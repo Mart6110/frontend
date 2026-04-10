@@ -7,7 +7,7 @@ function App() {
   return (
     <Flex direction="column" minH="100vh">
       <Navbar />
-      <Box as="main" flex="1">
+      <Box as="main" flex="1" display="flex" flexDirection="column">
         <Outlet />
       </Box>
       <Footer />
