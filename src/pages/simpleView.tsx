@@ -7,6 +7,7 @@ import { PumpStatusCard } from "@/components/dashboard/PumpStatusCard"
 import { TemperatureChart } from "@/components/dashboard/TemperatureChart"
 import { EnergyChart } from "@/components/dashboard/EnergyChart"
 import { EventTimeline } from "@/components/dashboard/EventTimeline"
+import { KPICardSkeleton, PumpStatusCardSkeleton, ChartSkeleton } from "@/components/dashboard/Skeletons"
 import { Drawer } from "@/components/ui/drawer"
 import { Button } from "@/components/ui/button"
 import { LuHistory } from "react-icons/lu"
@@ -17,9 +18,16 @@ export function SimpleViewPage() {
 
   // Initialize with historical data
   useEffect(() => {
-    const initialData = mockDataService.generateHistoricalData(6) // 6 hours
-    setData(initialData)
-    setIsLoading(false)
+    // Simulate realistic loading time
+    const loadData = async () => {
+      setIsLoading(true)
+      await new Promise(resolve => setTimeout(resolve, 1000)) // 1 second delay
+      const initialData = mockDataService.generateHistoricalData(6) // 6 hours
+      setData(initialData)
+      setIsLoading(false)
+    }
+    
+    loadData()
   }, [])
 
   // Real-time updates every 15 seconds
@@ -36,14 +44,6 @@ export function SimpleViewPage() {
     return () => clearInterval(interval)
   }, [data])
 
-  if (isLoading || !data) {
-    return (
-      <VStack p={{ base: 4, md: 8 }} align="center" justify="center" minH="60vh">
-        <Heading size={{ base: "md", md: "lg" }}>{APP_TEXT.DASHBOARD.LOADING}</Heading>
-      </VStack>
-    )
-  }
-
   return (
     <Box p={{ base: 4, md: 8 }}>
       <VStack align="start" gap={6} w="full">
@@ -56,19 +56,21 @@ export function SimpleViewPage() {
           gap={4}
         >
           <Heading size={{ base: "md", md: "lg" }}>{APP_TEXT.SIMPLE_VIEW.TITLE}</Heading>
-          <Drawer
-            placement="end"
-            size={{ base: "full", md: "md" }}
-            trigger={
-              <Button variant="outline" size={{ base: "sm", md: "md" }}>
-                <LuHistory />
-                System Events ({data.events.length})
-              </Button>
-            }
-            title="System Event Timeline"
-          >
-            <EventTimeline events={data.events} maxEvents={50} />
-          </Drawer>
+          {!isLoading && data && (
+            <Drawer
+              placement="end"
+              size={{ base: "full", md: "md" }}
+              trigger={
+                <Button variant="outline" size={{ base: "sm", md: "md" }}>
+                  <LuHistory />
+                  System Events ({data.events.length})
+                </Button>
+              }
+              title="System Event Timeline"
+            >
+              <EventTimeline events={data.events} maxEvents={50} />
+            </Drawer>
+          )}
         </Flex>
         
         {/* KPI Cards Grid */}
@@ -77,41 +79,52 @@ export function SimpleViewPage() {
           gap={4}
           w="full"
         >
-          <GridItem>
-            <KPICard
-              label={APP_TEXT.DASHBOARD.KPI.TEMPERATURE}
-              value={data.currentTemperature.toFixed(1)}
-              unit={APP_TEXT.DASHBOARD.UNITS.TEMPERATURE}
-              status="success"
-            />
-          </GridItem>
-          
-          <GridItem>
-            <KPICard
-              label={APP_TEXT.DASHBOARD.KPI.POWER}
-              value={data.currentPower.toFixed(1)}
-              unit={APP_TEXT.DASHBOARD.UNITS.POWER}
-              status={data.isPumpActive ? "success" : "info"}
-            />
-          </GridItem>
-          
-          <GridItem>
-            <KPICard
-              label={APP_TEXT.DASHBOARD.KPI.EFFICIENCY}
-              value={data.currentEfficiency.toFixed(1)}
-              unit={APP_TEXT.DASHBOARD.UNITS.EFFICIENCY}
-              status={data.currentEfficiency > 80 ? "success" : "warning"}
-            />
-          </GridItem>
-          
-          <GridItem>
-            <KPICard
-              label={APP_TEXT.DASHBOARD.KPI.STATE_OF_CHARGE}
-              value={data.stateOfCharge.toFixed(0)}
-              unit={APP_TEXT.DASHBOARD.UNITS.EFFICIENCY}
-              status="info"
-            />
-          </GridItem>
+          {isLoading || !data ? (
+            <>
+              <GridItem><KPICardSkeleton /></GridItem>
+              <GridItem><KPICardSkeleton /></GridItem>
+              <GridItem><KPICardSkeleton /></GridItem>
+              <GridItem><KPICardSkeleton /></GridItem>
+            </>
+          ) : (
+            <>
+              <GridItem>
+                <KPICard
+                  label={APP_TEXT.DASHBOARD.KPI.TEMPERATURE}
+                  value={data.currentTemperature.toFixed(1)}
+                  unit={APP_TEXT.DASHBOARD.UNITS.TEMPERATURE}
+                  status="success"
+                />
+              </GridItem>
+              
+              <GridItem>
+                <KPICard
+                  label={APP_TEXT.DASHBOARD.KPI.POWER}
+                  value={data.currentPower.toFixed(1)}
+                  unit={APP_TEXT.DASHBOARD.UNITS.POWER}
+                  status={data.isPumpActive ? "success" : "info"}
+                />
+              </GridItem>
+              
+              <GridItem>
+                <KPICard
+                  label={APP_TEXT.DASHBOARD.KPI.EFFICIENCY}
+                  value={data.currentEfficiency.toFixed(1)}
+                  unit={APP_TEXT.DASHBOARD.UNITS.EFFICIENCY}
+                  status={data.currentEfficiency > 80 ? "success" : "warning"}
+                />
+              </GridItem>
+              
+              <GridItem>
+                <KPICard
+                  label={APP_TEXT.DASHBOARD.KPI.STATE_OF_CHARGE}
+                  value={data.stateOfCharge.toFixed(0)}
+                  unit={APP_TEXT.DASHBOARD.UNITS.EFFICIENCY}
+                  status="info"
+                />
+              </GridItem>
+            </>
+          )}
         </Grid>
 
         {/* Pump Status */}
@@ -120,19 +133,28 @@ export function SimpleViewPage() {
           gap={4}
           w="full"
         >
-          <GridItem>
-            <PumpStatusCard isActive={data.isPumpActive} />
-          </GridItem>
-          
-          <GridItem>
-            <KPICard
-              label={APP_TEXT.DASHBOARD.KPI.FLOW_RATE}
-              value={data.currentFlow.toFixed(1)}
-              unit={APP_TEXT.DASHBOARD.UNITS.FLOW}
-              status="info"
-              size="lg"
-            />
-          </GridItem>
+          {isLoading || !data ? (
+            <>
+              <GridItem><PumpStatusCardSkeleton /></GridItem>
+              <GridItem><KPICardSkeleton /></GridItem>
+            </>
+          ) : (
+            <>
+              <GridItem>
+                <PumpStatusCard isActive={data.isPumpActive} />
+              </GridItem>
+              
+              <GridItem>
+                <KPICard
+                  label={APP_TEXT.DASHBOARD.KPI.FLOW_RATE}
+                  value={data.currentFlow.toFixed(1)}
+                  unit={APP_TEXT.DASHBOARD.UNITS.FLOW}
+                  status="info"
+                  size="lg"
+                />
+              </GridItem>
+            </>
+          )}
         </Grid>
 
         {/* Charts */}
@@ -141,39 +163,48 @@ export function SimpleViewPage() {
           gap={6}
           w="full"
         >
-          <GridItem>
-            <Box
-              borderWidth="1px"
-              borderColor="rgba(0, 255, 170, 0.3)"
-              borderRadius="12px"
-              p={{ base: 4, md: 6 }}
-              backdropFilter="blur(5px)"
-              boxShadow="0 4px 20px rgba(0, 255, 170, 0.1)"
-              css={{ WebkitBackdropFilter: "blur(5px)" }}
-            >
-              <TemperatureChart 
-                data={data.temperatureHistory}
-                height={300}
-              />
-            </Box>
-          </GridItem>
+          {isLoading || !data ? (
+            <>
+              <GridItem><ChartSkeleton height="300px" /></GridItem>
+              <GridItem><ChartSkeleton height="300px" /></GridItem>
+            </>
+          ) : (
+            <>
+              <GridItem>
+                <Box
+                  borderWidth="1px"
+                  borderColor="rgba(0, 255, 170, 0.3)"
+                  borderRadius="12px"
+                  p={{ base: 4, md: 6 }}
+                  backdropFilter="blur(5px)"
+                  boxShadow="0 4px 20px rgba(0, 255, 170, 0.1)"
+                  css={{ WebkitBackdropFilter: "blur(5px)" }}
+                >
+                  <TemperatureChart 
+                    data={data.temperatureHistory}
+                    height={300}
+                  />
+                </Box>
+              </GridItem>
 
-          <GridItem>
-            <Box
-              borderWidth="1px"
-              borderColor="rgba(0, 255, 170, 0.3)"
-              borderRadius="12px"
-              p={{ base: 4, md: 6 }}
-              backdropFilter="blur(5px)"
-              boxShadow="0 4px 20px rgba(0, 255, 170, 0.1)"
-              css={{ WebkitBackdropFilter: "blur(5px)" }}
-            >
-              <EnergyChart 
-                data={data.energyHistory}
-                height={300}
-              />
-            </Box>
-          </GridItem>
+              <GridItem>
+                <Box
+                  borderWidth="1px"
+                  borderColor="rgba(0, 255, 170, 0.3)"
+                  borderRadius="12px"
+                  p={{ base: 4, md: 6 }}
+                  backdropFilter="blur(5px)"
+                  boxShadow="0 4px 20px rgba(0, 255, 170, 0.1)"
+                  css={{ WebkitBackdropFilter: "blur(5px)" }}
+                >
+                  <EnergyChart 
+                    data={data.energyHistory}
+                    height={300}
+                  />
+                </Box>
+              </GridItem>
+            </>
+          )}
         </Grid>
       </VStack>
     </Box>
