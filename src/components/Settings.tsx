@@ -1,41 +1,42 @@
-import { VStack, Heading } from "@chakra-ui/react"
+import { VStack } from "@chakra-ui/react"
 import { Formik, Form } from "formik"
 import * as Yup from "yup"
 import { FormikField } from "@/components/ui/formikField"
 import { FormikSelect } from "@/components/ui/formikSelect"
 import { FormikSlider } from "@/components/ui/formikSlider"
 import { Button } from "@/components/ui/button"
+import { APP_TEXT, APP_CONFIG } from "@/constants/text"
 
 const settingsSchema = Yup.object().shape({
     capacity: Yup.number()
-        .required("Capacity is required")
-        .min(1, "Capacity must be at least 1 kWh")
-        .max(10000, "Capacity cannot exceed 10000 kWh"),
+        .required(APP_TEXT.VALIDATION.CAPACITY.REQUIRED)
+        .min(APP_CONFIG.LIMITS.CAPACITY.MIN, APP_TEXT.VALIDATION.CAPACITY.MIN)
+        .max(APP_CONFIG.LIMITS.CAPACITY.MAX, APP_TEXT.VALIDATION.CAPACITY.MAX),
     maxChargeRate: Yup.number()
-        .required("Max charge rate is required")
-        .min(1, "Must be at least 1 kW")
-        .max(1000, "Cannot exceed 1000 kW"),
+        .required(APP_TEXT.VALIDATION.MAX_CHARGE_RATE.REQUIRED)
+        .min(APP_CONFIG.LIMITS.CHARGE_RATE.MIN, APP_TEXT.VALIDATION.MAX_CHARGE_RATE.MIN)
+        .max(APP_CONFIG.LIMITS.CHARGE_RATE.MAX, APP_TEXT.VALIDATION.MAX_CHARGE_RATE.MAX),
     maxDischargeRate: Yup.number()
-        .required("Max discharge rate is required")
-        .min(1, "Must be at least 1 kW")
-        .max(1000, "Cannot exceed 1000 kW"),
-    operatingMode: Yup.string().required("Operating mode is required"),
+        .required(APP_TEXT.VALIDATION.MAX_DISCHARGE_RATE.REQUIRED)
+        .min(APP_CONFIG.LIMITS.DISCHARGE_RATE.MIN, APP_TEXT.VALIDATION.MAX_DISCHARGE_RATE.MIN)
+        .max(APP_CONFIG.LIMITS.DISCHARGE_RATE.MAX, APP_TEXT.VALIDATION.MAX_DISCHARGE_RATE.MAX),
+    operatingMode: Yup.string().required(APP_TEXT.VALIDATION.OPERATING_MODE.REQUIRED),
     targetTemperature: Yup.number()
-        .required("Target temperature is required")
-        .min(200, "Must be at least 200°C")
-        .max(800, "Cannot exceed 800°C"),
+        .required(APP_TEXT.VALIDATION.TARGET_TEMPERATURE.REQUIRED)
+        .min(APP_CONFIG.LIMITS.TEMPERATURE.MIN, APP_TEXT.VALIDATION.TARGET_TEMPERATURE.MIN)
+        .max(APP_CONFIG.LIMITS.TEMPERATURE.MAX, APP_TEXT.VALIDATION.TARGET_TEMPERATURE.MAX),
     efficiency: Yup.number()
-        .required("Efficiency is required")
-        .min(0)
-        .max(100),
+        .required(APP_TEXT.VALIDATION.EFFICIENCY.REQUIRED)
+        .min(APP_CONFIG.LIMITS.EFFICIENCY.MIN)
+        .max(APP_CONFIG.LIMITS.EFFICIENCY.MAX),
     minStateOfCharge: Yup.number()
-        .required("Min state of charge is required")
-        .min(0)
-        .max(100),
+        .required(APP_TEXT.VALIDATION.MIN_STATE_OF_CHARGE.REQUIRED)
+        .min(APP_CONFIG.LIMITS.STATE_OF_CHARGE.MIN)
+        .max(APP_CONFIG.LIMITS.STATE_OF_CHARGE.MAX),
     maxStateOfCharge: Yup.number()
-        .required("Max state of charge is required")
-        .min(0)
-        .max(100),
+        .required(APP_TEXT.VALIDATION.MAX_STATE_OF_CHARGE.REQUIRED)
+        .min(APP_CONFIG.LIMITS.STATE_OF_CHARGE.MIN)
+        .max(APP_CONFIG.LIMITS.STATE_OF_CHARGE.MAX),
 })
 
 export function Settings() {
@@ -43,14 +44,14 @@ export function Settings() {
         <VStack align="start" gap={6} w="full">
             <Formik
                 initialValues={{
-                    capacity: 100,
-                    maxChargeRate: 50,
-                    maxDischargeRate: 50,
-                    operatingMode: "auto",
-                    targetTemperature: 600,
-                    efficiency: 85,
-                    minStateOfCharge: 10,
-                    maxStateOfCharge: 95,
+                    capacity: APP_CONFIG.DEFAULT_VALUES.CAPACITY,
+                    maxChargeRate: APP_CONFIG.DEFAULT_VALUES.MAX_CHARGE_RATE,
+                    maxDischargeRate: APP_CONFIG.DEFAULT_VALUES.MAX_DISCHARGE_RATE,
+                    operatingMode: APP_CONFIG.DEFAULT_VALUES.OPERATING_MODE,
+                    targetTemperature: APP_CONFIG.DEFAULT_VALUES.TARGET_TEMPERATURE,
+                    efficiency: APP_CONFIG.DEFAULT_VALUES.EFFICIENCY,
+                    minStateOfCharge: APP_CONFIG.DEFAULT_VALUES.MIN_STATE_OF_CHARGE,
+                    maxStateOfCharge: APP_CONFIG.DEFAULT_VALUES.MAX_STATE_OF_CHARGE,
                 }}
                 validationSchema={settingsSchema}
                 onSubmit={(values) => {
@@ -63,80 +64,80 @@ export function Settings() {
                         <VStack gap={4} w="full">
                             <FormikField
                                 name="capacity"
-                                label="Battery Capacity"
+                                label={APP_TEXT.SETTINGS.CAPACITY.LABEL}
                                 type="number"
-                                placeholder="100"
-                                helperText="Total energy storage capacity in kWh"
+                                placeholder={APP_TEXT.SETTINGS.CAPACITY.PLACEHOLDER}
+                                helperText={APP_TEXT.SETTINGS.CAPACITY.HELPER}
                                 required
                             />
 
                             <FormikField
                                 name="maxChargeRate"
-                                label="Max Charge Rate"
+                                label={APP_TEXT.SETTINGS.MAX_CHARGE_RATE.LABEL}
                                 type="number"
-                                placeholder="50"
-                                helperText="Maximum charging power in kW"
+                                placeholder={APP_TEXT.SETTINGS.MAX_CHARGE_RATE.PLACEHOLDER}
+                                helperText={APP_TEXT.SETTINGS.MAX_CHARGE_RATE.HELPER}
                                 required
                             />
 
                             <FormikField
                                 name="maxDischargeRate"
-                                label="Max Discharge Rate"
+                                label={APP_TEXT.SETTINGS.MAX_DISCHARGE_RATE.LABEL}
                                 type="number"
-                                placeholder="50"
-                                helperText="Maximum discharging power in kW"
+                                placeholder={APP_TEXT.SETTINGS.MAX_DISCHARGE_RATE.PLACEHOLDER}
+                                helperText={APP_TEXT.SETTINGS.MAX_DISCHARGE_RATE.HELPER}
                                 required
                             />
 
                             <FormikSelect
                                 name="operatingMode"
-                                label="Operating Mode"
+                                label={APP_TEXT.SETTINGS.OPERATING_MODE.LABEL}
                                 options={[
-                                    { label: "Automatic", value: "auto" },
-                                    { label: "Charge Only", value: "charge" },
-                                    { label: "Discharge Only", value: "discharge" },
-                                    { label: "Standby", value: "standby" },
+                                    { label: APP_TEXT.SETTINGS.OPERATING_MODE.OPTIONS.AUTO, value: "auto" },
+                                    { label: APP_TEXT.SETTINGS.OPERATING_MODE.OPTIONS.CHARGE, value: "charge" },
+                                    { label: APP_TEXT.SETTINGS.OPERATING_MODE.OPTIONS.DISCHARGE, value: "discharge" },
+                                    { label: APP_TEXT.SETTINGS.OPERATING_MODE.OPTIONS.STANDBY, value: "standby" },
                                 ]}
-                                helperText="Battery operation mode"
+                                helperText={APP_TEXT.SETTINGS.OPERATING_MODE.HELPER}
                                 required
                             />
 
                             <FormikField
                                 name="targetTemperature"
-                                label="Target Temperature"
+                                label={APP_TEXT.SETTINGS.TARGET_TEMPERATURE.LABEL}
                                 type="number"
-                                placeholder="600"
-                                helperText="Target operating temperature in °C (200-800)"
+                                placeholder={APP_TEXT.SETTINGS.TARGET_TEMPERATURE.PLACEHOLDER}
+                                helperText={APP_TEXT.SETTINGS.TARGET_TEMPERATURE.HELPER}
                                 required
                             />
 
                             <FormikSlider
                                 name="efficiency"
-                                label="System Efficiency"
-                                min={0}
-                                max={100}
-                                step={1}
-                                helperText="Round-trip energy efficiency (%)"
+                                label={APP_TEXT.SETTINGS.EFFICIENCY.LABEL}
+                                min={APP_CONFIG.LIMITS.EFFICIENCY.MIN}
+                                max={APP_CONFIG.LIMITS.EFFICIENCY.MAX}
+                                step={APP_CONFIG.SLIDER_STEPS.EFFICIENCY}
+                                helperText={APP_TEXT.SETTINGS.EFFICIENCY.HELPER}
                                 required
                             />
 
                             <FormikSlider
                                 name="minStateOfCharge"
-                                label="Minimum State of Charge"
-                                min={0}
-                                max={100}
-                                step={5}
-                                helperText="Minimum allowed battery charge level (%)"
+                                label={APP_TEXT.SETTINGS.MIN_STATE_OF_CHARGE.LABEL}
+                                min={APP_CONFIG.LIMITS.STATE_OF_CHARGE.MIN}
+                                max={APP_CONFIG.LIMITS.STATE_OF_CHARGE.MAX}
+                                step={APP_CONFIG.SLIDER_STEPS.STATE_OF_CHARGE}
+                                helperText={APP_TEXT.SETTINGS.MIN_STATE_OF_CHARGE.HELPER}
                                 required
                             />
 
                             <FormikSlider
                                 name="maxStateOfCharge"
-                                label="Maximum State of Charge"
-                                min={0}
-                                max={100}
-                                step={5}
-                                helperText="Maximum allowed battery charge level (%)"
+                                label={APP_TEXT.SETTINGS.MAX_STATE_OF_CHARGE.LABEL}
+                                min={APP_CONFIG.LIMITS.STATE_OF_CHARGE.MIN}
+                                max={APP_CONFIG.LIMITS.STATE_OF_CHARGE.MAX}
+                                step={APP_CONFIG.SLIDER_STEPS.STATE_OF_CHARGE}
+                                helperText={APP_TEXT.SETTINGS.MAX_STATE_OF_CHARGE.HELPER}
                                 required
                             />
                         </VStack>
@@ -146,7 +147,7 @@ export function Settings() {
                             w="full"
                             mt={2}
                         >
-                            Save Settings
+                            {APP_TEXT.SETTINGS.SAVE_BUTTON}
                         </Button>
                     </Form>
                 )}

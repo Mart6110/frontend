@@ -8,11 +8,11 @@ import { setApiKey } from "@/store/apiKeySlice"
 import { Button } from "@/components/ui/button"
 import { FormikField } from "@/components/ui/formikField"
 import type { AppDispatch, RootState } from "@/store"
+import { APP_TEXT } from "@/constants/text"
 
 const apiKeySchema = Yup.object().shape({
   apiKey: Yup.string()
-    .required("API key is required")
-    .min(10, "API key must be at least 10 characters"),
+    .required(APP_TEXT.VALIDATION.API_KEY.REQUIRED)
 })
 
 export function HomePage() {
@@ -27,15 +27,15 @@ export function HomePage() {
   }, [apiKey, navigate])
 
   return (
-    <Center flex="1" w="100%">
+    <Center flex="1" w="100%" px={{ base: 4, md: 0 }}>
       <VStack
         align="start"
         gap={6}
         maxW="md"
         w="full"
-        px={8}
-        py={10}
-        mx={8}
+        px={{ base: 6, md: 8 }}
+        py={{ base: 8, md: 10 }}
+        mx={{ base: 0, md: 8 }}
         backdropFilter="blur(5px)"
         borderRadius="16px"
         borderWidth="1px"
@@ -45,8 +45,8 @@ export function HomePage() {
           WebkitBackdropFilter: "blur(5px)"
         }}
       >
-        <Heading size="lg">Welcome</Heading>
-        <Text>Enter your API key to access the dashboard.</Text>
+        <Heading size={{ base: "md", md: "lg" }}>{APP_TEXT.HOME.WELCOME_TITLE}</Heading>
+        <Text fontSize={{ base: "sm", md: "md" }}>{APP_TEXT.HOME.WELCOME_MESSAGE}</Text>
         <Formik
           initialValues={{ apiKey: "" }}
           validationSchema={apiKeySchema}
@@ -60,11 +60,10 @@ export function HomePage() {
               <VStack gap={4} w="full">
                 <FormikField
                   name="apiKey"
-                  placeholder="API key"
-                  type="password"
+                  placeholder={APP_TEXT.HOME.API_KEY_PLACEHOLDER}
                 />
                 <Button type="submit" disabled={isSubmitting || !isValid} w="full">
-                  Apply
+                  {APP_TEXT.HOME.SUBMIT_BUTTON}
                 </Button>
               </VStack>
             </Form>

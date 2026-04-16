@@ -5,6 +5,7 @@ import { clearApiKey } from "@/store/apiKeySlice"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogActionTrigger } from "@/components/ui/dialog"
 import type { AppDispatch } from "@/store"
+import { APP_TEXT } from "@/constants/text"
 
 interface ClearApiKeyDialogProps {
   trigger: React.ReactNode
@@ -28,18 +29,18 @@ export function ClearApiKeyDialog({ trigger }: ClearApiKeyDialogProps) {
       <Dialog.Positioner>
         <Dialog.Content bg="bg">
           <Dialog.Header>
-            <Dialog.Title>Clear API Key</Dialog.Title>
+            <Dialog.Title>{APP_TEXT.DIALOGS.CLEAR_API_KEY.TITLE}</Dialog.Title>
           </Dialog.Header>
           <Dialog.Body>
-            <Text>Are you sure you want to clear your API key? You will be logged out.</Text>
+            <Text>{APP_TEXT.DIALOGS.CLEAR_API_KEY.MESSAGE}</Text>
           </Dialog.Body>
           <Dialog.Footer>
             <DialogActionTrigger asChild>
-              <Button variant="outline">Cancel</Button>
+              <Button variant="outline">{APP_TEXT.DIALOGS.CLEAR_API_KEY.CANCEL}</Button>
             </DialogActionTrigger>
             <DialogActionTrigger asChild>
               <Button onClick={handleClear}>
-                Clear
+                {APP_TEXT.DIALOGS.CLEAR_API_KEY.CONFIRM}
               </Button>
             </DialogActionTrigger>
           </Dialog.Footer>

@@ -11,8 +11,8 @@ const config = defineConfig({
     },
     tokens: {
       fonts: {
-        body: { value: "system-ui, sans-serif" },
-        heading: { value: "system-ui, sans-serif" },
+        body: { value: "'Inter', system-ui, sans-serif" },
+        heading: { value: "'Inter', system-ui, sans-serif" },
       },
     },
     semanticTokens: {
