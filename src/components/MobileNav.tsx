@@ -10,6 +10,10 @@ export function MobileNav() {
   const router = useRouterState()
   const currentPath = router.location.pathname
 
+  const handleLinkClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    e.currentTarget.blur()
+  }
+
   if (!apiKey) return null
 
   return (
@@ -34,7 +38,7 @@ export function MobileNav() {
           textDecoration={currentPath === "/simpleView" ? "underline" : "none"}
           textUnderlineOffset={currentPath === "/simpleView" ? "4px" : undefined}
         >
-          <RouterLink to="/simpleView">{APP_TEXT.NAV.SIMPLE_VIEW.replace(" View", "")}</RouterLink>
+          <RouterLink to="/simpleView" onClick={handleLinkClick}>{APP_TEXT.NAV.SIMPLE_VIEW.replace(" Dashboard", "")}</RouterLink>
         </Link>
         <Link
           asChild
@@ -43,7 +47,7 @@ export function MobileNav() {
           textDecoration={currentPath === "/advancedView" ? "underline" : "none"}
           textUnderlineOffset={currentPath === "/advancedView" ? "4px" : undefined}
         >
-          <RouterLink to="/advancedView">{APP_TEXT.NAV.ADVANCED_VIEW.replace(" View", "")}</RouterLink>
+          <RouterLink to="/advancedView" onClick={handleLinkClick}>{APP_TEXT.NAV.ADVANCED_VIEW.replace(" Dashboard", "")}</RouterLink>
         </Link>
       </HStack>
     </Box>
