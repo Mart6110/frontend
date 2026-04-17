@@ -1,4 +1,4 @@
-import { VStack, Grid, GridItem, Box, Flex, Button } from "@chakra-ui/react"
+import { VStack, Grid, GridItem, Box } from "@chakra-ui/react"
 import { useEffect, useRef, useMemo } from "react"
 import { APP_TEXT, APP_CONFIG } from "@/constants/text"
 import { mockDataService } from "@/services/mockData"
@@ -9,14 +9,12 @@ import { EnergyChart } from "@/components/dashboard/EnergyChart"
 import { FlowChart } from "@/components/dashboard/FlowChart"
 import { EfficiencyChart } from "@/components/dashboard/EfficiencyChart"
 import { TemperatureVsPumpChart } from "@/components/dashboard/TemperatureVsPumpChart"
-import { EventTimeline } from "@/components/dashboard/EventTimeline"
 import { ChartSkeleton } from "@/components/dashboard/Skeletons"
 import { ViewModeToggle } from "@/components/dashboard/ViewModeToggle"
 import { RealtimeHoursSelector } from "@/components/dashboard/RealtimeHoursSelector"
 import { DateRangeSelector } from "@/components/dashboard/DateRangeSelector"
-import { Drawer } from "@/components/ui/drawer"
+import { DashboardHeader } from "@/components/dashboard/DashboardHeader"
 import { Widget } from "@/components/ui/widget"
-import { LuHistory } from "react-icons/lu"
 import { useAppDispatch, useAppSelector } from "@/store/hooks"
 import {
   setAllData,
@@ -121,16 +119,13 @@ export function AdvancedViewPage() {
 
   return (
     <Box p={{ base: 4, md: 8 }}>
-      <VStack align="start" gap={6} w="full">
+      <VStack align="start" gap={6} w="-webkit-fill-available">
         {/* Header with Time Controls */}
-        <Flex 
-          direction={{ base: "column", lg: "row" }}
-          align={{ base: "start", lg: "center" }}
-          w="full"
-          gap={3}
-          wrap="wrap"
+        <DashboardHeader 
+          events={displayData?.events}
+          isLoading={isLoading}
+          maxEvents={100}
         >
-          {/* Mode Toggle */}
           <ViewModeToggle
             value={viewMode}
             onChange={(value) => dispatch(setViewMode(value))}
@@ -138,7 +133,6 @@ export function AdvancedViewPage() {
             size="md"
           />
 
-          {/* Realtime Hour Selection */}
           {viewMode === 'realtime' && (
             <RealtimeHoursSelector
               value={realtimeHours}
@@ -148,7 +142,6 @@ export function AdvancedViewPage() {
             />
           )}
 
-          {/* Date Range Pickers */}
           {viewMode === 'dateRange' && (
             <DateRangeSelector
               startDate={startDate}
@@ -159,26 +152,7 @@ export function AdvancedViewPage() {
               showTime
             />
           )}
-
-          {/* System Events */}
-          {!isLoading && displayData && (
-            <Box ml={{ base: 0, lg: "auto" }}>
-              <Drawer
-                placement="end"
-                size={{ base: "full", md: "md" }}
-                trigger={
-                  <Button variant="outline" size={{ base: "sm", md: "md" }}>
-                    <LuHistory />
-                    System Events ({displayData.events.length})
-                  </Button>
-                }
-                title="System Event Timeline"
-              >
-                <EventTimeline events={displayData.events} maxEvents={100} />
-              </Drawer>
-            </Box>
-          )}
-        </Flex>
+        </DashboardHeader>
         
         {/* KPI Cards Grid */}
         <Grid

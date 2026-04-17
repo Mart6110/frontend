@@ -3,6 +3,8 @@ import { Box, Text } from "@chakra-ui/react"
 import { useMemo, memo } from "react"
 import ReactECharts from "echarts-for-react"
 import { formatTimestamp, sampleData } from "./BaseChart"
+import { ChartWithTableWrapper, type Column } from "./ChartWithTableWrapper"
+import { DataTable, formatBoolean } from "./DataTable"
 import type { EChartsOption } from "echarts"
 
 interface TemperatureVsPumpChartProps {
@@ -10,9 +12,16 @@ interface TemperatureVsPumpChartProps {
   pumpData: Array<{ timestamp: number; active: boolean }>
   height?: number
   title?: string
+  enableTableView?: boolean
 }
 
-export const TemperatureVsPumpChart = memo(function TemperatureVsPumpChart({ temperatureData, pumpData, height = 300, title = APP_TEXT.DASHBOARD.CHARTS.TEMPERATURE_VS_PUMP }: TemperatureVsPumpChartProps) {
+export const TemperatureVsPumpChart = memo(function TemperatureVsPumpChart({ 
+  temperatureData, 
+  pumpData, 
+  height = 300, 
+  title = APP_TEXT.DASHBOARD.CHARTS.TEMPERATURE_VS_PUMP,
+  enableTableView = true 
+}: TemperatureVsPumpChartProps) {
   const option = useMemo((): EChartsOption => {
     // Sample data for better performance
     const sampledTempData = sampleData(temperatureData, 500)
@@ -149,18 +158,59 @@ export const TemperatureVsPumpChart = memo(function TemperatureVsPumpChart({ tem
     }
   }, [temperatureData, pumpData])
 
-  return (
+  // Prepare combined data for table view
+  const tableData = useMemo(() => 
+    temperatureData.map(tempPoint => {
+      const pumpPoint = pumpData.find(p => p.timestamp === tempPoint.timestamp)
+      return {
+        timestamp: tempPoint.timestamp,
+        temperature: tempPoint.temperature,
+        pumpActive: pumpPoint?.active ?? false
+      }
+    }),
+    [temperatureData, pumpData]
+  )
+
+  const tableColumns: Column[] = [
+    { key: 'timestamp', label: 'Time' },
+    { key: 'temperature', label: APP_TEXT.DASHBOARD.KPI.TEMPERATURE, unit: APP_TEXT.DASHBOARD.UNITS.TEMPERATURE },
+    { key: 'pumpActive', label: 'Pump Status', format: formatBoolean },
+  ]
+
+  const chartComponent = (
     <Box>
-      {title && (
-        <Text fontSize="lg" fontWeight="semibold" mb={3}>
-          {title}
-        </Text>
-      )}
       <ReactECharts 
         option={option} 
         style={{ height: `${height}px` }} 
         lazyUpdate={true}
       />
     </Box>
+  )
+
+  const tableComponent = <DataTable data={tableData} columns={tableColumns} height={height} />
+
+  if (!enableTableView) {
+    return (
+      <Box>
+        {title && (
+          <Text fontSize="lg" fontWeight="semibold" mb={3}>
+            {title}
+          </Text>
+        )}
+        <ReactECharts 
+          option={option} 
+          style={{ height: `${height}px` }} 
+          lazyUpdate={true}
+        />
+      </Box>
+    )
+  }
+
+  return (
+    <ChartWithTableWrapper
+      title={title}
+      chartComponent={chartComponent}
+      tableComponent={tableComponent}
+    />
   )
 })

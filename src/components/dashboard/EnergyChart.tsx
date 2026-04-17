@@ -1,5 +1,7 @@
 import { APP_CONFIG, APP_TEXT } from "@/constants/text"
 import { BaseChart, createBaseChartConfig, createXAxis, createYAxis, formatTimestamp, sampleData } from "./BaseChart"
+import { ChartWithTableWrapper, type Column } from "./ChartWithTableWrapper"
+import { DataTable } from "./DataTable"
 import type { EChartsOption } from "echarts"
 import { memo, useCallback } from "react"
 
@@ -8,9 +10,16 @@ interface EnergyChartProps {
   height?: number
   showLegend?: boolean
   title?: string
+  enableTableView?: boolean
 }
 
-export const EnergyChart = memo(function EnergyChart({ data, height = 300, showLegend = true, title = APP_TEXT.DASHBOARD.CHARTS.ENERGY_TRANSFER }: EnergyChartProps) {
+export const EnergyChart = memo(function EnergyChart({ 
+  data, 
+  height = 300, 
+  showLegend = true, 
+  title = APP_TEXT.DASHBOARD.CHARTS.ENERGY_TRANSFER,
+  enableTableView = true 
+}: EnergyChartProps) {
   const getOption = useCallback((chartData: typeof data, legend: boolean): EChartsOption => {
     const sampledData = sampleData(chartData, 500)
     const timestamps = sampledData.map(point => formatTimestamp(point.timestamp))
@@ -57,5 +66,26 @@ export const EnergyChart = memo(function EnergyChart({ data, height = 300, showL
     })
   }, [])
 
-  return <BaseChart data={data} height={height} showLegend={showLegend} title={title} getOption={getOption} />
+  const tableColumns: Column[] = [
+    { key: 'timestamp', label: 'Time' },
+    { key: 'energyIn', label: APP_TEXT.DASHBOARD.KPI.ENERGY_IN, unit: APP_TEXT.DASHBOARD.UNITS.ENERGY },
+    { key: 'energyOut', label: APP_TEXT.DASHBOARD.KPI.ENERGY_OUT, unit: APP_TEXT.DASHBOARD.UNITS.ENERGY },
+  ]
+
+  const chartComponent = <BaseChart data={data} height={height} showLegend={showLegend} getOption={getOption} />
+  const tableComponent = <DataTable data={data} columns={tableColumns} height={height} />
+
+  if (!enableTableView) {
+    return (
+      <BaseChart data={data} height={height} showLegend={showLegend} title={title} getOption={getOption} />
+    )
+  }
+
+  return (
+    <ChartWithTableWrapper
+      title={title}
+      chartComponent={chartComponent}
+      tableComponent={tableComponent}
+    />
+  )
 })
