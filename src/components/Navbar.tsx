@@ -14,6 +14,10 @@ import { APP_TEXT } from "@/constants/text"
 export function Navbar() {
     const apiKey = useSelector((state: RootState) => state.apiKey.apiKey)
 
+    const handleLinkClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+        e.currentTarget.blur()
+    }
+
     return (
         <Box px={{ base: 4, md: 8 }} py={4} borderBottom="1px solid" borderColor="gray.200">
             <Flex justify="space-between" align="center" gap={2}>
@@ -24,6 +28,7 @@ export function Navbar() {
                             <Link asChild>
                                 <RouterLink 
                                     to="/simpleView"
+                                    onClick={handleLinkClick}
                                     activeProps={{
                                         style: {
                                             textDecoration: 'underline',
@@ -37,6 +42,7 @@ export function Navbar() {
                             <Link asChild>
                                 <RouterLink 
                                     to="/advancedView"
+                                    onClick={handleLinkClick}
                                     activeProps={{
                                         style: {
                                             textDecoration: 'underline',

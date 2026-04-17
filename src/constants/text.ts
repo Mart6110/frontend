@@ -5,8 +5,8 @@ export const APP_TEXT = {
   
   // Navigation
   NAV: {
-    SIMPLE_VIEW: "Simple View",
-    ADVANCED_VIEW: "Advanced View",
+    SIMPLE_VIEW: "Standard Dashboard",
+    ADVANCED_VIEW: "Advanced Dashboard",
     SETTINGS: "Settings",
     LOGOUT: "Logout",
   },
@@ -19,16 +19,16 @@ export const APP_TEXT = {
     SUBMIT_BUTTON: "Apply",
   },
 
-  // Simple View Page
+  // Standard Dashboard Page
   SIMPLE_VIEW: {
-    TITLE: "Simple View",
-    CONTENT: "Dashboard simple view content goes here.",
+    TITLE: "Standard Dashboard",
+    CONTENT: "Standard dashboard view content goes here.",
   },
 
-  // Advanced View Page
+  // Advanced Dashboard Page
   ADVANCED_VIEW: {
-    TITLE: "Advanced View",
-    CONTENT: "Dashboard advanced view content goes here.",
+    TITLE: "Advanced Dashboard",
+    CONTENT: "Advanced dashboard view content goes here.",
   },
 
   // Dashboard Common

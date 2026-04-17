@@ -141,6 +141,8 @@ export function AdvancedViewPage() {
           events={displayData?.events}
           isLoading={isLoading}
           maxEvents={100}
+          dashboardData={displayData ?? undefined}
+          enableExport={true}
         >
           <ViewModeToggle
             value={viewMode}
