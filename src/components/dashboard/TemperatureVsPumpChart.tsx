@@ -69,8 +69,8 @@ export const TemperatureVsPumpChart = memo(function TemperatureVsPumpChart({
       },
       grid: {
         left: '3%',
-        right: '8%',
-        bottom: '15%',
+        right: '3%',
+        bottom: '3%',
         containLabel: true,
       },
       dataZoom: [
