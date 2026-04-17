@@ -173,8 +173,8 @@ export const DateRangeSelector = memo(function DateRangeSelector({
       <DatePicker.Control>
         <DatePicker.Input index={0} />
         <DatePicker.Input index={1} />
-        <DatePicker.Trigger asChild>
-          <IconButton variant="outline" aria-label="Open calendar">
+        <DatePicker.Trigger asChild unstyled>
+          <IconButton variant="outline" size={'sm'}>
             <LuCalendar />
           </IconButton>
         </DatePicker.Trigger>

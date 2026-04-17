@@ -1,4 +1,4 @@
-import { Heading, VStack, Grid, GridItem, Box, Flex } from "@chakra-ui/react"
+import { VStack, Grid, GridItem, Box } from "@chakra-ui/react"
 import { useEffect } from "react"
 import { APP_TEXT, APP_CONFIG } from "@/constants/text"
 import { mockDataService } from "@/services/mockData"
@@ -6,12 +6,9 @@ import { KPICard } from "@/components/dashboard/KPICard"
 import { PumpStatusCard } from "@/components/dashboard/PumpStatusCard"
 import { TemperatureChart } from "@/components/dashboard/TemperatureChart"
 import { EnergyChart } from "@/components/dashboard/EnergyChart"
-import { EventTimeline } from "@/components/dashboard/EventTimeline"
 import { ChartSkeleton } from "@/components/dashboard/Skeletons"
-import { Drawer } from "@/components/ui/drawer"
-import { Button } from "@/components/ui/button"
+import { DashboardHeader } from "@/components/dashboard/DashboardHeader"
 import { Widget } from "@/components/ui/widget"
-import { LuHistory } from "react-icons/lu"
 import { useAppDispatch, useAppSelector } from "@/store/hooks"
 import { setSimpleData, setSimpleIsLoading } from "@/store/dashboardSlice"
 
@@ -47,32 +44,14 @@ export function SimpleViewPage() {
 
   return (
     <Box p={{ base: 4, md: 8 }}>
-      <VStack align="start" gap={6} w="full">
+      <VStack align="start" gap={6} w="-webkit-fill-available">
         {/* Header */}
-        <Flex 
-          direction={{ base: "column", sm: "row" }}
-          justify="space-between" 
-          align={{ base: "start", sm: "center" }}
-          w="full"
-          gap={4}
+        <DashboardHeader 
+          events={data?.events}
+          isLoading={isLoading}
+          maxEvents={50}
         >
-          <Heading size={{ base: "md", md: "lg" }}>{APP_TEXT.SIMPLE_VIEW.TITLE}</Heading>
-          {!isLoading && data && (
-            <Drawer
-              placement="end"
-              size={{ base: "full", md: "md" }}
-              trigger={
-                <Button variant="outline" size={{ base: "sm", md: "md" }}>
-                  <LuHistory />
-                  System Events ({data.events.length})
-                </Button>
-              }
-              title="System Event Timeline"
-            >
-              <EventTimeline events={data.events} maxEvents={50} />
-            </Drawer>
-          )}
-        </Flex>
+        </DashboardHeader>
         
         {/* KPI Cards Grid */}
         <Grid
