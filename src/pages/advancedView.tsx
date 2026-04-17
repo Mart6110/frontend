@@ -183,7 +183,17 @@ export function AdvancedViewPage() {
               label={APP_TEXT.DASHBOARD.KPI.TEMPERATURE}
               value={displayData?.currentTemperature.toFixed(1) ?? "0.0"}
               unit={APP_TEXT.DASHBOARD.UNITS.TEMPERATURE}
-              status="success"
+              status={
+                displayData 
+                  ? displayData.currentTemperature > 660 
+                    ? "error" 
+                    : displayData.currentTemperature > 640 
+                      ? "warning" 
+                      : displayData.currentTemperature < 560 
+                        ? "warning" 
+                        : "success"
+                  : "info"
+              }
               isLoading={isLoading}
             />
           </GridItem>
@@ -203,7 +213,17 @@ export function AdvancedViewPage() {
               label={APP_TEXT.DASHBOARD.KPI.EFFICIENCY}
               value={displayData?.currentEfficiency.toFixed(1) ?? "0.0"}
               unit={APP_TEXT.DASHBOARD.UNITS.EFFICIENCY}
-              status={displayData && displayData.currentEfficiency > 80 ? "success" : "warning"}
+              status={
+                displayData 
+                  ? displayData.currentEfficiency < 70 
+                    ? "error" 
+                    : displayData.currentEfficiency < 75 
+                      ? "warning" 
+                      : displayData.currentEfficiency > 85 
+                        ? "success" 
+                        : "info"
+                  : "info"
+              }
               isLoading={isLoading}
             />
           </GridItem>
@@ -213,7 +233,13 @@ export function AdvancedViewPage() {
               label={APP_TEXT.DASHBOARD.KPI.FLOW_RATE}
               value={displayData?.currentFlow.toFixed(1) ?? "0.0"}
               unit={APP_TEXT.DASHBOARD.UNITS.FLOW}
-              status="info"
+              status={
+                displayData 
+                  ? displayData.currentFlow < 35 || displayData.currentFlow > 65 
+                    ? "warning" 
+                    : "success"
+                  : "info"
+              }
               isLoading={isLoading}
             />
           </GridItem>
@@ -223,7 +249,17 @@ export function AdvancedViewPage() {
               label={APP_TEXT.DASHBOARD.KPI.STATE_OF_CHARGE}
               value={displayData?.stateOfCharge.toFixed(0) ?? "0"}
               unit={APP_TEXT.DASHBOARD.UNITS.EFFICIENCY}
-              status="info"
+              status={
+                displayData 
+                  ? displayData.stateOfCharge < 20 
+                    ? "error" 
+                    : displayData.stateOfCharge < 40 
+                      ? "warning" 
+                      : displayData.stateOfCharge > 80 
+                        ? "success" 
+                        : "info"
+                  : "info"
+              }
               isLoading={isLoading}
             />
           </GridItem>
