@@ -11,21 +11,37 @@ import { EfficiencyChart } from "@/components/dashboard/EfficiencyChart"
 import { TemperatureVsPumpChart } from "@/components/dashboard/TemperatureVsPumpChart"
 import { ChartSkeleton } from "@/components/dashboard/Skeletons"
 import { ViewModeToggle } from "@/components/dashboard/ViewModeToggle"
-import { RealtimeHoursSelector } from "@/components/dashboard/RealtimeHoursSelector"
+import { RealtimeTimeSelector } from "@/components/dashboard/RealtimeHoursSelector"
 import { DateRangeSelector } from "@/components/dashboard/DateRangeSelector"
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader"
 import { Widget } from "@/components/ui/widget"
 import { useAppDispatch, useAppSelector } from "@/store/hooks"
+import type { RealtimeTimeConfig } from "@/constants/timeRanges"
 import {
   setAllData,
   setDisplayData,
   setIsLoading,
   setIsFiltering,
   setViewMode,
-  setRealtimeHours,
+  setRealtimeConfig,
   setStartDate,
   setEndDate,
 } from "@/store/dashboardSlice"
+
+// Helper function to convert time config to milliseconds
+function timeConfigToMilliseconds(config: RealtimeTimeConfig): number {
+  const { value, unit } = config
+  switch (unit) {
+    case 'minutes':
+      return value * 60 * 1000
+    case 'hours':
+      return value * 60 * 60 * 1000
+    case 'days':
+      return value * 24 * 60 * 60 * 1000
+    default:
+      return value * 60 * 60 * 1000 // default to hours
+  }
+}
 
 export function AdvancedViewPage() {
   const dispatch = useAppDispatch()
@@ -35,7 +51,7 @@ export function AdvancedViewPage() {
     isLoading,
     isFiltering,
     viewMode,
-    realtimeHours,
+    realtimeConfig,
     startDate: startDateISO,
     endDate: endDateISO,
   } = useAppSelector((state) => state.dashboard.advanced)
@@ -76,7 +92,7 @@ export function AdvancedViewPage() {
     if (isRealtimeUpdateRef.current && viewMode === 'realtime') {
       isRealtimeUpdateRef.current = false
       // Just update displayData directly from allData for realtime mode
-      const milliseconds = realtimeHours * 60 * 60 * 1000
+      const milliseconds = timeConfigToMilliseconds(realtimeConfig)
       const filteredData = mockDataService.getDataForTimeRange(allData, milliseconds)
       dispatch(setDisplayData(filteredData))
       return
@@ -88,8 +104,8 @@ export function AdvancedViewPage() {
     let filteredData
     
     if (viewMode === 'realtime') {
-      // Realtime mode: show last X hours from now
-      const milliseconds = realtimeHours * 60 * 60 * 1000
+      // Realtime mode: show last X time from now
+      const milliseconds = timeConfigToMilliseconds(realtimeConfig)
       filteredData = mockDataService.getDataForTimeRange(allData, milliseconds)
     } else {
       // Date range mode: show specific date range
@@ -102,7 +118,7 @@ export function AdvancedViewPage() {
     
     dispatch(setDisplayData(filteredData))
     dispatch(setIsFiltering(false))
-  }, [allData, viewMode, realtimeHours, startDate, endDate, dispatch])
+  }, [allData, viewMode, realtimeConfig, startDate, endDate, dispatch])
 
   // Real-time updates every 30 seconds
   useEffect(() => {
@@ -134,9 +150,9 @@ export function AdvancedViewPage() {
           />
 
           {viewMode === 'realtime' && (
-            <RealtimeHoursSelector
-              value={realtimeHours}
-              onChange={(value) => dispatch(setRealtimeHours(value))}
+            <RealtimeTimeSelector
+              value={realtimeConfig}
+              onChange={(config) => dispatch(setRealtimeConfig(config))}
               disabled={isLoading || isFiltering}
               size="md"
             />

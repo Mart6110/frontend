@@ -27,7 +27,7 @@ export function ChartWithTableWrapper({
       {(title || showToggle) && (
         <Flex justify="space-between" align="center" mb={3}>
           {title && (
-            <Text fontSize="lg" fontWeight="semibold">
+            <Text fontSize="lg" fontWeight="semibold" color="fg">
               {title}
             </Text>
           )}

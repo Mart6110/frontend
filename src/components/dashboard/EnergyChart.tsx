@@ -32,7 +32,7 @@ export const EnergyChart = memo(function EnergyChart({
         ],
         top: 0,
         textStyle: {
-          color: '#888',
+          color: '#aaa',
         },
       } : undefined,
       xAxis: createXAxis(timestamps),
@@ -43,6 +43,9 @@ export const EnergyChart = memo(function EnergyChart({
           type: 'line',
           smooth: true,
           symbol: 'none',
+          itemStyle: {
+            color: APP_CONFIG.DASHBOARD.COLORS.ENERGY_IN,
+          },
           lineStyle: {
             color: APP_CONFIG.DASHBOARD.COLORS.ENERGY_IN,
             width: 2,
@@ -55,6 +58,9 @@ export const EnergyChart = memo(function EnergyChart({
           type: 'line',
           smooth: true,
           symbol: 'none',
+          itemStyle: {
+            color: APP_CONFIG.DASHBOARD.COLORS.ENERGY_OUT,
+          },
           lineStyle: {
             color: APP_CONFIG.DASHBOARD.COLORS.ENERGY_OUT,
             width: 2,

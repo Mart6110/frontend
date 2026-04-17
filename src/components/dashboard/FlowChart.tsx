@@ -29,7 +29,7 @@ export const FlowChart = memo(function FlowChart({
         data: [`${APP_TEXT.DASHBOARD.KPI.FLOW_RATE} (${APP_TEXT.DASHBOARD.UNITS.FLOW})`],
         top: 0,
         textStyle: {
-          color: '#888',
+          color: '#aaa',
         },
       } : undefined,
       xAxis: createXAxis(timestamps),
@@ -40,6 +40,9 @@ export const FlowChart = memo(function FlowChart({
           type: 'line',
           smooth: true,
           symbol: 'none',
+          itemStyle: {
+            color: APP_CONFIG.DASHBOARD.COLORS.FLOW,
+          },
           lineStyle: {
             color: APP_CONFIG.DASHBOARD.COLORS.FLOW,
             width: 2,

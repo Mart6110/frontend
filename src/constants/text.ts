@@ -279,14 +279,14 @@ export const APP_CONFIG = {
     // Temperature Precision
     TEMPERATURE_PRECISION: 0.5,
     
-    // Color Scheme
+    // Color Scheme (using logo colors: #D4A373 tan/brown, #0d9488 teal)
     COLORS: {
-      TEMPERATURE: "#FF6B35",
-      ENERGY_IN: "#4ECDC4",
-      ENERGY_OUT: "#FFE66D",
-      EFFICIENCY: "#95E1D3",
-      FLOW: "#38A3A5",
-      PUMP_ACTIVE: "#00FFA A",
+      TEMPERATURE: "#D4A373",
+      ENERGY_IN: "#0d9488",
+      ENERGY_OUT: "#D4A373",
+      EFFICIENCY: "#0d9488",
+      FLOW: "#D4A373",
+      PUMP_ACTIVE: "#0d9488",
       PUMP_INACTIVE: "#757575",
       WARNING: "#FFA726",
       ERROR: "#EF5350",

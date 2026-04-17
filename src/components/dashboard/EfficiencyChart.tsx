@@ -48,7 +48,7 @@ export const EfficiencyChart = memo(function EfficiencyChart({
         data: [`${APP_TEXT.DASHBOARD.KPI.EFFICIENCY} (${APP_TEXT.DASHBOARD.UNITS.EFFICIENCY})`],
         top: 0,
         textStyle: {
-          color: '#888',
+          color: '#aaa',
         },
       } : undefined,
       xAxis: createXAxis(timestamps),
@@ -63,6 +63,9 @@ export const EfficiencyChart = memo(function EfficiencyChart({
           type: 'line',
           smooth: true,
           symbol: 'none',
+          itemStyle: {
+            color: APP_CONFIG.DASHBOARD.COLORS.EFFICIENCY,
+          },
           lineStyle: {
             color: APP_CONFIG.DASHBOARD.COLORS.EFFICIENCY,
             width: 2,

@@ -56,7 +56,7 @@ export function EventTimeline({ events, maxEvents = 100 }: EventTimelineProps) {
   if (displayEvents.length === 0) {
     return (
       <Box py={8} textAlign="center">
-        <Text color="gray.500">{APP_TEXT.DASHBOARD.NO_DATA}</Text>
+        <Text color="gray.400">{APP_TEXT.DASHBOARD.NO_DATA}</Text>
       </Box>
     )
   }
@@ -85,7 +85,7 @@ export function EventTimeline({ events, maxEvents = 100 }: EventTimelineProps) {
                 {event.severity}
               </Badge>
             </Timeline.Title>
-            <Timeline.Description fontSize="xs" color="gray.500">
+            <Timeline.Description fontSize="xs" color="gray.400">
               {formatTimestamp(event.timestamp)}
             </Timeline.Description>
           </Timeline.Content>

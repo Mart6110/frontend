@@ -44,7 +44,7 @@ export const KPICard = memo(function KPICard({ label, value, unit, icon, status,
     >
       <Flex direction="column" gap={2}>
         <Flex justify="space-between" align="center">
-          <Text fontSize={sizes[size].label} color="gray.400">
+          <Text fontSize={sizes[size].label} color="gray.300">
             {label}
           </Text>
           {icon && <Box color="teal.400">{icon}</Box>}
@@ -55,11 +55,11 @@ export const KPICard = memo(function KPICard({ label, value, unit, icon, status,
             <Spinner size="md" color="teal.500" />
           ) : (
             <>
-              <Text fontSize={sizes[size].value} fontWeight="bold">
+              <Text fontSize={sizes[size].value} fontWeight="bold" color="fg">
                 {value}
               </Text>
               {unit && (
-                <Text fontSize="lg" color="gray.500">
+                <Text fontSize="lg" color="gray.400">
                   {unit}
                 </Text>
               )}
