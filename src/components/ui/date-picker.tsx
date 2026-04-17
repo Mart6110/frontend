@@ -1,7 +1,6 @@
 import { Input, Box } from "@chakra-ui/react"
 import { Field } from "@/components/ui/field"
-import { useState, useEffect } from "react"
-import { format, parseISO, isValid } from "date-fns"
+import { parseISO, isValid, format } from "date-fns"
 
 export interface DatePickerProps {
   label?: string
@@ -28,38 +27,22 @@ export function DatePicker({
   disabled = false,
   showTime = false
 }: DatePickerProps) {
-  const [internalValue, setInternalValue] = useState<string>(() => {
-    if (!value) return ""
+  const formatDateForInput = (date: Date): string => {
     try {
       if (showTime) {
-        return format(value, "yyyy-MM-dd'T'HH:mm")
+        return format(date, "yyyy-MM-dd'T'HH:mm")
       }
-      return format(value, "yyyy-MM-dd")
+      return format(date, "yyyy-MM-dd")
     } catch {
       return ""
     }
-  })
+  }
 
-  // Sync internal value when external value changes
-  useEffect(() => {
-    if (!value) {
-      setInternalValue("")
-      return
-    }
-    try {
-      if (showTime) {
-        setInternalValue(format(value, "yyyy-MM-dd'T'HH:mm"))
-      } else {
-        setInternalValue(format(value, "yyyy-MM-dd"))
-      }
-    } catch {
-      setInternalValue("")
-    }
-  }, [value, showTime])
+  // Derive input value directly from prop (fully controlled)
+  const inputValue = value ? formatDateForInput(value) : ""
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value
-    setInternalValue(newValue)
     
     if (onChange) {
       if (newValue === "") {
@@ -79,17 +62,6 @@ export function DatePicker({
     }
   }
 
-  const formatDateForInput = (date: Date): string => {
-    try {
-      if (showTime) {
-        return format(date, "yyyy-MM-dd'T'HH:mm")
-      }
-      return format(date, "yyyy-MM-dd")
-    } catch {
-      return ""
-    }
-  }
-
   const inputType = showTime ? "datetime-local" : "date"
   const min = minDate ? formatDateForInput(minDate) : undefined
   const max = maxDate ? formatDateForInput(maxDate) : undefined
@@ -97,7 +69,7 @@ export function DatePicker({
   const inputElement = (
     <Input
       type={inputType}
-      value={internalValue}
+      value={inputValue}
       onChange={handleChange}
       min={min}
       max={max}

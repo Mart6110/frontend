@@ -1,5 +1,6 @@
 import { Box, Flex, Text, Badge, Spinner } from "@chakra-ui/react"
-import { ReactNode, memo } from "react"
+import { memo } from "react"
+import type { ReactNode } from "react"
 
 interface KPICardProps {
   label: string
