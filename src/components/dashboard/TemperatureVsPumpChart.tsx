@@ -69,9 +69,74 @@ export const TemperatureVsPumpChart = memo(function TemperatureVsPumpChart({
       },
       grid: {
         left: '3%',
-        right: '8%',
-        bottom: '3%',
+        right: '3%',
+        bottom: '15%',
         containLabel: true,
+      },
+      dataZoom: [
+        {
+          type: 'inside',
+          start: 0,
+          end: 100,
+          zoomOnMouseWheel: true,
+          moveOnMouseMove: true,
+          moveOnMouseWheel: false,
+        },
+        {
+          type: 'slider',
+          start: 0,
+          end: 100,
+          height: 25,
+          bottom: 10,
+          borderColor: 'rgba(0, 255, 170, 0.3)',
+          fillerColor: 'rgba(0, 255, 170, 0.15)',
+          handleStyle: {
+            color: 'rgba(0, 255, 170, 0.5)',
+            borderColor: 'rgba(0, 255, 170, 0.8)',
+          },
+          textStyle: {
+            color: '#aaa',
+          },
+          brushSelect: false,
+        },
+      ],
+      toolbox: {
+        show: true,
+        feature: {
+          dataZoom: {
+            yAxisIndex: 'none',
+            title: {
+              zoom: 'Zoom',
+              back: 'Reset Zoom'
+            },
+          },
+          restore: {
+            title: 'Restore'
+          },
+          saveAsImage: {
+            backgroundColor: '#1a1a1a',
+            title: 'Save'
+          },
+        },
+        iconStyle: {
+          borderColor: '#14b8a6',
+          borderWidth: 1,
+        },
+        emphasis: {
+          iconStyle: {
+            borderColor: '#14b8a6',
+            borderWidth: 2,
+            shadowBlur: 3,
+            shadowColor: '#14b8a6',
+          },
+        },
+        tooltip: {
+          show: true,
+          backgroundColor: 'rgba(0, 0, 0, 0.8)',
+          textStyle: {
+            color: '#fff',
+          },
+        },
       },
       xAxis: {
         type: 'category',
