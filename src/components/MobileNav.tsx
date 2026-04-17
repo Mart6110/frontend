@@ -31,6 +31,8 @@ export function MobileNav() {
           asChild
           fontWeight={currentPath === "/simpleView" ? "bold" : "normal"}
           colorPalette={currentPath === "/simpleView" ? "teal" : undefined}
+          textDecoration={currentPath === "/simpleView" ? "underline" : "none"}
+          textUnderlineOffset={currentPath === "/simpleView" ? "4px" : undefined}
         >
           <RouterLink to="/simpleView">{APP_TEXT.NAV.SIMPLE_VIEW.replace(" View", "")}</RouterLink>
         </Link>
@@ -38,6 +40,8 @@ export function MobileNav() {
           asChild
           fontWeight={currentPath === "/advancedView" ? "bold" : "normal"}
           colorPalette={currentPath === "/advancedView" ? "teal" : undefined}
+          textDecoration={currentPath === "/advancedView" ? "underline" : "none"}
+          textUnderlineOffset={currentPath === "/advancedView" ? "4px" : undefined}
         >
           <RouterLink to="/advancedView">{APP_TEXT.NAV.ADVANCED_VIEW.replace(" View", "")}</RouterLink>
         </Link>

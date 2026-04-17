@@ -24,4 +24,8 @@ export const Select = {
   Indicator: ChakraSelect.Indicator,
   Positioner: ChakraSelect.Positioner,
   ItemText: ChakraSelect.ItemText,
+  HiddenSelect: ChakraSelect.HiddenSelect,
+  Control: ChakraSelect.Control,
+  IndicatorGroup: ChakraSelect.IndicatorGroup,
+  ItemIndicator: ChakraSelect.ItemIndicator,
 }

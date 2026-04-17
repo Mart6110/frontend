@@ -60,8 +60,24 @@ class MockDataService {
   // Generate historical data for initial load
   generateHistoricalData(hours: number): DashboardData {
     const now = Date.now()
-    const interval = 60000 // 1 minute intervals
-    const points = Math.min((hours * 60), 500) // Max 500 points
+    
+    // Adaptive interval based on time range for better performance
+    // For longer time ranges, use larger intervals
+    let interval: number
+    let maxPoints: number
+    
+    if (hours <= 24) {
+      interval = 60000 // 1 minute for <= 24 hours
+      maxPoints = 1440 // 24 hours * 60 minutes
+    } else if (hours <= 168) { // 7 days
+      interval = 300000 // 5 minutes for <= 7 days
+      maxPoints = 2016 // 7 days * 24 hours * 12 (5-min intervals)
+    } else {
+      interval = 900000 // 15 minutes for > 7 days
+      maxPoints = 2880 // 30 days * 24 hours * 4 (15-min intervals)
+    }
+    
+    const points = Math.min(Math.floor((hours * 60 * 60 * 1000) / interval), maxPoints)
     
     const temperatureHistory: TemperatureData[] = []
     const energyHistory: EnergyData[] = []
@@ -141,24 +157,25 @@ class MockDataService {
     // Randomly toggle pump (10% chance)
     const isPumpActive = Math.random() > 0.1 ? previousData.isPumpActive : !previousData.isPumpActive
     
-    // Update histories (keep last 500 points)
+    // Update histories (keep last 5000 points to support long date ranges)
+    const maxHistoryPoints = 5000
     const temperatureHistory = [
-      ...previousData.temperatureHistory.slice(-499),
+      ...previousData.temperatureHistory.slice(-maxHistoryPoints + 1),
       { timestamp: now, temperature: currentTemperature }
     ]
     
     const energyHistory = [
-      ...previousData.energyHistory.slice(-499),
+      ...previousData.energyHistory.slice(-maxHistoryPoints + 1),
       { timestamp: now, energyIn: currentEnergyIn, energyOut: currentEnergyOut }
     ]
     
     const flowHistory = [
-      ...previousData.flowHistory.slice(-499),
+      ...previousData.flowHistory.slice(-maxHistoryPoints + 1),
       { timestamp: now, flow: currentFlow }
     ]
     
     const pumpHistory = [
-      ...previousData.pumpHistory.slice(-499),
+      ...previousData.pumpHistory.slice(-maxHistoryPoints + 1),
       { timestamp: now, active: isPumpActive }
     ]
     
@@ -237,7 +254,7 @@ class MockDataService {
     return events.filter(event => types.includes(event.type))
   }
 
-  // Get data for specific time range
+  // Get data for specific time range (from now going backwards)
   getDataForTimeRange(allData: DashboardData, rangeMs: number): DashboardData {
     const cutoffTime = Date.now() - rangeMs
     
@@ -248,6 +265,96 @@ class MockDataService {
       flowHistory: allData.flowHistory.filter(d => d.timestamp >= cutoffTime),
       pumpHistory: allData.pumpHistory.filter(d => d.timestamp >= cutoffTime),
       events: allData.events.filter(e => e.timestamp >= cutoffTime),
+    }
+  }
+
+  // Get data for specific date range (custom start and end)
+  getDataForDateRange(allData: DashboardData, startDate: Date, endDate: Date): DashboardData {
+    const startTime = startDate.getTime()
+    const endTime = endDate.getTime()
+    
+    // Filter existing data
+    const filteredTemp = allData.temperatureHistory.filter(d => d.timestamp >= startTime && d.timestamp <= endTime)
+    const filteredEnergy = allData.energyHistory.filter(d => d.timestamp >= startTime && d.timestamp <= endTime)
+    const filteredFlow = allData.flowHistory.filter(d => d.timestamp >= startTime && d.timestamp <= endTime)
+    const filteredPump = allData.pumpHistory.filter(d => d.timestamp >= startTime && d.timestamp <= endTime)
+    
+    // If we have filtered data, return it
+    if (filteredTemp.length > 0) {
+      return {
+        ...allData,
+        temperatureHistory: filteredTemp,
+        energyHistory: filteredEnergy,
+        flowHistory: filteredFlow,
+        pumpHistory: filteredPump,
+        events: allData.events.filter(e => e.timestamp >= startTime && e.timestamp <= endTime),
+      }
+    }
+    
+    // If no data in range, generate data for the requested range
+    const rangeHours = (endTime - startTime) / (60 * 60 * 1000)
+    
+    // Determine interval based on range
+    let interval: number
+    if (rangeHours <= 24) {
+      interval = 60000 // 1 minute
+    } else if (rangeHours <= 168) {
+      interval = 300000 // 5 minutes
+    } else {
+      interval = 900000 // 15 minutes
+    }
+    
+    const points = Math.floor((endTime - startTime) / interval)
+    const temperatureHistory: TemperatureData[] = []
+    const energyHistory: EnergyData[] = []
+    const flowHistory: FlowData[] = []
+    const pumpHistory: PumpStatus[] = []
+    
+    for (let i = 0; i <= points; i++) {
+      const timestamp = startTime + (i * interval)
+      
+      // Simulate temperature variations
+      const tempVariation = Math.sin(i / 10) * 25 + Math.random() * 10
+      const temperature = this.baseTemperature + tempVariation
+      temperatureHistory.push({ timestamp, temperature: Number(temperature.toFixed(1)) })
+      
+      // Simulate energy transfer
+      const energyIn = this.baseEnergy + Math.random() * 30 - 10
+      const energyOut = energyIn * (0.8 + Math.random() * 0.15)
+      energyHistory.push({ 
+        timestamp, 
+        energyIn: Number(energyIn.toFixed(2)), 
+        energyOut: Number(energyOut.toFixed(2)) 
+      })
+      
+      // Simulate flow rate
+      const flow = this.baseFlow + Math.random() * 20 - 10
+      flowHistory.push({ timestamp, flow: Number(flow.toFixed(1)) })
+      
+      // Simulate pump on/off cycles
+      const pumpActive = Math.sin(i / 20) > -0.5
+      pumpHistory.push({ timestamp, active: pumpActive })
+    }
+    
+    const latestTemp = temperatureHistory[temperatureHistory.length - 1]?.temperature || this.baseTemperature
+    const latestEnergy = energyHistory[energyHistory.length - 1] || { energyIn: this.baseEnergy, energyOut: this.baseEnergy * 0.85 }
+    const latestFlow = flowHistory[flowHistory.length - 1]?.flow || this.baseFlow
+    const latestPump = pumpHistory[pumpHistory.length - 1]?.active || false
+    
+    return {
+      currentTemperature: latestTemp,
+      currentEnergyIn: latestEnergy.energyIn,
+      currentEnergyOut: latestEnergy.energyOut,
+      currentEfficiency: Number(((latestEnergy.energyOut / latestEnergy.energyIn) * 100).toFixed(1)),
+      currentFlow: latestFlow,
+      isPumpActive: latestPump,
+      stateOfCharge: 75 + Math.random() * 20,
+      currentPower: latestEnergy.energyIn * (latestPump ? 1 : 0),
+      temperatureHistory,
+      energyHistory,
+      flowHistory,
+      pumpHistory,
+      events: [],
     }
   }
 }

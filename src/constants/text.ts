@@ -254,7 +254,7 @@ export const APP_CONFIG = {
   DASHBOARD: {
     // Update Intervals (in milliseconds)
     UPDATE_INTERVALS: {
-      REAL_TIME: 15000,      // 15 seconds
+      REAL_TIME: 30000,      // 30 seconds - reduced from 15s to improve performance
       EFFICIENCY: 60000,     // 60 seconds
       HISTORICAL: 300000,    // 5 minutes
     },
@@ -263,7 +263,7 @@ export const APP_CONFIG = {
     CHART: {
       MIN_DATA_POINTS: 100,
       MAX_DATA_POINTS: 500,
-      ANIMATION_DURATION: 300,
+      ANIMATION_DURATION: 0,  // Disabled for better performance
     },
     
     // Time Ranges (in milliseconds)

@@ -1,12 +1,15 @@
-import { Box, Flex, Text, Badge } from "@chakra-ui/react"
+import { Box, Flex, Text, Badge, Spinner } from "@chakra-ui/react"
 import { APP_TEXT } from "@/constants/text"
+import { memo } from "react"
 
 interface PumpStatusCardProps {
   isActive: boolean
   lastChanged?: number
+  size?: 'sm' | 'md' | 'lg'
+  isLoading?: boolean
 }
 
-export function PumpStatusCard({ isActive, lastChanged }: PumpStatusCardProps) {
+export const PumpStatusCard = memo(function PumpStatusCard({ isActive, lastChanged, size = 'md', isLoading = false }: PumpStatusCardProps) {
   const formatLastChanged = (timestamp: number) => {
     const seconds = Math.floor((Date.now() - timestamp) / 1000)
     if (seconds < 60) return `${seconds}s ago`
@@ -16,12 +19,18 @@ export function PumpStatusCard({ isActive, lastChanged }: PumpStatusCardProps) {
     return `${hours}h ago`
   }
 
+  const sizes = {
+    sm: { value: 'xl', label: 'sm', padding: 4 },
+    md: { value: '2xl', label: 'md', padding: 5 },
+    lg: { value: '3xl', label: 'lg', padding: 6 },
+  }
+
   return (
     <Box
       borderWidth="1px"
       borderColor={isActive ? "rgba(0, 255, 170, 0.5)" : "rgba(117, 117, 117, 0.3)"}
       borderRadius="12px"
-      p={5}
+      p={sizes[size].padding}
       backdropFilter="blur(5px)"
       boxShadow={isActive ? "0 4px 20px rgba(0, 255, 170, 0.2)" : "0 4px 20px rgba(0, 0, 0, 0.1)"}
       css={{
@@ -29,9 +38,9 @@ export function PumpStatusCard({ isActive, lastChanged }: PumpStatusCardProps) {
       }}
       transition="all 0.3s"
     >
-      <Flex direction="column" gap={3}>
+      <Flex direction="column" gap={2}>
         <Flex justify="space-between" align="center">
-          <Text fontSize="md" color="gray.400">
+          <Text fontSize={sizes[size].label} color="gray.400">
             {APP_TEXT.DASHBOARD.KPI.PUMP_STATUS}
           </Text>
           <Box
@@ -44,9 +53,13 @@ export function PumpStatusCard({ isActive, lastChanged }: PumpStatusCardProps) {
           />
         </Flex>
         
-        <Text fontSize="2xl" fontWeight="bold" color={isActive ? "green.400" : "gray.500"}>
-          {isActive ? APP_TEXT.DASHBOARD.STATUS.PUMP_ON : APP_TEXT.DASHBOARD.STATUS.PUMP_OFF}
-        </Text>
+        {isLoading ? (
+          <Spinner size="md" color="teal.500" />
+        ) : (
+          <Text fontSize={sizes[size].value} fontWeight="bold" color={isActive ? "green.400" : "gray.500"}>
+            {isActive ? APP_TEXT.DASHBOARD.STATUS.PUMP_ON : APP_TEXT.DASHBOARD.STATUS.PUMP_OFF}
+          </Text>
+        )}
         
         <Flex gap={2}>
           <Badge
@@ -67,4 +80,4 @@ export function PumpStatusCard({ isActive, lastChanged }: PumpStatusCardProps) {
       </Flex>
     </Box>
   )
-}
+})

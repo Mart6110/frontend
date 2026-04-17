@@ -1,9 +1,4 @@
-import { Box, Flex, Skeleton, SkeletonText } from "@chakra-ui/react"
-
-const skeletonColors = {
-  "--start-color": "#D4A373",
-  "--end-color": "#0d9488",
-}
+import { Box, Spinner, Center } from "@chakra-ui/react"
 
 export function KPICardSkeleton() {
   return (
@@ -17,11 +12,11 @@ export function KPICardSkeleton() {
       css={{
         WebkitBackdropFilter: "blur(5px)"
       }}
+      minH="100px"
     >
-      <Flex direction="column" gap={2}>
-        <Skeleton variant="shine" height="20px" width="60%" css={skeletonColors} />
-        <Skeleton variant="shine" height="32px" width="80%" mt={2} css={skeletonColors} />
-      </Flex>
+      <Center h="100%">
+        <Spinner size="lg" color="teal.500" />
+      </Center>
     </Box>
   )
 }
@@ -38,15 +33,11 @@ export function PumpStatusCardSkeleton() {
       css={{
         WebkitBackdropFilter: "blur(5px)"
       }}
+      minH="100px"
     >
-      <Flex direction="column" gap={3}>
-        <Flex justify="space-between" align="center">
-          <Skeleton variant="shine" height="20px" width="100px" css={skeletonColors} />
-          <Skeleton variant="shine" boxSize="12px" borderRadius="full" css={skeletonColors} />
-        </Flex>
-        <Skeleton variant="shine" height="32px" width="70%" css={skeletonColors} />
-        <Skeleton variant="shine" height="16px" width="50%" css={skeletonColors} />
-      </Flex>
+      <Center h="100%">
+        <Spinner size="lg" color="teal.500" />
+      </Center>
     </Box>
   )
 }
@@ -63,36 +54,20 @@ export function ChartSkeleton({ height = "300px" }: { height?: string }) {
       css={{
         WebkitBackdropFilter: "blur(5px)"
       }}
+      height={height}
     >
-      <Flex direction="column" gap={4}>
-        <Skeleton variant="shine" height="24px" width="200px" css={skeletonColors} />
-        <Skeleton variant="shine" height={height} width="100%" css={skeletonColors} />
-      </Flex>
+      <Center h="100%">
+        <Spinner size="xl" color="teal.500" />
+      </Center>
     </Box>
   )
 }
 
 export function TimelineSkeleton() {
   return (
-    <Flex direction="column" gap={3}>
-      {[1, 2, 3, 4, 5].map((i) => (
-        <Box
-          key={i}
-          borderWidth="1px"
-          borderColor="rgba(0, 255, 170, 0.2)"
-          borderRadius="8px"
-          p={3}
-        >
-          <Flex direction="column" gap={2}>
-            <Flex justify="space-between" align="center">
-              <Skeleton variant="shine" height="16px" width="100px" css={skeletonColors} />
-              <Skeleton variant="shine" height="20px" width="60px" borderRadius="full" css={skeletonColors} />
-            </Flex>
-            <SkeletonText variant="shine" noOfLines={2} spaceY={2} css={skeletonColors} />
-          </Flex>
-        </Box>
-      ))}
-    </Flex>
+    <Center minH="200px">
+      <Spinner size="xl" color="teal.500" />
+    </Center>
   )
 }
 
