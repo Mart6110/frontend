@@ -1,6 +1,6 @@
 import { Button, DatePicker, Flex, Portal, VStack, Input, Text, IconButton } from "@chakra-ui/react"
 import { LuCalendar } from "react-icons/lu"
-import { useState, memo, useMemo } from "react"
+import { useState, memo, useMemo, useEffect } from "react"
 import { CalendarDateTime, type DateValue } from "@internationalized/date"
 
 export interface DateRangeSelectorProps {
@@ -47,8 +47,8 @@ export const DateRangeSelector = memo(function DateRangeSelector({
     )
   }
 
-  // Derive value from props instead of using useEffect
-  const value = useMemo(() => {
+  // Initialize local value from props
+  const initialValue = useMemo(() => {
     const newValue: CalendarDateTime[] = []
     const startDateTime = dateToCalendarDateTime(startDate)
     const endDateTime = dateToCalendarDateTime(endDate)
@@ -58,6 +58,16 @@ export const DateRangeSelector = memo(function DateRangeSelector({
     
     return newValue
   }, [startDate, endDate])
+
+  // Local state for date picker UI (before applying)
+  const [value, setValue] = useState<CalendarDateTime[]>(initialValue)
+
+  // Sync local state when picker opens
+  useEffect(() => {
+    if (open) {
+      setValue(initialValue)
+    }
+  }, [open, initialValue])
 
   const handleValueChange = (details: { value: DateValue[] }) => {
     const newValue: CalendarDateTime[] = []
