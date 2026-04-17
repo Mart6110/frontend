@@ -29,9 +29,9 @@ export const selectViewMode = createSelector(
   (advanced) => advanced.viewMode
 )
 
-export const selectRealtimeHours = createSelector(
+export const selectRealtimeConfig = createSelector(
   [selectAdvancedDashboard],
-  (advanced) => advanced.realtimeHours
+  (advanced) => advanced.realtimeConfig
 )
 
 export const selectDateRange = createSelector(
