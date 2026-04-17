@@ -1,6 +1,6 @@
 import { Box, Flex, Text, Badge, Spinner } from "@chakra-ui/react"
 import { APP_TEXT } from "@/constants/text"
-import { memo } from "react"
+import { memo, useState, useEffect } from "react"
 
 interface PumpStatusCardProps {
   isActive: boolean
@@ -10,8 +10,15 @@ interface PumpStatusCardProps {
 }
 
 export const PumpStatusCard = memo(function PumpStatusCard({ isActive, lastChanged, size = 'md', isLoading = false }: PumpStatusCardProps) {
+  const [now, setNow] = useState(() => Date.now())
+  
+  useEffect(() => {
+    const interval = setInterval(() => setNow(Date.now()), 1000)
+    return () => clearInterval(interval)
+  }, [])
+  
   const formatLastChanged = (timestamp: number) => {
-    const seconds = Math.floor((Date.now() - timestamp) / 1000)
+    const seconds = Math.floor((now - timestamp) / 1000)
     if (seconds < 60) return `${seconds}s ago`
     const minutes = Math.floor(seconds / 60)
     if (minutes < 60) return `${minutes}m ago`
