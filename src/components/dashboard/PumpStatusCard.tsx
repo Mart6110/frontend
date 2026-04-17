@@ -40,7 +40,7 @@ export const PumpStatusCard = memo(function PumpStatusCard({ isActive, lastChang
     >
       <Flex direction="column" gap={2}>
         <Flex justify="space-between" align="center">
-          <Text fontSize={sizes[size].label} color="gray.400">
+          <Text fontSize={sizes[size].label} color="gray.300">
             {APP_TEXT.DASHBOARD.KPI.PUMP_STATUS}
           </Text>
           <Box
@@ -56,7 +56,7 @@ export const PumpStatusCard = memo(function PumpStatusCard({ isActive, lastChang
         {isLoading ? (
           <Spinner size="md" color="teal.500" />
         ) : (
-          <Text fontSize={sizes[size].value} fontWeight="bold" color={isActive ? "green.400" : "gray.500"}>
+          <Text fontSize={sizes[size].value} fontWeight="bold" color={isActive ? "green.400" : "gray.400"}>
             {isActive ? APP_TEXT.DASHBOARD.STATUS.PUMP_ON : APP_TEXT.DASHBOARD.STATUS.PUMP_OFF}
           </Text>
         )}
@@ -72,7 +72,7 @@ export const PumpStatusCard = memo(function PumpStatusCard({ isActive, lastChang
           </Badge>
           
           {lastChanged && (
-            <Text fontSize="sm" color="gray.500">
+            <Text fontSize="sm" color="gray.400">
               {formatLastChanged(lastChanged)}
             </Text>
           )}

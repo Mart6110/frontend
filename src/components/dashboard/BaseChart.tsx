@@ -18,7 +18,7 @@ export const BaseChart = memo(function BaseChart({ data, height = 300, showLegen
   return (
     <Box>
       {title && (
-        <Text fontSize="lg" fontWeight="semibold" mb={3}>
+        <Text fontSize="lg" fontWeight="semibold" mb={3} color="fg">
           {title}
         </Text>
       )}
@@ -100,33 +100,37 @@ export function createXAxis(timestamps: string[]): any {
     data: timestamps,
     axisLine: {
       lineStyle: {
-        color: '#555',
+        color: '#888',
       },
     },
     axisLabel: {
       rotate: 45,
       fontSize: 10,
+      color: '#aaa',
     },
   }
 }
 
 // Common y-axis configuration
-export function createYAxis(name: string, color: string = '#555'): any {
+export function createYAxis(name: string, color: string = '#888'): any {
   return {
     type: 'value',
     name,
     nameTextStyle: {
-      color: '#888',
+      color: '#aaa',
     },
     axisLine: {
       lineStyle: {
         color,
       },
     },
+    axisLabel: {
+      color: '#aaa',
+    },
     splitLine: {
       lineStyle: {
-        color: '#333',
-        opacity: 0.3,
+        color: '#444',
+        opacity: 0.5,
       },
     },
   }

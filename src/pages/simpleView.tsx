@@ -1,5 +1,5 @@
 import { VStack, Grid, GridItem, Box } from "@chakra-ui/react"
-import { useEffect } from "react"
+import { useEffect, useRef } from "react"
 import { APP_TEXT, APP_CONFIG } from "@/constants/text"
 import { mockDataService } from "@/services/mockData"
 import { KPICard } from "@/components/dashboard/KPICard"
@@ -8,21 +8,48 @@ import { TemperatureChart } from "@/components/dashboard/TemperatureChart"
 import { EnergyChart } from "@/components/dashboard/EnergyChart"
 import { ChartSkeleton } from "@/components/dashboard/Skeletons"
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader"
+import { RealtimeTimeSelector } from "@/components/dashboard/RealtimeHoursSelector"
 import { Widget } from "@/components/ui/widget"
 import { useAppDispatch, useAppSelector } from "@/store/hooks"
-import { setSimpleData, setSimpleIsLoading } from "@/store/dashboardSlice"
+import type { RealtimeTimeConfig } from "@/constants/timeRanges"
+import { 
+  setSimpleAllData,
+  setSimpleDisplayData, 
+  setSimpleData, 
+  setSimpleIsLoading,
+  setSimpleRealtimeConfig 
+} from "@/store/dashboardSlice"
+
+// Helper function to convert time config to milliseconds
+function timeConfigToMilliseconds(config: RealtimeTimeConfig): number {
+  const { value, unit } = config
+  switch (unit) {
+    case 'minutes':
+      return value * 60 * 1000
+    case 'hours':
+      return value * 60 * 60 * 1000
+    case 'days':
+      return value * 24 * 60 * 60 * 1000
+    default:
+      return value * 60 * 60 * 1000 // default to hours
+  }
+}
 
 export function SimpleViewPage() {
   const dispatch = useAppDispatch()
-  const { data, isLoading } = useAppSelector((state) => state.dashboard.simple)
+  const { allData, data, isLoading, realtimeConfig } = useAppSelector((state) => state.dashboard.simple)
+  
+  // Track if this is a realtime update vs user-triggered filter change
+  const isRealtimeUpdateRef = useRef(false)
 
-  // Initialize with historical data
+  // Initialize with historical data (30 days to support longer time ranges)
   useEffect(() => {
     // Simulate realistic loading time
     const loadData = async () => {
       dispatch(setSimpleIsLoading(true))
       await new Promise(resolve => setTimeout(resolve, 1000)) // 1 second delay
-      const initialData = mockDataService.generateHistoricalData(6) // 6 hours
+      const initialData = mockDataService.generateHistoricalData(24 * 30) // 30 days
+      dispatch(setSimpleAllData(initialData))
       dispatch(setSimpleData(initialData))
       dispatch(setSimpleIsLoading(false))
     }
@@ -30,17 +57,38 @@ export function SimpleViewPage() {
     loadData()
   }, [dispatch])
 
+  // Update display data when realtimeConfig changes
+  useEffect(() => {
+    if (!allData) return
+
+    // Skip filtering if this is just a realtime data update
+    if (isRealtimeUpdateRef.current) {
+      isRealtimeUpdateRef.current = false
+      const milliseconds = timeConfigToMilliseconds(realtimeConfig)
+      const filteredData = mockDataService.getDataForTimeRange(allData, milliseconds)
+      dispatch(setSimpleDisplayData(filteredData))
+      dispatch(setSimpleData(filteredData))
+      return
+    }
+
+    const milliseconds = timeConfigToMilliseconds(realtimeConfig)
+    const filteredData = mockDataService.getDataForTimeRange(allData, milliseconds)
+    dispatch(setSimpleDisplayData(filteredData))
+    dispatch(setSimpleData(filteredData))
+  }, [allData, realtimeConfig, dispatch])
+
   // Real-time updates every 15 seconds
   useEffect(() => {
-    if (!data) return
+    if (!allData) return
 
     const interval = setInterval(() => {
-      const updatedData = mockDataService.generateRealtimeUpdate(data)
-      dispatch(setSimpleData(updatedData))
+      isRealtimeUpdateRef.current = true
+      const updatedData = mockDataService.generateRealtimeUpdate(allData)
+      dispatch(setSimpleAllData(updatedData))
     }, APP_CONFIG.DASHBOARD.UPDATE_INTERVALS.REAL_TIME)
 
     return () => clearInterval(interval)
-  }, [data, dispatch])
+  }, [allData, dispatch])
 
   return (
     <Box p={{ base: 4, md: 8 }}>
@@ -51,6 +99,12 @@ export function SimpleViewPage() {
           isLoading={isLoading}
           maxEvents={50}
         >
+          <RealtimeTimeSelector
+            value={realtimeConfig}
+            onChange={(config) => dispatch(setSimpleRealtimeConfig(config))}
+            disabled={isLoading}
+            size="md"
+          />
         </DashboardHeader>
         
         {/* KPI Cards Grid */}

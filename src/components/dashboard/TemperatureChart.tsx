@@ -29,7 +29,7 @@ export const TemperatureChart = memo(function TemperatureChart({
         data: [`${APP_TEXT.DASHBOARD.KPI.TEMPERATURE} (${APP_TEXT.DASHBOARD.UNITS.TEMPERATURE})`],
         top: 0,
         textStyle: {
-          color: '#888',
+          color: '#aaa',
         },
       } : undefined,
       xAxis: createXAxis(timestamps),
@@ -40,6 +40,9 @@ export const TemperatureChart = memo(function TemperatureChart({
           type: 'line',
           smooth: true,
           symbol: 'none',
+          itemStyle: {
+            color: APP_CONFIG.DASHBOARD.COLORS.TEMPERATURE,
+          },
           lineStyle: {
             color: APP_CONFIG.DASHBOARD.COLORS.TEMPERATURE,
             width: 2,

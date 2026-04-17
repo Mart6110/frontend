@@ -1,6 +1,6 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit"
 import { subHours } from "date-fns"
-import { DEFAULT_VIEW_MODE, DEFAULT_REALTIME_HOURS, type ViewMode, type RealtimeHours } from "@/constants/timeRanges"
+import { DEFAULT_VIEW_MODE, DEFAULT_REALTIME_CONFIG, type ViewMode, type RealtimeTimeConfig } from "@/constants/timeRanges"
 import type { DashboardData } from "@/services/mockData"
 
 interface DashboardState {
@@ -11,14 +11,17 @@ interface DashboardState {
     isLoading: boolean
     isFiltering: boolean
     viewMode: ViewMode
-    realtimeHours: RealtimeHours
+    realtimeConfig: RealtimeTimeConfig
     startDate: string | null // ISO string for serialization
     endDate: string | null // ISO string for serialization
   }
   // Simple View State
   simple: {
+    allData: DashboardData | null
+    displayData: DashboardData | null
     data: DashboardData | null
     isLoading: boolean
+    realtimeConfig: RealtimeTimeConfig
   }
 }
 
@@ -29,13 +32,16 @@ const initialState: DashboardState = {
     isLoading: true,
     isFiltering: false,
     viewMode: DEFAULT_VIEW_MODE,
-    realtimeHours: DEFAULT_REALTIME_HOURS,
-    startDate: subHours(new Date(), DEFAULT_REALTIME_HOURS).toISOString(),
+    realtimeConfig: DEFAULT_REALTIME_CONFIG,
+    startDate: subHours(new Date(), DEFAULT_REALTIME_CONFIG.value).toISOString(),
     endDate: new Date().toISOString(),
   },
   simple: {
+    allData: null,
+    displayData: null,
     data: null,
     isLoading: true,
+    realtimeConfig: DEFAULT_REALTIME_CONFIG,
   },
 }
 
@@ -59,8 +65,12 @@ const dashboardSlice = createSlice({
     setViewMode(state, action: PayloadAction<ViewMode>) {
       state.advanced.viewMode = action.payload
     },
-    setRealtimeHours(state, action: PayloadAction<RealtimeHours>) {
-      state.advanced.realtimeHours = action.payload
+    setRealtimeConfig(state, action: PayloadAction<RealtimeTimeConfig>) {
+      state.advanced.realtimeConfig = action.payload
+    },
+    // Legacy action for backward compatibility
+    setRealtimeHours(state, action: PayloadAction<number>) {
+      state.advanced.realtimeConfig = { value: action.payload, unit: 'hours' }
     },
     setStartDate(state, action: PayloadAction<Date | null>) {
       state.advanced.startDate = action.payload ? action.payload.toISOString() : null
@@ -73,11 +83,20 @@ const dashboardSlice = createSlice({
       state.advanced.endDate = action.payload.endDate ? action.payload.endDate.toISOString() : null
     },
     // Simple View Actions
+    setSimpleAllData(state, action: PayloadAction<DashboardData>) {
+      state.simple.allData = action.payload
+    },
+    setSimpleDisplayData(state, action: PayloadAction<DashboardData>) {
+      state.simple.displayData = action.payload
+    },
     setSimpleData(state, action: PayloadAction<DashboardData>) {
       state.simple.data = action.payload
     },
     setSimpleIsLoading(state, action: PayloadAction<boolean>) {
       state.simple.isLoading = action.payload
+    },
+    setSimpleRealtimeConfig(state, action: PayloadAction<RealtimeTimeConfig>) {
+      state.simple.realtimeConfig = action.payload
     },
   },
 })
@@ -88,12 +107,16 @@ export const {
   setIsLoading,
   setIsFiltering,
   setViewMode,
+  setRealtimeConfig,
   setRealtimeHours,
   setStartDate,
   setEndDate,
   setDateRange,
+  setSimpleAllData,
+  setSimpleDisplayData,
   setSimpleData,
   setSimpleIsLoading,
+  setSimpleRealtimeConfig,
 } = dashboardSlice.actions
 
 export default dashboardSlice.reducer

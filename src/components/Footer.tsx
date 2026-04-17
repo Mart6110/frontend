@@ -12,7 +12,7 @@ export function Footer() {
       textAlign="center"
       display={{ base: "none", md: "block" }}
     >
-      <Text fontSize="sm" color="gray.600">
+      <Text fontSize="sm" color="gray.500">
         {APP_TEXT.FOOTER.COPYRIGHT(new Date().getFullYear())}
       </Text>
     </Box>

@@ -64,7 +64,7 @@ export const TemperatureVsPumpChart = memo(function TemperatureVsPumpChart({
         ],
         top: 0,
         textStyle: {
-          color: '#888',
+          color: '#aaa',
         },
       },
       grid: {
@@ -78,12 +78,13 @@ export const TemperatureVsPumpChart = memo(function TemperatureVsPumpChart({
         data: timestamps,
         axisLine: {
           lineStyle: {
-            color: '#555',
+            color: '#888',
           },
         },
         axisLabel: {
           rotate: 45,
           fontSize: 10,
+          color: '#aaa',
         },
       },
       yAxis: [
@@ -92,17 +93,20 @@ export const TemperatureVsPumpChart = memo(function TemperatureVsPumpChart({
           name: APP_TEXT.DASHBOARD.UNITS.TEMPERATURE,
           position: 'left',
           nameTextStyle: {
-            color: '#888',
+            color: '#aaa',
           },
           axisLine: {
             lineStyle: {
-              color: '#555',
+              color: '#888',
             },
+          },
+          axisLabel: {
+            color: '#aaa',
           },
           splitLine: {
             lineStyle: {
-              color: '#333',
-              opacity: 0.3,
+              color: '#444',
+              opacity: 0.5,
             },
           },
         },
@@ -114,14 +118,15 @@ export const TemperatureVsPumpChart = memo(function TemperatureVsPumpChart({
           max: 1,
           interval: 1,
           nameTextStyle: {
-            color: '#888',
+            color: '#aaa',
           },
           axisLabel: {
             formatter: (value: number) => value === 1 ? 'ON' : 'OFF',
+            color: '#aaa',
           },
           axisLine: {
             lineStyle: {
-              color: '#555',
+              color: '#888',
             },
           },
           splitLine: {
@@ -136,6 +141,9 @@ export const TemperatureVsPumpChart = memo(function TemperatureVsPumpChart({
           yAxisIndex: 0,
           smooth: true,
           symbol: 'none',
+          itemStyle: {
+            color: APP_CONFIG.DASHBOARD.COLORS.TEMPERATURE,
+          },
           lineStyle: {
             color: APP_CONFIG.DASHBOARD.COLORS.TEMPERATURE,
             width: 2,

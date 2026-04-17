@@ -126,6 +126,66 @@ export const DateRangeSelector = memo(function DateRangeSelector({
     })
   }
 
+  const handlePreset = (days: number, type: 'last' | 'thisMonth' | 'lastMonth') => {
+    const now = new Date()
+    let start: CalendarDateTime
+    let end: CalendarDateTime
+    
+    if (type === 'last') {
+      // Last N days
+      const startDate = new Date(now)
+      startDate.setDate(startDate.getDate() - days)
+      startDate.setHours(0, 0, 0, 0)
+      
+      start = new CalendarDateTime(
+        startDate.getFullYear(),
+        startDate.getMonth() + 1,
+        startDate.getDate(),
+        0, 0, 0
+      )
+      end = new CalendarDateTime(
+        now.getFullYear(),
+        now.getMonth() + 1,
+        now.getDate(),
+        23, 59, 59
+      )
+    } else if (type === 'thisMonth') {
+      // This month
+      const startDate = new Date(now.getFullYear(), now.getMonth(), 1)
+      start = new CalendarDateTime(
+        startDate.getFullYear(),
+        startDate.getMonth() + 1,
+        1,
+        0, 0, 0
+      )
+      end = new CalendarDateTime(
+        now.getFullYear(),
+        now.getMonth() + 1,
+        now.getDate(),
+        23, 59, 59
+      )
+    } else {
+      // Last month
+      const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1)
+      const lastDayOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0)
+      
+      start = new CalendarDateTime(
+        lastMonth.getFullYear(),
+        lastMonth.getMonth() + 1,
+        1,
+        0, 0, 0
+      )
+      end = new CalendarDateTime(
+        lastDayOfLastMonth.getFullYear(),
+        lastDayOfLastMonth.getMonth() + 1,
+        lastDayOfLastMonth.getDate(),
+        23, 59, 59
+      )
+    }
+    
+    setValue([start, end])
+  }
+
   const handleApply = () => {
     // Update parent with current selection
     if (value[0]) {
@@ -203,90 +263,38 @@ export const DateRangeSelector = memo(function DateRangeSelector({
                 minW={{ base: "full", sm: "140px" }}
                 height="100%"
               >
-                <DatePicker.PresetTrigger value="last7Days" asChild>
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    width="100%"
-                    _selected={{
-                      bg: "rgba(0, 255, 170, 0.2)",
-                      borderColor: "rgba(0, 255, 170, 0.6)",
-                      color: "teal.400"
-                    }}
-                  >
-                    Last 7 days
-                  </Button>
-                </DatePicker.PresetTrigger>
-                <DatePicker.PresetTrigger value="last30Days" asChild>
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    width="100%"
-                    _selected={{
-                      bg: "rgba(0, 255, 170, 0.2)",
-                      borderColor: "rgba(0, 255, 170, 0.6)",
-                      color: "teal.400"
-                    }}
-                  >
-                    Last 30 days
-                  </Button>
-                </DatePicker.PresetTrigger>
-                <DatePicker.PresetTrigger value="thisMonth" asChild>
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    width="100%"
-                    _selected={{
-                      bg: "rgba(0, 255, 170, 0.2)",
-                      borderColor: "rgba(0, 255, 170, 0.6)",
-                      color: "teal.400"
-                    }}
-                  >
-                    This month
-                  </Button>
-                </DatePicker.PresetTrigger>
-                <DatePicker.PresetTrigger value="lastMonth" asChild>
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    width="100%"
-                    _selected={{
-                      bg: "rgba(0, 255, 170, 0.2)",
-                      borderColor: "rgba(0, 255, 170, 0.6)",
-                      color: "teal.400"
-                    }}
-                  >
-                    Last month
-                  </Button>
-                </DatePicker.PresetTrigger>
-                <DatePicker.PresetTrigger value="thisYear" asChild>
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    width="100%"
-                    _selected={{
-                      bg: "rgba(0, 255, 170, 0.2)",
-                      borderColor: "rgba(0, 255, 170, 0.6)",
-                      color: "teal.400"
-                    }}
-                  >
-                    This year
-                  </Button>
-                </DatePicker.PresetTrigger>
-                <DatePicker.PresetTrigger value="lastYear" asChild>
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    width="100%"
-                    _selected={{
-                      bg: "rgba(0, 255, 170, 0.2)",
-                      borderColor: "rgba(0, 255, 170, 0.6)",
-                      color: "teal.400"
-                    }}
-                  >
-                    Last year
-                  </Button>
-                </DatePicker.PresetTrigger>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  width="100%"
+                  onClick={() => handlePreset(7, 'last')}
+                >
+                  Last 7 days
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  width="100%"
+                  onClick={() => handlePreset(30, 'last')}
+                >
+                  Last 30 days
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  width="100%"
+                  onClick={() => handlePreset(0, 'thisMonth')}
+                >
+                  This month
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  width="100%"
+                  onClick={() => handlePreset(0, 'lastMonth')}
+                >
+                  Last month
+                </Button>
               </VStack>
               
               <Flex direction="column" flex="1" minW={0}>
