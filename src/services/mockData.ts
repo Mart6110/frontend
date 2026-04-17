@@ -111,9 +111,21 @@ class MockDataService {
       const pumpActive = Math.sin(i / 20) > -0.5
       pumpHistory.push({ timestamp, active: pumpActive })
       
-      // Generate some events
-      if (i % 30 === 0) {
-        events.push(this.generateEvent(timestamp, pumpActive))
+      // Generate pump status change events
+      const prevPumpActive = i > 0 ? pumpHistory[pumpHistory.length - 2]?.active : false
+      if (pumpActive !== prevPumpActive) {
+        events.push(this.generatePumpEvent(timestamp, pumpActive))
+      }
+      
+      // Generate condition-based events (every 10 points check conditions)
+      if (i % 10 === 0) {
+        const conditionEvents = this.generateConditionEvents(timestamp, temperature, energyIn, energyOut, flow)
+        events.push(...conditionEvents)
+      }
+      
+      // Generate random system events periodically
+      if (i % 25 === 0 && Math.random() > 0.5) {
+        events.push(this.generateRandomSystemEvent(timestamp))
       }
     }
 
@@ -182,13 +194,25 @@ class MockDataService {
     // Generate event if pump status changed
     let events = [...previousData.events]
     if (isPumpActive !== previousData.isPumpActive) {
-      const newEvent = this.generateEvent(now, isPumpActive)
+      const newEvent = this.generatePumpEvent(now, isPumpActive)
       events = [newEvent, ...events.slice(0, 999)] // Keep last 1000 events
     }
     
-    // Random events (5% chance)
-    if (Math.random() < 0.05) {
-      events = [this.generateRandomEvent(now, currentTemperature), ...events.slice(0, 999)]
+    // Generate condition-based events
+    const conditionEvents = this.generateConditionEvents(
+      now, 
+      currentTemperature, 
+      currentEnergyIn, 
+      currentEnergyOut, 
+      currentFlow
+    )
+    if (conditionEvents.length > 0) {
+      events = [...conditionEvents, ...events.slice(0, 999)]
+    }
+    
+    // Random system events (8% chance)
+    if (Math.random() < 0.08) {
+      events = [this.generateRandomSystemEvent(now), ...events.slice(0, 999)]
     }
 
     return {
@@ -208,7 +232,7 @@ class MockDataService {
     }
   }
 
-  private generateEvent(timestamp: number, pumpActive: boolean): SystemEvent {
+  private generatePumpEvent(timestamp: number, pumpActive: boolean): SystemEvent {
     const id = `event-${this.eventIdCounter++}-${timestamp}`
     
     if (pumpActive) {
@@ -230,13 +254,108 @@ class MockDataService {
     }
   }
 
-  private generateRandomEvent(timestamp: number, temperature: number): SystemEvent {
+  private generateConditionEvents(
+    timestamp: number, 
+    temperature: number, 
+    energyIn: number, 
+    energyOut: number, 
+    flow: number
+  ): SystemEvent[] {
+    const events: SystemEvent[] = []
+    const efficiency = (energyOut / energyIn) * 100
+    
+    // Temperature-based events
+    if (temperature > 640) {
+      events.push({
+        id: `event-${this.eventIdCounter++}-${timestamp}`,
+        timestamp,
+        type: 'temperature',
+        message: `High Temperature Alert: ${temperature.toFixed(1)}°C`,
+        severity: 'warning',
+      })
+    } else if (temperature > 660) {
+      events.push({
+        id: `event-${this.eventIdCounter++}-${timestamp}`,
+        timestamp,
+        type: 'error',
+        message: `Critical Temperature: ${temperature.toFixed(1)}°C - System Shutdown Required`,
+        severity: 'error',
+      })
+    } else if (temperature < 560) {
+      events.push({
+        id: `event-${this.eventIdCounter++}-${timestamp}`,
+        timestamp,
+        type: 'temperature',
+        message: `Low Temperature Warning: ${temperature.toFixed(1)}°C`,
+        severity: 'warning',
+      })
+    }
+    
+    // Efficiency-based events
+    if (efficiency < 75) {
+      events.push({
+        id: `event-${this.eventIdCounter++}-${timestamp}`,
+        timestamp,
+        type: 'warning',
+        message: `Low Efficiency Warning: ${efficiency.toFixed(1)}% - Maintenance Recommended`,
+        severity: 'warning',
+      })
+    } else if (efficiency < 70) {
+      events.push({
+        id: `event-${this.eventIdCounter++}-${timestamp}`,
+        timestamp,
+        type: 'error',
+        message: `Critical Efficiency: ${efficiency.toFixed(1)}% - System Check Required`,
+        severity: 'error',
+      })
+    }
+    
+    // Flow rate events
+    if (flow < 35) {
+      events.push({
+        id: `event-${this.eventIdCounter++}-${timestamp}`,
+        timestamp,
+        type: 'warning',
+        message: `Low Flow Rate: ${flow.toFixed(1)} L/min - Check Pump`,
+        severity: 'warning',
+      })
+    } else if (flow > 65) {
+      events.push({
+        id: `event-${this.eventIdCounter++}-${timestamp}`,
+        timestamp,
+        type: 'warning',
+        message: `High Flow Rate: ${flow.toFixed(1)} L/min - Possible Leak`,
+        severity: 'warning',
+      })
+    }
+    
+    // Energy events
+    if (energyIn > 120) {
+      events.push({
+        id: `event-${this.eventIdCounter++}-${timestamp}`,
+        timestamp,
+        type: 'energy',
+        message: `High Charging Rate: ${energyIn.toFixed(2)} kWh`,
+        severity: 'info',
+      })
+    }
+    
+    return events
+  }
+
+  private generateRandomSystemEvent(timestamp: number): SystemEvent {
     const id = `event-${this.eventIdCounter++}-${timestamp}`
     const eventTypes = [
-      { type: 'energy' as const, message: 'Charging Started', severity: 'info' as const },
-      { type: 'energy' as const, message: 'Discharging Started', severity: 'info' as const },
-      { type: 'temperature' as const, message: `Temperature: ${temperature.toFixed(1)}°C`, severity: 'info' as const },
-      { type: 'warning' as const, message: 'High Temperature Warning', severity: 'warning' as const },
+      { type: 'energy' as const, message: 'Charging Cycle Started', severity: 'info' as const },
+      { type: 'energy' as const, message: 'Discharging Cycle Started', severity: 'info' as const },
+      { type: 'energy' as const, message: 'Charging Cycle Completed', severity: 'info' as const },
+      { type: 'warning' as const, message: 'System Maintenance Due in 7 Days', severity: 'warning' as const },
+      { type: 'warning' as const, message: 'Sensor Calibration Recommended', severity: 'warning' as const },
+      { type: 'pump' as const, message: 'Pump Operating Normally', severity: 'info' as const },
+      { type: 'temperature' as const, message: 'Temperature Stabilized', severity: 'info' as const },
+      { type: 'error' as const, message: 'Communication Timeout - Sensor 3', severity: 'error' as const },
+      { type: 'error' as const, message: 'Data Logger Buffer 85% Full', severity: 'warning' as const },
+      { type: 'warning' as const, message: 'Network Latency Detected', severity: 'warning' as const },
     ]
     
     const selectedEvent = eventTypes[Math.floor(Math.random() * eventTypes.length)]
@@ -309,6 +428,7 @@ class MockDataService {
     const energyHistory: EnergyData[] = []
     const flowHistory: FlowData[] = []
     const pumpHistory: PumpStatus[] = []
+    const events: SystemEvent[] = []
     
     for (let i = 0; i <= points; i++) {
       const timestamp = startTime + (i * interval)
@@ -334,6 +454,23 @@ class MockDataService {
       // Simulate pump on/off cycles
       const pumpActive = Math.sin(i / 20) > -0.5
       pumpHistory.push({ timestamp, active: pumpActive })
+      
+      // Generate pump status change events
+      const prevPumpActive = i > 0 ? pumpHistory[i - 1]?.active : false
+      if (pumpActive !== prevPumpActive) {
+        events.push(this.generatePumpEvent(timestamp, pumpActive))
+      }
+      
+      // Generate condition-based events
+      if (i % 10 === 0) {
+        const conditionEvents = this.generateConditionEvents(timestamp, temperature, energyIn, energyOut, flow)
+        events.push(...conditionEvents)
+      }
+      
+      // Generate random system events
+      if (i % 25 === 0 && Math.random() > 0.5) {
+        events.push(this.generateRandomSystemEvent(timestamp))
+      }
     }
     
     const latestTemp = temperatureHistory[temperatureHistory.length - 1]?.temperature || this.baseTemperature
@@ -354,7 +491,7 @@ class MockDataService {
       energyHistory,
       flowHistory,
       pumpHistory,
-      events: [],
+      events: events.reverse(), // Most recent first
     }
   }
 }

@@ -118,7 +118,17 @@ export function SimpleViewPage() {
               label={APP_TEXT.DASHBOARD.KPI.TEMPERATURE}
               value={data?.currentTemperature.toFixed(1) ?? "0.0"}
               unit={APP_TEXT.DASHBOARD.UNITS.TEMPERATURE}
-              status="success"
+              status={
+                data 
+                  ? data.currentTemperature > 660 
+                    ? "error" 
+                    : data.currentTemperature > 640 
+                      ? "warning" 
+                      : data.currentTemperature < 560 
+                        ? "warning" 
+                        : "success"
+                  : "info"
+              }
               isLoading={isLoading}
             />
           </GridItem>
@@ -138,7 +148,17 @@ export function SimpleViewPage() {
               label={APP_TEXT.DASHBOARD.KPI.EFFICIENCY}
               value={data?.currentEfficiency.toFixed(1) ?? "0.0"}
               unit={APP_TEXT.DASHBOARD.UNITS.EFFICIENCY}
-              status={data && data.currentEfficiency > 80 ? "success" : "warning"}
+              status={
+                data 
+                  ? data.currentEfficiency < 70 
+                    ? "error" 
+                    : data.currentEfficiency < 75 
+                      ? "warning" 
+                      : data.currentEfficiency > 85 
+                        ? "success" 
+                        : "info"
+                  : "info"
+              }
               isLoading={isLoading}
             />
           </GridItem>
@@ -148,7 +168,17 @@ export function SimpleViewPage() {
               label={APP_TEXT.DASHBOARD.KPI.STATE_OF_CHARGE}
               value={data?.stateOfCharge.toFixed(0) ?? "0"}
               unit={APP_TEXT.DASHBOARD.UNITS.EFFICIENCY}
-              status="info"
+              status={
+                data 
+                  ? data.stateOfCharge < 20 
+                    ? "error" 
+                    : data.stateOfCharge < 40 
+                      ? "warning" 
+                      : data.stateOfCharge > 80 
+                        ? "success" 
+                        : "info"
+                  : "info"
+              }
               isLoading={isLoading}
             />
           </GridItem>
@@ -173,7 +203,13 @@ export function SimpleViewPage() {
               label={APP_TEXT.DASHBOARD.KPI.FLOW_RATE}
               value={data?.currentFlow.toFixed(1) ?? "0.0"}
               unit={APP_TEXT.DASHBOARD.UNITS.FLOW}
-              status="info"
+              status={
+                data 
+                  ? data.currentFlow < 35 || data.currentFlow > 65 
+                    ? "warning" 
+                    : "success"
+                  : "info"
+              }
               size="lg"
               isLoading={isLoading}
             />
