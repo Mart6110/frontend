@@ -1,7 +1,7 @@
-import { Heading, VStack, Grid, GridItem, Box, Flex, Button, ButtonGroup } from "@chakra-ui/react"
-import { useEffect, useState } from "react"
+import { VStack, Grid, GridItem, Box, Flex, Button } from "@chakra-ui/react"
+import { useEffect, useRef, useMemo } from "react"
 import { APP_TEXT, APP_CONFIG } from "@/constants/text"
-import { mockDataService, type DashboardData } from "@/services/mockData"
+import { mockDataService } from "@/services/mockData"
 import { KPICard } from "@/components/dashboard/KPICard"
 import { PumpStatusCard } from "@/components/dashboard/PumpStatusCard"
 import { TemperatureChart } from "@/components/dashboard/TemperatureChart"
@@ -10,77 +10,159 @@ import { FlowChart } from "@/components/dashboard/FlowChart"
 import { EfficiencyChart } from "@/components/dashboard/EfficiencyChart"
 import { TemperatureVsPumpChart } from "@/components/dashboard/TemperatureVsPumpChart"
 import { EventTimeline } from "@/components/dashboard/EventTimeline"
-import { KPICardSkeleton, PumpStatusCardSkeleton, ChartSkeleton } from "@/components/dashboard/Skeletons"
+import { ChartSkeleton } from "@/components/dashboard/Skeletons"
+import { ViewModeToggle } from "@/components/dashboard/ViewModeToggle"
+import { RealtimeHoursSelector } from "@/components/dashboard/RealtimeHoursSelector"
+import { DateRangeSelector } from "@/components/dashboard/DateRangeSelector"
 import { Drawer } from "@/components/ui/drawer"
+import { Widget } from "@/components/ui/widget"
 import { LuHistory } from "react-icons/lu"
-
-type TimeRange = 'ONE_HOUR' | 'SIX_HOURS' | 'TWELVE_HOURS' | 'ONE_DAY' | 'ONE_WEEK'
+import { useAppDispatch, useAppSelector } from "@/store/hooks"
+import {
+  setAllData,
+  setDisplayData,
+  setIsLoading,
+  setIsFiltering,
+  setViewMode,
+  setRealtimeHours,
+  setStartDate,
+  setEndDate,
+} from "@/store/dashboardSlice"
 
 export function AdvancedViewPage() {
-  const [allData, setAllData] = useState<DashboardData | null>(null)
-  const [displayData, setDisplayData] = useState<DashboardData | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
-  const [timeRange, setTimeRange] = useState<TimeRange>('SIX_HOURS')
+  const dispatch = useAppDispatch()
+  const {
+    allData,
+    displayData,
+    isLoading,
+    isFiltering,
+    viewMode,
+    realtimeHours,
+    startDate: startDateISO,
+    endDate: endDateISO,
+  } = useAppSelector((state) => state.dashboard.advanced)
+
+  // Track if this is a realtime update vs user-triggered filter change
+  const isRealtimeUpdateRef = useRef(false)
+
+  // Convert ISO strings back to Date objects - memoized to prevent infinite loops
+  const startDate = useMemo(
+    () => (startDateISO ? new Date(startDateISO) : null),
+    [startDateISO]
+  )
+  const endDate = useMemo(
+    () => (endDateISO ? new Date(endDateISO) : null),
+    [endDateISO]
+  )
 
   // Initialize with historical data
   useEffect(() => {
     // Simulate realistic loading time
     const loadData = async () => {
-      setIsLoading(true)
+      dispatch(setIsLoading(true))
       await new Promise(resolve => setTimeout(resolve, 1200)) // 1.2 second delay
-      const initialData = mockDataService.generateHistoricalData(24) // 24 hours
-      setAllData(initialData)
-      setIsLoading(false)
+      // Generate 30 days of historical data to support date range selection
+      const initialData = mockDataService.generateHistoricalData(24 * 30) // 30 days
+      dispatch(setAllData(initialData))
+      dispatch(setIsLoading(false))
     }
     
     loadData()
-  }, [])
+  }, [dispatch])
 
-  // Update display data when time range changes
+  // Update display data when parameters change
   useEffect(() => {
     if (!allData) return
 
-    const rangeMap: Record<TimeRange, number> = {
-      'ONE_HOUR': APP_CONFIG.DASHBOARD.TIME_RANGES.ONE_HOUR,
-      'SIX_HOURS': APP_CONFIG.DASHBOARD.TIME_RANGES.SIX_HOURS,
-      'TWELVE_HOURS': APP_CONFIG.DASHBOARD.TIME_RANGES.TWELVE_HOURS,
-      'ONE_DAY': APP_CONFIG.DASHBOARD.TIME_RANGES.ONE_DAY,
-      'ONE_WEEK': APP_CONFIG.DASHBOARD.TIME_RANGES.ONE_WEEK,
+    // Skip filtering if this is just a realtime data update in realtime mode
+    if (isRealtimeUpdateRef.current && viewMode === 'realtime') {
+      isRealtimeUpdateRef.current = false
+      // Just update displayData directly from allData for realtime mode
+      const milliseconds = realtimeHours * 60 * 60 * 1000
+      const filteredData = mockDataService.getDataForTimeRange(allData, milliseconds)
+      dispatch(setDisplayData(filteredData))
+      return
     }
 
-    const filteredData = mockDataService.getDataForTimeRange(allData, rangeMap[timeRange])
-    setDisplayData(filteredData)
-  }, [allData, timeRange])
+    isRealtimeUpdateRef.current = false
+    dispatch(setIsFiltering(true))
+    
+    let filteredData
+    
+    if (viewMode === 'realtime') {
+      // Realtime mode: show last X hours from now
+      const milliseconds = realtimeHours * 60 * 60 * 1000
+      filteredData = mockDataService.getDataForTimeRange(allData, milliseconds)
+    } else {
+      // Date range mode: show specific date range
+      if (!startDate || !endDate) {
+        dispatch(setIsFiltering(false))
+        return
+      }
+      filteredData = mockDataService.getDataForDateRange(allData, startDate, endDate)
+    }
+    
+    dispatch(setDisplayData(filteredData))
+    dispatch(setIsFiltering(false))
+  }, [allData, viewMode, realtimeHours, startDate, endDate, dispatch])
 
-  // Real-time updates every 15 seconds
+  // Real-time updates every 30 seconds
   useEffect(() => {
     if (!allData) return
 
     const interval = setInterval(() => {
-      setAllData(prevData => {
-        if (!prevData) return prevData
-        return mockDataService.generateRealtimeUpdate(prevData)
-      })
+      isRealtimeUpdateRef.current = true
+      const updatedData = mockDataService.generateRealtimeUpdate(allData)
+      dispatch(setAllData(updatedData))
     }, APP_CONFIG.DASHBOARD.UPDATE_INTERVALS.REAL_TIME)
 
     return () => clearInterval(interval)
-  }, [allData])
+  }, [allData, dispatch])
 
   return (
     <Box p={{ base: 4, md: 8 }}>
       <VStack align="start" gap={6} w="full">
-        {/* Header with Time Range Selector */}
+        {/* Header with Time Controls */}
         <Flex 
-          direction={{ base: "column", md: "row" }}
-          justify="space-between" 
-          align={{ base: "start", md: "center" }}
+          direction={{ base: "column", lg: "row" }}
+          align={{ base: "start", lg: "center" }}
           w="full"
-          gap={4}
+          gap={3}
+          wrap="wrap"
         >
-          <Heading size={{ base: "md", md: "lg" }}>{APP_TEXT.ADVANCED_VIEW.TITLE}</Heading>
-          
-          <Flex gap={3} direction={{ base: "column", sm: "row" }} w={{ base: "full", md: "auto" }}>
-            {!isLoading && displayData && (
+          {/* Mode Toggle */}
+          <ViewModeToggle
+            value={viewMode}
+            onChange={(value) => dispatch(setViewMode(value))}
+            disabled={isLoading || isFiltering}
+            size="md"
+          />
+
+          {/* Realtime Hour Selection */}
+          {viewMode === 'realtime' && (
+            <RealtimeHoursSelector
+              value={realtimeHours}
+              onChange={(value) => dispatch(setRealtimeHours(value))}
+              disabled={isLoading || isFiltering}
+              size="md"
+            />
+          )}
+
+          {/* Date Range Pickers */}
+          {viewMode === 'dateRange' && (
+            <DateRangeSelector
+              startDate={startDate}
+              endDate={endDate}
+              onStartDateChange={(date) => dispatch(setStartDate(date))}
+              onEndDateChange={(date) => dispatch(setEndDate(date))}
+              disabled={isLoading || isFiltering}
+              showTime
+            />
+          )}
+
+          {/* System Events */}
+          {!isLoading && displayData && (
+            <Box ml={{ base: 0, lg: "auto" }}>
               <Drawer
                 placement="end"
                 size={{ base: "full", md: "md" }}
@@ -94,38 +176,8 @@ export function AdvancedViewPage() {
               >
                 <EventTimeline events={displayData.events} maxEvents={100} />
               </Drawer>
-            )}
-            <ButtonGroup size={{ base: "sm", md: "md" }} attached variant="outline">
-            <Button 
-              onClick={() => setTimeRange('ONE_HOUR')}
-              colorScheme={timeRange === 'ONE_HOUR' ? 'teal' : 'gray'}
-              disabled={isLoading}
-            >
-              {APP_TEXT.DASHBOARD.TIME_RANGE.ONE_HOUR}
-            </Button>
-            <Button 
-              onClick={() => setTimeRange('SIX_HOURS')}
-              colorScheme={timeRange === 'SIX_HOURS' ? 'teal' : 'gray'}
-              disabled={isLoading}
-            >
-              {APP_TEXT.DASHBOARD.TIME_RANGE.SIX_HOURS}
-            </Button>
-            <Button 
-              onClick={() => setTimeRange('TWELVE_HOURS')}
-              colorScheme={timeRange === 'TWELVE_HOURS' ? 'teal' : 'gray'}
-              disabled={isLoading}
-            >
-              {APP_TEXT.DASHBOARD.TIME_RANGE.TWELVE_HOURS}
-            </Button>
-            <Button 
-              onClick={() => setTimeRange('ONE_DAY')}
-              colorScheme={timeRange === 'ONE_DAY' ? 'teal' : 'gray'}
-              disabled={isLoading}
-            >
-              {APP_TEXT.DASHBOARD.TIME_RANGE.ONE_DAY}
-            </Button>
-          </ButtonGroup>
-          </Flex>
+            </Box>
+          )}
         </Flex>
         
         {/* KPI Cards Grid */}
@@ -134,62 +186,55 @@ export function AdvancedViewPage() {
           gap={4}
           w="full"
         >
-          {isLoading || !displayData ? (
-            <>
-              <GridItem><KPICardSkeleton /></GridItem>
-              <GridItem><KPICardSkeleton /></GridItem>
-              <GridItem><KPICardSkeleton /></GridItem>
-              <GridItem><KPICardSkeleton /></GridItem>
-              <GridItem><KPICardSkeleton /></GridItem>
-            </>
-          ) : (
-            <>
-              <GridItem>
-                <KPICard
-                  label={APP_TEXT.DASHBOARD.KPI.TEMPERATURE}
-                  value={displayData.currentTemperature.toFixed(1)}
-                  unit={APP_TEXT.DASHBOARD.UNITS.TEMPERATURE}
-                  status="success"
-                />
-              </GridItem>
-              
-              <GridItem>
-                <KPICard
-                  label={APP_TEXT.DASHBOARD.KPI.POWER}
-                  value={displayData.currentPower.toFixed(1)}
-                  unit={APP_TEXT.DASHBOARD.UNITS.POWER}
-                  status={displayData.isPumpActive ? "success" : "info"}
-                />
-              </GridItem>
-              
-              <GridItem>
-                <KPICard
-                  label={APP_TEXT.DASHBOARD.KPI.EFFICIENCY}
-                  value={displayData.currentEfficiency.toFixed(1)}
-                  unit={APP_TEXT.DASHBOARD.UNITS.EFFICIENCY}
-                  status={displayData.currentEfficiency > 80 ? "success" : "warning"}
-                />
-              </GridItem>
-              
-              <GridItem>
-                <KPICard
-                  label={APP_TEXT.DASHBOARD.KPI.FLOW_RATE}
-                  value={displayData.currentFlow.toFixed(1)}
-                  unit={APP_TEXT.DASHBOARD.UNITS.FLOW}
-                  status="info"
-                />
-              </GridItem>
-              
-              <GridItem>
-                <KPICard
-                  label={APP_TEXT.DASHBOARD.KPI.STATE_OF_CHARGE}
-                  value={displayData.stateOfCharge.toFixed(0)}
-                  unit={APP_TEXT.DASHBOARD.UNITS.EFFICIENCY}
-                  status="info"
-                />
-              </GridItem>
-            </>
-          )}
+          <GridItem>
+            <KPICard
+              label={APP_TEXT.DASHBOARD.KPI.TEMPERATURE}
+              value={displayData?.currentTemperature.toFixed(1) ?? "0.0"}
+              unit={APP_TEXT.DASHBOARD.UNITS.TEMPERATURE}
+              status="success"
+              isLoading={isLoading}
+            />
+          </GridItem>
+          
+          <GridItem>
+            <KPICard
+              label={APP_TEXT.DASHBOARD.KPI.POWER}
+              value={displayData?.currentPower.toFixed(1) ?? "0.0"}
+              unit={APP_TEXT.DASHBOARD.UNITS.POWER}
+              status={displayData?.isPumpActive ? "success" : "info"}
+              isLoading={isLoading}
+            />
+          </GridItem>
+          
+          <GridItem>
+            <KPICard
+              label={APP_TEXT.DASHBOARD.KPI.EFFICIENCY}
+              value={displayData?.currentEfficiency.toFixed(1) ?? "0.0"}
+              unit={APP_TEXT.DASHBOARD.UNITS.EFFICIENCY}
+              status={displayData && displayData.currentEfficiency > 80 ? "success" : "warning"}
+              isLoading={isLoading}
+            />
+          </GridItem>
+          
+          <GridItem>
+            <KPICard
+              label={APP_TEXT.DASHBOARD.KPI.FLOW_RATE}
+              value={displayData?.currentFlow.toFixed(1) ?? "0.0"}
+              unit={APP_TEXT.DASHBOARD.UNITS.FLOW}
+              status="info"
+              isLoading={isLoading}
+            />
+          </GridItem>
+          
+          <GridItem>
+            <KPICard
+              label={APP_TEXT.DASHBOARD.KPI.STATE_OF_CHARGE}
+              value={displayData?.stateOfCharge.toFixed(0) ?? "0"}
+              unit={APP_TEXT.DASHBOARD.UNITS.EFFICIENCY}
+              status="info"
+              isLoading={isLoading}
+            />
+          </GridItem>
         </Grid>
 
         {/* System Status and Energy KPIs */}
@@ -198,39 +243,35 @@ export function AdvancedViewPage() {
           gap={4}
           w="full"
         >
-          {isLoading || !displayData ? (
-            <>
-              <GridItem><PumpStatusCardSkeleton /></GridItem>
-              <GridItem><KPICardSkeleton /></GridItem>
-              <GridItem><KPICardSkeleton /></GridItem>
-            </>
-          ) : (
-            <>
-              <GridItem>
-                <PumpStatusCard isActive={displayData.isPumpActive} />
-              </GridItem>
-              
-              <GridItem>
-                <KPICard
-                  label={APP_TEXT.DASHBOARD.KPI.ENERGY_IN}
-                  value={displayData.currentEnergyIn.toFixed(2)}
-                  unit={APP_TEXT.DASHBOARD.UNITS.ENERGY}
-                  status="info"
-                  size="lg"
-                />
-              </GridItem>
-              
-              <GridItem>
-                <KPICard
-                  label={APP_TEXT.DASHBOARD.KPI.ENERGY_OUT}
-                  value={displayData.currentEnergyOut.toFixed(2)}
-                  unit={APP_TEXT.DASHBOARD.UNITS.ENERGY}
-                  status="success"
-                  size="lg"
-                />
-              </GridItem>
-            </>
-          )}
+          <GridItem>
+            <PumpStatusCard 
+              isActive={displayData?.isPumpActive ?? false} 
+              size="lg"
+              isLoading={isLoading}
+            />
+          </GridItem>
+          
+          <GridItem>
+            <KPICard
+              label={APP_TEXT.DASHBOARD.KPI.ENERGY_IN}
+              value={displayData?.currentEnergyIn.toFixed(2) ?? "0.00"}
+              unit={APP_TEXT.DASHBOARD.UNITS.ENERGY}
+              status="info"
+              size="lg"
+              isLoading={isLoading}
+            />
+          </GridItem>
+          
+          <GridItem>
+            <KPICard
+              label={APP_TEXT.DASHBOARD.KPI.ENERGY_OUT}
+              value={displayData?.currentEnergyOut.toFixed(2) ?? "0.00"}
+              unit={APP_TEXT.DASHBOARD.UNITS.ENERGY}
+              status="success"
+              size="lg"
+              isLoading={isLoading}
+            />
+          </GridItem>
         </Grid>
 
         {/* Main Charts Grid */}
@@ -239,85 +280,53 @@ export function AdvancedViewPage() {
           gap={6}
           w="full"
         >
-          {isLoading || !displayData ? (
+          {isLoading ? (
             <>
               <GridItem><ChartSkeleton height="300px" /></GridItem>
               <GridItem><ChartSkeleton height="300px" /></GridItem>
               <GridItem><ChartSkeleton height="300px" /></GridItem>
               <GridItem><ChartSkeleton height="300px" /></GridItem>
             </>
-          ) : (
+          ) : displayData && (
             <>
               {/* Temperature Chart */}
               <GridItem>
-                <Box
-                  borderWidth="1px"
-                  borderColor="rgba(0, 255, 170, 0.3)"
-                  borderRadius="12px"
-                  p={{ base: 4, md: 6 }}
-                  backdropFilter="blur(5px)"
-                  boxShadow="0 4px 20px rgba(0, 255, 170, 0.1)"
-                  css={{ WebkitBackdropFilter: "blur(5px)" }}
-                >
+                <Widget>
                   <TemperatureChart 
                     data={displayData.temperatureHistory}
                     height={300}
                   />
-                </Box>
+                </Widget>
               </GridItem>
 
               {/* Energy Transfer Chart */}
               <GridItem>
-                <Box
-                  borderWidth="1px"
-                  borderColor="rgba(0, 255, 170, 0.3)"
-                  borderRadius="12px"
-                  p={{ base: 4, md: 6 }}
-                  backdropFilter="blur(5px)"
-                  boxShadow="0 4px 20px rgba(0, 255, 170, 0.1)"
-                  css={{ WebkitBackdropFilter: "blur(5px)" }}
-                >
+                <Widget>
                   <EnergyChart 
                     data={displayData.energyHistory}
                     height={300}
                   />
-                </Box>
+                </Widget>
               </GridItem>
 
               {/* Flow Rate Chart */}
               <GridItem>
-                <Box
-                  borderWidth="1px"
-                  borderColor="rgba(0, 255, 170, 0.3)"
-                  borderRadius="12px"
-                  p={{ base: 4, md: 6 }}
-                  backdropFilter="blur(5px)"
-                  boxShadow="0 4px 20px rgba(0, 255, 170, 0.1)"
-                  css={{ WebkitBackdropFilter: "blur(5px)" }}
-                >
+                <Widget>
                   <FlowChart 
                     data={displayData.flowHistory}
                     height={300}
                   />
-                </Box>
+                </Widget>
               </GridItem>
 
               {/* Efficiency Trend Chart */}
               <GridItem>
-                <Box
-                  borderWidth="1px"
-                  borderColor="rgba(0, 255, 170, 0.3)"
-                  borderRadius="12px"
-                  p={{ base: 4, md: 6 }}
-                  backdropFilter="blur(5px)"
-                  boxShadow="0 4px 20px rgba(0, 255, 170, 0.1)"
-                  css={{ WebkitBackdropFilter: "blur(5px)" }}
-                >
+                <Widget>
                   <EfficiencyChart 
                     data={displayData.energyHistory}
                     height={300}
                   />
-                </Box>
+                </Widget>
               </GridItem>
             </>
           )}
@@ -325,25 +334,17 @@ export function AdvancedViewPage() {
 
         {/* Correlation Chart - Temperature vs Pump */}
         <Grid templateColumns="1fr" w="full">
-          {isLoading || !displayData ? (
+          {isLoading ? (
             <GridItem><ChartSkeleton height="300px" /></GridItem>
-          ) : (
+          ) : displayData && (
             <GridItem>
-              <Box
-                borderWidth="1px"
-                borderColor="rgba(0, 255, 170, 0.3)"
-                borderRadius="12px"
-                p={{ base: 4, md: 6 }}
-                backdropFilter="blur(5px)"
-                boxShadow="0 4px 20px rgba(0, 255, 170, 0.1)"
-                css={{ WebkitBackdropFilter: "blur(5px)" }}
-              >
+              <Widget>
                 <TemperatureVsPumpChart 
                   temperatureData={displayData.temperatureHistory}
                   pumpData={displayData.pumpHistory}
                   height={300}
                 />
-              </Box>
+              </Widget>
             </GridItem>
           )}
         </Grid>

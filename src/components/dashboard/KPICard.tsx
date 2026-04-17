@@ -1,5 +1,5 @@
-import { Box, Flex, Text, Badge } from "@chakra-ui/react"
-import { ReactNode } from "react"
+import { Box, Flex, Text, Badge, Spinner } from "@chakra-ui/react"
+import { ReactNode, memo } from "react"
 
 interface KPICardProps {
   label: string
@@ -8,9 +8,10 @@ interface KPICardProps {
   icon?: ReactNode
   status?: 'success' | 'warning' | 'error' | 'info'
   size?: 'sm' | 'md' | 'lg'
+  isLoading?: boolean
 }
 
-export function KPICard({ label, value, unit, icon, status, size = 'md' }: KPICardProps) {
+export const KPICard = memo(function KPICard({ label, value, unit, icon, status, size = 'md', isLoading = false }: KPICardProps) {
   const sizes = {
     sm: { value: 'xl', label: 'sm', padding: 4 },
     md: { value: '2xl', label: 'md', padding: 5 },
@@ -50,13 +51,19 @@ export function KPICard({ label, value, unit, icon, status, size = 'md' }: KPICa
         </Flex>
         
         <Flex align="baseline" gap={2}>
-          <Text fontSize={sizes[size].value} fontWeight="bold">
-            {value}
-          </Text>
-          {unit && (
-            <Text fontSize="lg" color="gray.500">
-              {unit}
-            </Text>
+          {isLoading ? (
+            <Spinner size="md" color="teal.500" />
+          ) : (
+            <>
+              <Text fontSize={sizes[size].value} fontWeight="bold">
+                {value}
+              </Text>
+              {unit && (
+                <Text fontSize="lg" color="gray.500">
+                  {unit}
+                </Text>
+              )}
+            </>
           )}
         </Flex>
         
@@ -74,4 +81,4 @@ export function KPICard({ label, value, unit, icon, status, size = 'md' }: KPICa
       </Flex>
     </Box>
   )
-}
+})

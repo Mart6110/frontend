@@ -22,10 +22,30 @@ export function Navbar() {
                     <>
                         <HStack gap={{ base: 2, md: 4 }} display={{ base: "none", md: "flex" }}>
                             <Link asChild>
-                                <RouterLink to="/simpleView">{APP_TEXT.NAV.SIMPLE_VIEW}</RouterLink>
+                                <RouterLink 
+                                    to="/simpleView"
+                                    activeProps={{
+                                        style: {
+                                            textDecoration: 'underline',
+                                            textUnderlineOffset: '4px',
+                                        }
+                                    }}
+                                >
+                                    {APP_TEXT.NAV.SIMPLE_VIEW}
+                                </RouterLink>
                             </Link>
                             <Link asChild>
-                                <RouterLink to="/advancedView">{APP_TEXT.NAV.ADVANCED_VIEW}</RouterLink>
+                                <RouterLink 
+                                    to="/advancedView"
+                                    activeProps={{
+                                        style: {
+                                            textDecoration: 'underline',
+                                            textUnderlineOffset: '4px',
+                                        }
+                                    }}
+                                >
+                                    {APP_TEXT.NAV.ADVANCED_VIEW}
+                                </RouterLink>
                             </Link>
                         </HStack>
                         <HStack gap={{ base: 1, md: 4 }}>
