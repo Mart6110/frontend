@@ -62,12 +62,22 @@ export const DateRangeSelector = memo(function DateRangeSelector({
   // Local state for date picker UI (before applying)
   const [value, setValue] = useState<CalendarDateTime[]>(initialValue)
 
-  // Sync local state when picker opens
+  // Sync local state when picker opens (reset to prop values)
   useEffect(() => {
     if (open) {
-      setValue(initialValue)
+      // When opening, reset to current prop values
+      // We don't track initialValue changes to avoid interfering with user edits
+      const newValue: CalendarDateTime[] = []
+      const startDateTime = dateToCalendarDateTime(startDate)
+      const endDateTime = dateToCalendarDateTime(endDate)
+      
+      if (startDateTime) newValue.push(startDateTime)
+      if (endDateTime) newValue.push(endDateTime)
+      
+      setValue(newValue)
     }
-  }, [open, initialValue])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open])
 
   const handleValueChange = (details: { value: DateValue[] }) => {
     const newValue: CalendarDateTime[] = []
