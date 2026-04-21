@@ -167,7 +167,6 @@ APP_CONFIG.DASHBOARD = {
 3. **Custom Time Ranges**: Allow users to select custom date ranges
 4. **Alert Configuration**: User-configurable alerts based on thresholds
 5. **Historical Comparison**: Compare different time periods
-6. **WebSocket Integration**: True real-time updates instead of polling
 
 ## Development
 
