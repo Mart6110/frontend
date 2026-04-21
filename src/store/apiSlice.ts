@@ -41,4 +41,4 @@ export const api = createApi({
 })
 
 // Export hooks will be auto-generated when endpoints are injected
-export const {} = api
+// Empty export for now - hooks will be added as endpoints are injected

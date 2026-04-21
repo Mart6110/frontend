@@ -1,6 +1,6 @@
 import type { Middleware } from "@reduxjs/toolkit"
 import { getWebSocketUrl } from "../config/api"
-import { WebSocketManager, WebSocketEventType } from "../utils/websocket"
+import { WebSocketManager } from "../utils/websocket"
 import type { RootState } from "./index"
 
 /**
@@ -58,7 +58,7 @@ export const createWebSocketMiddleware = (): Middleware<
           onClose: () => {
             store.dispatch({ type: WS_DISCONNECTED })
           },
-          onError: (event) => {
+          onError: () => {
             store.dispatch({
               type: WS_ERROR,
               payload: { error: "WebSocket connection error" },

@@ -74,7 +74,7 @@ export const useWebSocketMessage = <T = unknown>(
     // and filter for specific message types
     // This is a simplified example structure
     
-    const handleMessage = (action: any) => {
+    const _handleMessage = (action: any) => {
       if (
         action.type === "ws/message" &&
         action.payload?.type === messageType

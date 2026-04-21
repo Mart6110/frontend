@@ -1,5 +1,4 @@
 import { api } from "../apiSlice"
-import type { BaseQueryFn } from "@reduxjs/toolkit/query"
 
 /**
  * Example: Real-time Data Endpoint with WebSocket Integration
@@ -38,13 +37,13 @@ export const realtimeApi = api.injectEndpoints({
        */
       async onCacheEntryAdded(
         arg,
-        { updateCachedData, cacheDataLoaded, cacheEntryRemoved, dispatch }
+        { updateCachedData, cacheDataLoaded, cacheEntryRemoved }
       ) {
         // Wait for the initial query to resolve before proceeding
         await cacheDataLoaded
 
         // Listen for WebSocket messages
-        const handleWebSocketMessage = (action: any) => {
+        const _handleWebSocketMessage = (action: any) => {
           if (action.type === "ws/message") {
             const message = action.payload
 
