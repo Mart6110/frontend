@@ -1,91 +1,55 @@
-# WebSocket Utilities
+# Utility Functions
 
-This directory contains utilities for managing WebSocket connections in the application.
+This directory contains utility functions used throughout the application.
 
 ## Files
 
-### `websocket.ts`
+### `exportToExcel.ts`
 
-Core WebSocket manager class that handles:
-- Connection lifecycle (connect, disconnect, reconnect)
-- Automatic reconnection with exponential backoff
-- Heartbeat/ping-pong to keep connections alive
-- Message queuing when disconnected
-- API key authentication
+Utility for exporting dashboard data to Excel format:
+- Exports chart data to `.xlsx` files
+- Formats timestamps and values
+- Creates separate sheets for different data types
+- Uses `xlsx` library for file generation
 
-## WebSocketManager Class
+### `requireApiKey.ts`
 
-### Features
+Route protection utility:
+- Checks if user has entered an API key
+- Redirects to home page if no API key is present
+- Used in route configuration for protected views
 
-- **Auto-reconnection**: Automatically reconnects with exponential backoff
-- **Heartbeat**: Sends periodic pings to keep connection alive
-- **Message Queue**: Queues messages when disconnected and sends them when reconnected
-- **Authentication**: Supports API key authentication via query parameters
+## Usage
 
-### Usage
+### Export to Excel
 
 ```typescript
-import { WebSocketManager } from "@/utils/websocket"
+import { exportToExcel } from "@/utils/exportToExcel"
 
-const wsManager = new WebSocketManager({
-  url: "ws://localhost:3000/ws",
-  onOpen: (event) => console.log("Connected"),
-  onClose: (event) => console.log("Disconnected"),
-  onMessage: (data) => console.log("Message:", data),
-  onError: (error) => console.error("Error:", error),
+// Export temperature data
+exportToExcel(
+  temperatureData,
+  "Temperature Data",
+  "temperature-export.xlsx"
+)
+```
+
+### Require API Key
+
+```typescript
+import { requireApiKey } from "@/utils/requireApiKey"
+
+// In route configuration
+export const Route = createFileRoute('/dashboard')({
+  beforeLoad: requireApiKey,
+  component: Dashboard,
 })
-
-// Set API key
-wsManager.setApiKey("your-api-key")
-
-// Connect
-wsManager.connect()
-
-// Send message
-wsManager.send("message_type", { data: "payload" })
-
-// Disconnect
-wsManager.disconnect()
 ```
 
-## Message Format
+## Adding New Utilities
 
-WebSocket messages follow this structure:
-
-```typescript
-{
-  type: string      // Message type identifier
-  payload: unknown  // Message data
-  timestamp: number // Optional timestamp
-}
-```
-
-## Configuration
-
-WebSocket configuration is in `/src/config/api.ts`:
-
-```typescript
-WEBSOCKET_CONFIG = {
-  url: "ws://localhost:3000/ws",  // Auto-converts from HTTP URL
-  reconnect: {
-    enabled: true,
-    maxAttempts: 5,
-    delay: 3000,
-    maxDelay: 30000,
-    backoffMultiplier: 1.5,
-  },
-  heartbeat: {
-    enabled: true,
-    interval: 30000,
-    timeout: 5000,
-  },
-}
-```
-
-## Environment Variables
-
-```env
-VITE_WS_URL=ws://localhost:3000/ws
-```
-
-If not set, automatically converts from `VITE_API_BASE_URL`.
+When adding new utility functions:
+1. Create a new file in this directory
+2. Export functions with clear TypeScript types
+3. Add JSDoc comments for documentation
+4. Update this README with usage examples
