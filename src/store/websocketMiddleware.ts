@@ -38,14 +38,17 @@ interface WebSocketAction {
 export const createWebSocketMiddleware = () => {
   let wsManager: WebSocketManager | null = null
 
-  const middleware: Middleware = (store) => (next) => (action: WebSocketAction) => {
+  const middleware: Middleware = (store) => (next) => (action: unknown) => {
     const result = next(action)
+
+    // Type guard for action
+    const wsAction = action as WebSocketAction
 
     // Get current API key from state
     const state = store.getState() as { apiKey: { apiKey: string | null } }
     const apiKey = state.apiKey.apiKey
 
-    switch (action.type) {
+    switch (wsAction.type) {
       case WS_CONNECT: {
         // Disconnect existing connection
         if (wsManager) {
@@ -96,7 +99,7 @@ export const createWebSocketMiddleware = () => {
 
       case WS_SEND: {
         if (wsManager?.isConnected()) {
-          const { messageType, payload } = action.payload
+          const { messageType, payload } = wsAction.payload
           wsManager.send(messageType, payload)
         } else {
           console.warn("WebSocket not connected. Cannot send message.")
@@ -106,8 +109,8 @@ export const createWebSocketMiddleware = () => {
 
       // Update API key in WebSocket connection when it changes
       case "apiKey/setApiKey": {
-        if (wsManager && action.payload) {
-          wsManager.setApiKey(action.payload as string)
+        if (wsManager && wsAction.payload) {
+          wsManager.setApiKey(wsAction.payload as string)
           // Reconnect with new API key
           wsManager.disconnect()
           setTimeout(() => {
