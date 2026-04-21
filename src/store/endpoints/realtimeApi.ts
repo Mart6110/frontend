@@ -36,51 +36,28 @@ export const realtimeApi = api.injectEndpoints({
        * This allows you to listen to WebSocket updates and update the cache
        */
       async onCacheEntryAdded(
-        arg,
-        { updateCachedData, cacheDataLoaded, cacheEntryRemoved }
+        _arg,
+        { cacheDataLoaded, cacheEntryRemoved }
       ) {
         // Wait for the initial query to resolve before proceeding
         await cacheDataLoaded
 
-        // Listen for WebSocket messages
-        const _handleWebSocketMessage = (action: any) => {
-          if (action.type === "ws/message") {
-            const message = action.payload
-
-            // Handle different message types
-            switch (message.type) {
-              case "realtime_data_update":
-                // Update the cached data with WebSocket data
-                updateCachedData((draft) => {
-                  draft.data = message.payload.data
-                  draft.lastUpdate = message.payload.timestamp
-                })
-                break
-
-              case "realtime_data_item_update":
-                // Update a single item in the cached data
-                updateCachedData((draft) => {
-                  const index = draft.data.findIndex(
-                    (item) => item.id === message.payload.id
-                  )
-                  if (index !== -1) {
-                    draft.data[index] = message.payload
-                  } else {
-                    draft.data.push(message.payload)
-                  }
-                  draft.lastUpdate = new Date().toISOString()
-                })
-                break
-            }
-          }
-        }
-
+        // TODO: Implement WebSocket message handling
+        // This is a placeholder for future real-time update integration
+        // When implemented, subscribe to WebSocket messages here and call updateCachedData
+        
+        // Example pattern (not currently active):
+        // - Listen for ws/message actions
+        // - Filter by message.type (e.g., "realtime_data_update")
+        // - Call updateCachedData to update the cached query data
+        
         // Subscribe to store changes to listen for WebSocket messages
         // In a real implementation, you'd use store.subscribe or middleware
         // This is a simplified example
         
         // Wait until cache entry is removed
         await cacheEntryRemoved
+        // Cleanup WebSocket subscriptions here when cache is removed
       },
     }),
 

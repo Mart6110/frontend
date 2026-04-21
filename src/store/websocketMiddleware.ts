@@ -1,7 +1,6 @@
 import type { Middleware } from "@reduxjs/toolkit"
 import { getWebSocketUrl } from "../config/api"
 import { WebSocketManager } from "../utils/websocket"
-import type { RootState } from "./index"
 
 /**
  * WebSocket Action Types
@@ -25,20 +24,25 @@ export const wsSend = <T = unknown>(messageType: string, payload: T) => ({
 })
 
 /**
+ * WebSocket Action Interface
+ */
+interface WebSocketAction {
+  type: string
+  payload?: any
+}
+
+/**
  * WebSocket Middleware
  * Manages WebSocket connections and integrates with Redux
  */
-export const createWebSocketMiddleware = (): Middleware<
-  object,
-  RootState
-> => {
+export const createWebSocketMiddleware = () => {
   let wsManager: WebSocketManager | null = null
 
-  return (store) => (next) => (action) => {
+  const middleware: Middleware = (store) => (next) => (action: WebSocketAction) => {
     const result = next(action)
 
     // Get current API key from state
-    const state = store.getState()
+    const state = store.getState() as { apiKey: { apiKey: string | null } }
     const apiKey = state.apiKey.apiKey
 
     switch (action.type) {
@@ -102,8 +106,8 @@ export const createWebSocketMiddleware = (): Middleware<
 
       // Update API key in WebSocket connection when it changes
       case "apiKey/setApiKey": {
-        if (wsManager) {
-          wsManager.setApiKey(action.payload)
+        if (wsManager && action.payload) {
+          wsManager.setApiKey(action.payload as string)
           // Reconnect with new API key
           wsManager.disconnect()
           setTimeout(() => {
@@ -124,6 +128,8 @@ export const createWebSocketMiddleware = (): Middleware<
 
     return result
   }
+  
+  return middleware
 }
 
 /**
@@ -149,27 +155,43 @@ export const websocketSlice = createSlice({
   reducers: {},
   extraReducers: (builder) => {
     builder
-      .addCase(WS_CONNECT, (state) => {
-        state.connecting = true
-        state.error = null
-      })
-      .addCase(WS_CONNECTED, (state) => {
-        state.connected = true
-        state.connecting = false
-        state.error = null
-      })
-      .addCase(WS_DISCONNECTED, (state) => {
-        state.connected = false
-        state.connecting = false
-      })
-      .addCase(WS_ERROR, (state, action: any) => {
-        state.error = action.payload?.error || "Unknown error"
-        state.connecting = false
-      })
-      .addCase(WS_DISCONNECT, (state) => {
-        state.connected = false
-        state.connecting = false
-      })
+      .addMatcher(
+        (action): action is { type: typeof WS_CONNECT } => action.type === WS_CONNECT,
+        (state) => {
+          state.connecting = true
+          state.error = null
+        }
+      )
+      .addMatcher(
+        (action): action is { type: typeof WS_CONNECTED } => action.type === WS_CONNECTED,
+        (state) => {
+          state.connected = true
+          state.connecting = false
+          state.error = null
+        }
+      )
+      .addMatcher(
+        (action): action is { type: typeof WS_DISCONNECTED } => action.type === WS_DISCONNECTED,
+        (state) => {
+          state.connected = false
+          state.connecting = false
+        }
+      )
+      .addMatcher(
+        (action): action is { type: typeof WS_ERROR; payload: { error: string } } => 
+          action.type === WS_ERROR,
+        (state, action) => {
+          state.error = action.payload?.error || "Unknown error"
+          state.connecting = false
+        }
+      )
+      .addMatcher(
+        (action): action is { type: typeof WS_DISCONNECT } => action.type === WS_DISCONNECT,
+        (state) => {
+          state.connected = false
+          state.connecting = false
+        }
+      )
   },
 })
 

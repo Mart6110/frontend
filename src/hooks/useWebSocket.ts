@@ -72,17 +72,8 @@ export const useWebSocketMessage = <T = unknown>(
   useEffect(() => {
     // In a real implementation, you'd subscribe to the store
     // and filter for specific message types
-    // This is a simplified example structure
+    // This is a placeholder for future WebSocket message handling
     
-    const _handleMessage = (action: any) => {
-      if (
-        action.type === "ws/message" &&
-        action.payload?.type === messageType
-      ) {
-        callback(action.payload.payload)
-      }
-    }
-
     // Subscribe to store changes
     // Note: This requires additional setup with store.subscribe
     // or a custom middleware to expose message handlers

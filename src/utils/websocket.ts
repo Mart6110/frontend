@@ -3,14 +3,16 @@ import { WEBSOCKET_CONFIG } from "../config/api"
 /**
  * WebSocket Event Types
  */
-export enum WebSocketEventType {
-  CONNECT = "ws/connect",
-  DISCONNECT = "ws/disconnect",
-  MESSAGE = "ws/message",
-  ERROR = "ws/error",
-  RECONNECTING = "ws/reconnecting",
-  RECONNECTED = "ws/reconnected",
-}
+export const WebSocketEventType = {
+  CONNECT: "ws/connect",
+  DISCONNECT: "ws/disconnect",
+  MESSAGE: "ws/message",
+  ERROR: "ws/error",
+  RECONNECTING: "ws/reconnecting",
+  RECONNECTED: "ws/reconnected",
+} as const
+
+export type WebSocketEventType = typeof WebSocketEventType[keyof typeof WebSocketEventType]
 
 /**
  * WebSocket Message Structure
@@ -43,9 +45,9 @@ export class WebSocketManager {
   private url: string
   private protocols?: string | string[]
   private reconnectAttempts = 0
-  private reconnectTimer: NodeJS.Timeout | null = null
-  private heartbeatTimer: NodeJS.Timeout | null = null
-  private heartbeatTimeoutTimer: NodeJS.Timeout | null = null
+  private reconnectTimer: number | null = null
+  private heartbeatTimer: number | null = null
+  private heartbeatTimeoutTimer: number | null = null
   private shouldReconnect = true
   private messageQueue: string[] = []
   private apiKey: string | null = null
