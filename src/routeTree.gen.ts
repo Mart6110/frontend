@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SimpleViewRouteImport } from './routes/simpleView'
 import { Route as AdvancedViewRouteImport } from './routes/advancedView'
+import { Route as R404RouteImport } from './routes/404'
 import { Route as IndexRouteImport } from './routes/index'
 
 const SimpleViewRoute = SimpleViewRouteImport.update({
@@ -23,6 +24,11 @@ const AdvancedViewRoute = AdvancedViewRouteImport.update({
   path: '/advancedView',
   getParentRoute: () => rootRouteImport,
 } as any)
+const R404Route = R404RouteImport.update({
+  id: '/404',
+  path: '/404',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -31,30 +37,34 @@ const IndexRoute = IndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/404': typeof R404Route
   '/advancedView': typeof AdvancedViewRoute
   '/simpleView': typeof SimpleViewRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/404': typeof R404Route
   '/advancedView': typeof AdvancedViewRoute
   '/simpleView': typeof SimpleViewRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/404': typeof R404Route
   '/advancedView': typeof AdvancedViewRoute
   '/simpleView': typeof SimpleViewRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/advancedView' | '/simpleView'
+  fullPaths: '/' | '/404' | '/advancedView' | '/simpleView'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/advancedView' | '/simpleView'
-  id: '__root__' | '/' | '/advancedView' | '/simpleView'
+  to: '/' | '/404' | '/advancedView' | '/simpleView'
+  id: '__root__' | '/' | '/404' | '/advancedView' | '/simpleView'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  R404Route: typeof R404Route
   AdvancedViewRoute: typeof AdvancedViewRoute
   SimpleViewRoute: typeof SimpleViewRoute
 }
@@ -75,6 +85,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdvancedViewRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/404': {
+      id: '/404'
+      path: '/404'
+      fullPath: '/404'
+      preLoaderRoute: typeof R404RouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -87,6 +104,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  R404Route: R404Route,
   AdvancedViewRoute: AdvancedViewRoute,
   SimpleViewRoute: SimpleViewRoute,
 }
