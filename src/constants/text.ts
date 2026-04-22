@@ -221,6 +221,17 @@ export const APP_TEXT = {
     CLEAR_API_KEY_BUTTON: "Clear Product Key",
     COLOR_MODE_BUTTON: "Toggle color mode",
   },
+
+  // Error Page
+  ERROR: {
+    NOT_FOUND_TITLE: "Page Not Found",
+    NOT_FOUND_MESSAGE: "The page you're looking for doesn't exist or has been moved.",
+    GENERAL_TITLE: "Something Went Wrong",
+    GENERAL_MESSAGE: "An unexpected error occurred. Please try again later.",
+    GO_HOME: "Go to Home",
+    GO_BACK: "Go Back",
+    DEBUG_INFO: "Error Details (Development Mode):",
+  },
 }
 
 // Application Configuration Constants
