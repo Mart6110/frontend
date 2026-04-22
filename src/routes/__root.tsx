@@ -1,5 +1,5 @@
 import { Provider } from "@/components/ui/provider";
-import { createRootRoute, ErrorComponent } from "@tanstack/react-router";
+import { createRootRoute } from "@tanstack/react-router";
 import App from "@/App";
 import { ErrorPage } from "@/pages/errorPage";
 
