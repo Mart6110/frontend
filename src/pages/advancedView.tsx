@@ -3,6 +3,7 @@ import { useEffect, useRef, useMemo } from "react"
 import { APP_TEXT, APP_CONFIG } from "@/constants/text"
 import { mockDataService } from "@/services/mockData"
 import { ExampleApiUsage } from "@/components/ExampleApiUsage"
+import { ApiTester } from "@/components/ApiTester"
 import { KPICard } from "@/components/dashboard/KPICard"
 import { PumpStatusCard } from "@/components/dashboard/PumpStatusCard"
 import { TemperatureChart } from "@/components/dashboard/TemperatureChart"
@@ -191,6 +192,9 @@ export function AdvancedViewPage() {
             </Text>
             <ExampleApiUsage />
           </Box>
+
+          {/* API Endpoint Tester */}
+          <ApiTester />
 
           {/* KPI Cards Grid */}
           <Grid

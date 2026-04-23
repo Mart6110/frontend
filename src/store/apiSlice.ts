@@ -1,5 +1,4 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
-import type { BaseQueryFn, FetchArgs, FetchBaseQueryError } from '@reduxjs/toolkit/query'
 import type { RootState } from './index'
 import type {
   LatestDataResponse,
@@ -20,13 +19,10 @@ import type {
   ActionSource,
 } from './apiTypes'
 
-// Custom base query with logging
-const baseQueryWithLogging: BaseQueryFn<
-  string | FetchArgs,
-  unknown,
-  FetchBaseQueryError
-> = async (args, api, extraOptions) => {
-  const baseQuery = fetchBaseQuery({
+// Create the API slice
+export const api = createApi({
+  reducerPath: 'api',
+  baseQuery: fetchBaseQuery({
     baseUrl: import.meta.env.VITE_API_BASE_URL,
     prepareHeaders: (headers, { getState }) => {
       // Get API key from Redux state and set X-Product-Key header
@@ -38,46 +34,7 @@ const baseQueryWithLogging: BaseQueryFn<
       
       return headers
     },
-  })
-
-  const url = typeof args === 'string' ? args : args.url
-  const method = typeof args === 'string' ? 'GET' : (args.method || 'GET')
-  const body = typeof args === 'string' ? undefined : args.body
-
-  console.log('🚀 API Request:', {
-    endpoint: url,
-    method,
-    baseUrl: import.meta.env.VITE_API_BASE_URL,
-    fullUrl: `${import.meta.env.VITE_API_BASE_URL}${url}`,
-    body,
-    timestamp: new Date().toISOString(),
-  })
-
-  const result = await baseQuery(args, api, extraOptions)
-
-  if (result.error) {
-    console.error('❌ API Error:', {
-      endpoint: url,
-      method,
-      error: result.error,
-      timestamp: new Date().toISOString(),
-    })
-  } else {
-    console.log('✅ API Response:', {
-      endpoint: url,
-      method,
-      data: result.data,
-      timestamp: new Date().toISOString(),
-    })
-  }
-
-  return result
-}
-
-// Create the API slice
-export const api = createApi({
-  reducerPath: 'api',
-  baseQuery: baseQueryWithLogging,
+  }),
   tagTypes: ['Data', 'Control', 'Settings', 'Events', 'Alerts'],
   endpoints: (builder) => ({
     // === /data endpoints ===
