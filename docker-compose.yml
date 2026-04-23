@@ -9,3 +9,28 @@ services:
       - "${FRONTEND_PORT:-3000}:80"
     restart: unless-stopped
     container_name: sandbattery-frontend
+    depends_on:
+      - backend
+    networks:
+      - sandbattery-network
+  
+  # Backend service (uncomment and configure when ready)
+  backend:
+    # Replace with your actual backend image or build context
+    image: sandbattery-backend:latest
+    # build:
+    #   context: ../backend
+    #   dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+    container_name: sandbattery-backend
+    environment:
+      - NODE_ENV=production
+      # Add other backend environment variables here
+    networks:
+      - sandbattery-network
+
+networks:
+  sandbattery-network:
+    driver: bridge
