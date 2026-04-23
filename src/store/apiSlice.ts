@@ -1,97 +1,221 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
+import type { BaseQueryFn, FetchArgs, FetchBaseQueryError } from '@reduxjs/toolkit/query'
 import type { RootState } from './index'
+import type {
+  LatestDataResponse,
+  HistoryDataResponse,
+  HistoryDataParams,
+  ControlStatusResponse,
+  ControlActionResponse,
+  SettingsResponse,
+  ElectricityPriceResponse,
+  ElectricityPriceParams,
+  EventsResponse,
+  EventsParams,
+  AlertsResponse,
+  AcknowledgeAlertResponse,
+  ValidateKeyResponse,
+  PumpAction,
+  HeaterAction,
+  ActionSource,
+} from './apiTypes'
 
-// Define types for your API responses
-export interface DashboardData {
-  currentTemperature: number
-  currentPower: number
-  currentEfficiency: number
-  stateOfCharge: number
-  currentFlow: number
-  isPumpActive: boolean
-  temperatureHistory: Array<{ timestamp: number; value: number }>
-  energyHistory: Array<{ timestamp: number; energyIn: number; energyOut: number }>
-  pumpHistory: Array<{ timestamp: number; isActive: boolean }>
-  events: SystemEvent[]
-}
+// Custom base query with logging
+const baseQueryWithLogging: BaseQueryFn<
+  string | FetchArgs,
+  unknown,
+  FetchBaseQueryError
+> = async (args, api, extraOptions) => {
+  const baseQuery = fetchBaseQuery({
+    baseUrl: import.meta.env.VITE_API_BASE_URL,
+    prepareHeaders: (headers, { getState }) => {
+      // Get API key from Redux state and set X-Product-Key header
+      const apiKey = (getState() as RootState).apiKey.apiKey
+      
+      if (apiKey) {
+        headers.set('X-Product-Key', apiKey)
+      }
+      
+      return headers
+    },
+  })
 
-export interface SystemEvent {
-  id: string
-  timestamp: number
-  type: 'pump' | 'temperature' | 'energy' | 'error' | 'warning'
-  severity: 'info' | 'warning' | 'error'
-  message: string
+  const url = typeof args === 'string' ? args : args.url
+  const method = typeof args === 'string' ? 'GET' : (args.method || 'GET')
+  const body = typeof args === 'string' ? undefined : args.body
+
+  console.log('🚀 API Request:', {
+    endpoint: url,
+    method,
+    baseUrl: import.meta.env.VITE_API_BASE_URL,
+    fullUrl: `${import.meta.env.VITE_API_BASE_URL}${url}`,
+    body,
+    timestamp: new Date().toISOString(),
+  })
+
+  const result = await baseQuery(args, api, extraOptions)
+
+  if (result.error) {
+    console.error('❌ API Error:', {
+      endpoint: url,
+      method,
+      error: result.error,
+      timestamp: new Date().toISOString(),
+    })
+  } else {
+    console.log('✅ API Response:', {
+      endpoint: url,
+      method,
+      data: result.data,
+      timestamp: new Date().toISOString(),
+    })
+  }
+
+  return result
 }
 
 // Create the API slice
 export const api = createApi({
   reducerPath: 'api',
-  baseQuery: fetchBaseQuery({
-    baseUrl: import.meta.env.VITE_API_BASE_URL,
-    prepareHeaders: (headers, { getState }) => {
-      // Get API key from Redux state
-      const apiKey = (getState() as RootState).apiKey.apiKey
-      
-      if (apiKey) {
-        headers.set('Authorization', `Bearer ${apiKey}`)
-      }
-      
-      return headers
-    },
-  }),
-  tagTypes: ['Dashboard', 'Events'],
+  baseQuery: baseQueryWithLogging,
+  tagTypes: ['Data', 'Control', 'Settings', 'Events', 'Alerts'],
   endpoints: (builder) => ({
-    // Get dashboard data
-    getDashboardData: builder.query<DashboardData, { 
-      startDate?: string
-      endDate?: string
-      timeRange?: string 
-    }>({
-      query: (params) => ({
-        url: '/dashboard',
-        params,
-      }),
-      providesTags: ['Dashboard'],
+    // === /data endpoints ===
+    
+    // GET /data/latest - Get latest sensor readings
+    getLatestData: builder.query<LatestDataResponse, void>({
+      query: () => '/data/latest',
+      providesTags: ['Data'],
     }),
     
-    // Get system events
-    getSystemEvents: builder.query<SystemEvent[], { 
-      limit?: number
-      types?: string[]
-      severities?: string[]
+    // GET /data/history - Get historical data
+    getHistoryData: builder.query<HistoryDataResponse, HistoryDataParams>({
+      query: (params) => ({
+        url: '/data/history',
+        params,
+      }),
+      providesTags: ['Data'],
+    }),
+    
+    // === /control endpoints ===
+    
+    // POST /control/pump - Control water pump
+    controlPump: builder.mutation<ControlActionResponse, {
+      action: PumpAction
+      source: ActionSource
     }>({
+      query: (body) => ({
+        url: '/control/pump',
+        method: 'POST',
+        body,
+      }),
+      invalidatesTags: ['Control', 'Events'],
+    }),
+    
+    // POST /control/heater - Control heater
+    controlHeater: builder.mutation<ControlActionResponse, {
+      action: HeaterAction
+      source: ActionSource
+    }>({
+      query: (body) => ({
+        url: '/control/heater',
+        method: 'POST',
+        body,
+      }),
+      invalidatesTags: ['Control', 'Events'],
+    }),
+    
+    // GET /control/status - Get pump and heater status
+    getControlStatus: builder.query<ControlStatusResponse, void>({
+      query: () => '/control/status',
+      providesTags: ['Control'],
+    }),
+    
+    // === /settings endpoints ===
+    
+    // GET /settings - Get system settings
+    getSettings: builder.query<SettingsResponse, void>({
+      query: () => '/settings',
+      providesTags: ['Settings'],
+    }),
+    
+    // PUT /settings - Update settings (partial update)
+    updateSettings: builder.mutation<{
+      success: boolean
+      updated_fields: string[]
+    }, Partial<SettingsResponse>>({
+      query: (body) => ({
+        url: '/settings',
+        method: 'PUT',
+        body,
+      }),
+      invalidatesTags: ['Settings'],
+    }),
+    
+    // GET /settings/electricity-price - Get electricity prices
+    getElectricityPrice: builder.query<ElectricityPriceResponse, ElectricityPriceParams>({
+      query: (params) => ({
+        url: '/settings/electricity-price',
+        params,
+      }),
+    }),
+    
+    // === /events endpoints ===
+    
+    // GET /events - Get system events
+    getEvents: builder.query<EventsResponse, EventsParams>({
       query: (params) => ({
         url: '/events',
-        params: {
-          ...params,
-          types: params.types?.join(','),
-          severities: params.severities?.join(','),
-        },
+        params,
       }),
       providesTags: ['Events'],
     }),
     
-    // Update system settings (example mutation)
-    updateSettings: builder.mutation<void, {
-      capacity?: number
-      maxChargeRate?: number
-      maxDischargeRate?: number
-      operatingMode?: string
-      targetTemperature?: number
-    }>({
-      query: (settings) => ({
-        url: '/settings',
-        method: 'PUT',
-        body: settings,
+    // GET /events/alerts - Get active alerts
+    getAlerts: builder.query<AlertsResponse, void>({
+      query: () => '/events/alerts',
+      providesTags: ['Alerts'],
+    }),
+    
+    // POST /events/alerts/:id/acknowledge - Acknowledge an alert
+    acknowledgeAlert: builder.mutation<AcknowledgeAlertResponse, number>({
+      query: (alertId) => ({
+        url: `/events/alerts/${alertId}/acknowledge`,
+        method: 'POST',
       }),
-      invalidatesTags: ['Dashboard'],
+      invalidatesTags: ['Alerts'],
+    }),
+    
+    // === /auth endpoints ===
+    
+    // POST /auth/validate-key - Validate product key
+    validateKey: builder.mutation<ValidateKeyResponse, string>({
+      query: (productKey) => ({
+        url: '/auth/validate-key',
+        method: 'POST',
+        headers: {
+          'X-Product-Key': productKey,
+        },
+      }),
     }),
   }),
 })
 
 // Export hooks for usage in components
 export const {
-  useGetDashboardDataQuery,
-  useGetSystemEventsQuery,
+  useGetLatestDataQuery,
+  useGetHistoryDataQuery,
+  useControlPumpMutation,
+  useControlHeaterMutation,
+  useGetControlStatusQuery,
+  useGetSettingsQuery,
   useUpdateSettingsMutation,
+  useGetElectricityPriceQuery,
+  useGetEventsQuery,
+  useGetAlertsQuery,
+  useAcknowledgeAlertMutation,
+  useValidateKeyMutation,
 } = api
+
+// Re-export types for convenience
+export type * from './apiTypes'

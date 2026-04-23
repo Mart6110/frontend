@@ -23,7 +23,8 @@ export default defineConfig({
   server: {
     proxy: {
       // Proxy API requests to backend in development
-      '/api': {
+      // Maps /api/v1/* -> http://localhost:8080/api/v1/*
+      '/api/v1': {
         target: 'http://localhost:8080',
         changeOrigin: true,
         secure: false,

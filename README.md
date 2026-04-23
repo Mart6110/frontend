@@ -112,16 +112,15 @@ This project uses RTK Query for API communication. See examples in:
 ### Example Usage
 
 ```typescript
-import { useGetDashboardDataQuery } from '@/store/apiSlice'
+import { useGetLatestDataQuery } from '@/store/apiSlice'
 
 function Dashboard() {
-  const { data, isLoading } = useGetDashboardDataQuery({
-    timeRange: 'last-24h'
-  }, {
-    pollingInterval: 30000 // Update every 30 seconds
-  })
+  const { data, isLoading } = useGetLatestDataQuery(
+    undefined,
+    { pollingInterval: 30000 } // Update every 30 seconds
+  )
   
-  return <div>Temperature: {data?.currentTemperature}°C</div>
+  return <div>Sand Temperature: {data?.sand_temp}°C</div>
 }
 ```
 

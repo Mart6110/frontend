@@ -1,4 +1,4 @@
-import { useGetDashboardDataQuery } from '@/store/apiSlice'
+import { useGetLatestDataQuery } from '@/store/apiSlice'
 import { Box, Text, Spinner } from '@chakra-ui/react'
 import { Button } from '@/components/ui/button'
 
@@ -9,17 +9,15 @@ import { Button } from '@/components/ui/button'
  * to replace the mockDataService in your actual components
  */
 export function ExampleApiUsage() {
-  // Basic query with parameters
+  // Basic query - fetches latest sensor data
   const { 
     data, 
     error, 
     isLoading,
     isError,
     refetch 
-  } = useGetDashboardDataQuery(
-    {
-      timeRange: 'last-24h',
-    },
+  } = useGetLatestDataQuery(
+    undefined,
     {
       // Optional: Enable polling for real-time updates
       pollingInterval: 30000, // 30 seconds
@@ -56,10 +54,16 @@ export function ExampleApiUsage() {
   return (
     <Box>
       <Text fontSize="lg" fontWeight="bold" mb={2}>
-        Current Temperature: {data?.currentTemperature}°C
+        Sand Temperature: {data?.sand_temp}°C
       </Text>
-      <Text fontSize="sm" mb={1}>Efficiency: {data?.currentEfficiency}%</Text>
-      <Text fontSize="sm" mb={3}>Power: {data?.currentPower}kW</Text>
+      <Text fontSize="sm" mb={1}>Water In: {data?.water_temp_in}°C</Text>
+      <Text fontSize="sm" mb={1}>Water Out: {data?.water_temp_out}°C</Text>
+      <Text fontSize="sm" mb={1}>Flow Rate: {data?.flow_rate} L/min</Text>
+      <Text fontSize="sm" mb={1}>Power: {data?.power_w}W</Text>
+      <Text fontSize="sm" mb={3}>Energy: {data?.energy_kwh} kWh</Text>
+      <Text fontSize="sm" mb={3} fontWeight="bold" color={data?.status === 'OK' ? 'green.500' : 'red.500'}>
+        Status: {data?.status}
+      </Text>
       
       {/* Button to manually refetch */}
       <Button onClick={() => refetch()} size="sm" colorPalette="blue">
@@ -70,33 +74,20 @@ export function ExampleApiUsage() {
 }
 
 /**
- * Example: Conditional queries based on view mode
+ * Example: Using history data endpoint
  */
-export function ConditionalQueryExample({ viewMode }: { viewMode: 'realtime' | 'historical' }) {
-  const { data: realtimeData } = useGetDashboardDataQuery(
-    { timeRange: 'last-1h' },
-    { 
-      skip: viewMode !== 'realtime',
-      pollingInterval: 15000, // Only poll in realtime mode
-    }
-  )
+export function HistoryQueryExample() {
+  const { data: historyData, isLoading } = useGetLatestDataQuery()
 
-  const { data: historicalData } = useGetDashboardDataQuery(
-    { 
-      startDate: '2024-01-01',
-      endDate: '2024-01-31',
-    },
-    { 
-      skip: viewMode !== 'historical',
-    }
-  )
-
-  const data = viewMode === 'realtime' ? realtimeData : historicalData
+  if (isLoading) {
+    return <Text fontSize="sm">Loading history...</Text>
+  }
 
   return (
     <Box>
-      <Text>Mode: {viewMode}</Text>
-      <Text>Temperature: {data?.currentTemperature}°C</Text>
+      <Text fontSize="sm" fontWeight="bold">Latest Reading:</Text>
+      <Text fontSize="xs">Sand Temp: {historyData?.sand_temp}°C</Text>
+      <Text fontSize="xs">Power: {historyData?.power_w}W</Text>
     </Box>
   )
 }
