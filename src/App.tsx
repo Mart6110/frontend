@@ -6,13 +6,14 @@ import { MobileNav } from "@/components/MobileNav"
 
 function App() {
   return (
-    <Flex direction="column" minH="100vh">
+    <Flex direction="column" h="100vh" overflow="hidden">
       <Navbar />
       <Box 
         as="main" 
         flex="1" 
         display="flex" 
         flexDirection="column"
+        overflow="hidden"
         pb={{ base: "60px", md: 0 }}
       >
         <Outlet />

@@ -1,10 +1,24 @@
 import { Box, Text, Timeline, Badge, Flex, Stack, Separator, Button, IconButton } from "@chakra-ui/react"
-import { Checkbox } from "@/components/ui/checkbox"
 import { Popover, PopoverBody, PopoverCloseTrigger, PopoverHeader, PopoverTitle } from "@/components/ui/popover"
+import { FilterCheckbox } from "@/components/ui/filterCheckbox"
 import { useState } from "react"
 import { LuFilter, LuX } from "react-icons/lu"
 import type { SystemEvent } from "@/services/mockData"
 import { APP_TEXT } from "@/constants/text"
+
+const EVENT_TYPE_OPTIONS = [
+  { value: 'pump', label: 'Pump' },
+  { value: 'temperature', label: 'Temperature' },
+  { value: 'energy', label: 'Energy' },
+  { value: 'error', label: 'Error' },
+  { value: 'warning', label: 'Warning' },
+] as const
+
+const EVENT_SEVERITY_OPTIONS = [
+  { value: 'info', label: 'Info' },
+  { value: 'warning', label: 'Warning' },
+  { value: 'error', label: 'Error' },
+] as const
 
 interface EventTimelineProps {
   events: SystemEvent[]
@@ -12,18 +26,25 @@ interface EventTimelineProps {
 }
 
 export function EventTimeline({ events, maxEvents = 100 }: EventTimelineProps) {
-  const [selectedTypes, setSelectedTypes] = useState<string[]>(['pump', 'temperature', 'energy', 'error', 'warning'])
-  const [selectedSeverities, setSelectedSeverities] = useState<string[]>(['info', 'warning', 'error'])
+  // Applied filters (used for actual filtering)
+  const [selectedTypes, setSelectedTypes] = useState<string[]>([])
+  const [selectedSeverities, setSelectedSeverities] = useState<string[]>([])
+  
+  // Temporary selections in the popover (before Apply is clicked)
+  const [tempTypes, setTempTypes] = useState<string[]>([])
+  const [tempSeverities, setTempSeverities] = useState<string[]>([])
 
-  // Filter events based on selections
-  const filteredEvents = events.filter(event => 
-    selectedTypes.includes(event.type) && selectedSeverities.includes(event.severity)
-  )
+  // Filter events based on selections (empty array = show all)
+  const filteredEvents = events.filter(event => {
+    const typeMatch = selectedTypes.length === 0 || selectedTypes.includes(event.type)
+    const severityMatch = selectedSeverities.length === 0 || selectedSeverities.includes(event.severity)
+    return typeMatch && severityMatch
+  })
   
   const displayEvents = filteredEvents.slice(0, maxEvents)
 
   const handleTypeToggle = (type: string) => {
-    setSelectedTypes(prev => 
+    setTempTypes(prev => 
       prev.includes(type) 
         ? prev.filter(t => t !== type)
         : [...prev, type]
@@ -31,11 +52,29 @@ export function EventTimeline({ events, maxEvents = 100 }: EventTimelineProps) {
   }
 
   const handleSeverityToggle = (severity: string) => {
-    setSelectedSeverities(prev => 
+    setTempSeverities(prev => 
       prev.includes(severity) 
         ? prev.filter(s => s !== severity)
         : [...prev, severity]
     )
+  }
+
+  const handleApply = () => {
+    setSelectedTypes(tempTypes)
+    setSelectedSeverities(tempSeverities)
+  }
+
+  const handleClear = () => {
+    setTempTypes([])
+    setTempSeverities([])
+  }
+
+  const handleOpenChange = (open: boolean) => {
+    if (open) {
+      // Reset temp selections to current applied filters when opening
+      setTempTypes(selectedTypes)
+      setTempSeverities(selectedSeverities)
+    }
   }
 
   const getSeverityColor = (severity: 'info' | 'warning' | 'error') => {
@@ -82,21 +121,25 @@ export function EventTimeline({ events, maxEvents = 100 }: EventTimelineProps) {
   }
 
   return (
-    <Box>
-      {/* Filter Button and Stats */}
-      <Flex justify="space-between" align="center" mb={4}>
-        <Popover
-          trigger={
-            <Button variant="outline" size="sm" colorPalette="teal">
-              <LuFilter />
-              Filter Events
-              {(selectedTypes.length < 5 || selectedSeverities.length < 3) && (
-                <Badge ml={2} colorScheme="teal" fontSize="2xs">
-                  {5 - selectedTypes.length + (3 - selectedSeverities.length)} hidden
-                </Badge>
-              )}
-            </Button>
-          }
+    <Box display="flex" flexDirection="column" h="full">
+      {/* Filter Button and Stats - Fixed at top */}
+      <Flex 
+        justify="space-between" 
+        align="center" 
+        pb={4}
+        borderBottomWidth="1px"
+        borderColor="border"
+        mb={4}
+      >
+        <Box position="relative">
+          <Popover
+            onOpenChange={(e) => handleOpenChange(e.open)}
+            trigger={
+              <Button variant="outline" size="sm" colorPalette="teal">
+                <LuFilter />
+                Filter Events
+              </Button>
+            }
           content={
             <Box minW="300px">
               <PopoverHeader>
@@ -114,76 +157,15 @@ export function EventTimeline({ events, maxEvents = 100 }: EventTimelineProps) {
                   <Box>
                     <Text fontSize="sm" fontWeight="semibold" mb={2} color="fg">Filter by Type</Text>
                     <Stack gap={2}>
-                      <Checkbox.Root
-                        checked={selectedTypes.includes('pump')}
-                        onCheckedChange={() => handleTypeToggle('pump')}
-                      >
-                        <Checkbox.HiddenInput />
-                        <Checkbox.Control>
-                          <Checkbox.Indicator />
-                        </Checkbox.Control>
-                        <Checkbox.Label>
-                          <Flex align="center" gap={1}>
-                            <Text fontSize="sm">⚙️ Pump</Text>
-                          </Flex>
-                        </Checkbox.Label>
-                      </Checkbox.Root>
-                      <Checkbox.Root
-                        checked={selectedTypes.includes('temperature')}
-                        onCheckedChange={() => handleTypeToggle('temperature')}
-                      >
-                        <Checkbox.HiddenInput />
-                        <Checkbox.Control>
-                          <Checkbox.Indicator />
-                        </Checkbox.Control>
-                        <Checkbox.Label>
-                          <Flex align="center" gap={1}>
-                            <Text fontSize="sm">🌡️ Temperature</Text>
-                          </Flex>
-                        </Checkbox.Label>
-                      </Checkbox.Root>
-                      <Checkbox.Root
-                        checked={selectedTypes.includes('energy')}
-                        onCheckedChange={() => handleTypeToggle('energy')}
-                      >
-                        <Checkbox.HiddenInput />
-                        <Checkbox.Control>
-                          <Checkbox.Indicator />
-                        </Checkbox.Control>
-                        <Checkbox.Label>
-                          <Flex align="center" gap={1}>
-                            <Text fontSize="sm">⚡ Energy</Text>
-                          </Flex>
-                        </Checkbox.Label>
-                      </Checkbox.Root>
-                      <Checkbox.Root
-                        checked={selectedTypes.includes('error')}
-                        onCheckedChange={() => handleTypeToggle('error')}
-                      >
-                        <Checkbox.HiddenInput />
-                        <Checkbox.Control>
-                          <Checkbox.Indicator />
-                        </Checkbox.Control>
-                        <Checkbox.Label>
-                          <Flex align="center" gap={1}>
-                            <Text fontSize="sm">❌ Error</Text>
-                          </Flex>
-                        </Checkbox.Label>
-                      </Checkbox.Root>
-                      <Checkbox.Root
-                        checked={selectedTypes.includes('warning')}
-                        onCheckedChange={() => handleTypeToggle('warning')}
-                      >
-                        <Checkbox.HiddenInput />
-                        <Checkbox.Control>
-                          <Checkbox.Indicator />
-                        </Checkbox.Control>
-                        <Checkbox.Label>
-                          <Flex align="center" gap={1}>
-                            <Text fontSize="sm">⚠️ Warning</Text>
-                          </Flex>
-                        </Checkbox.Label>
-                      </Checkbox.Root>
+                      {EVENT_TYPE_OPTIONS.map((option) => (
+                        <FilterCheckbox
+                          key={option.value}
+                          checked={tempTypes.includes(option.value)}
+                          onCheckedChange={() => handleTypeToggle(option.value)}
+                          label={option.label}
+                          icon={getTypeIcon(option.value)}
+                        />
+                      ))}
                     </Stack>
                   </Box>
 
@@ -192,59 +174,60 @@ export function EventTimeline({ events, maxEvents = 100 }: EventTimelineProps) {
                   <Box>
                     <Text fontSize="sm" fontWeight="semibold" mb={2} color="fg">Filter by Severity</Text>
                     <Stack gap={2}>
-                      <Checkbox.Root
-                        checked={selectedSeverities.includes('info')}
-                        onCheckedChange={() => handleSeverityToggle('info')}
-                        colorPalette="teal"
-                      >
-                        <Checkbox.HiddenInput />
-                        <Checkbox.Control>
-                          <Checkbox.Indicator />
-                        </Checkbox.Control>
-                        <Checkbox.Label>
-                          <Badge colorScheme="teal" fontSize="xs">Info</Badge>
-                        </Checkbox.Label>
-                      </Checkbox.Root>
-                      <Checkbox.Root
-                        checked={selectedSeverities.includes('warning')}
-                        onCheckedChange={() => handleSeverityToggle('warning')}
-                        colorPalette="orange"
-                      >
-                        <Checkbox.HiddenInput />
-                        <Checkbox.Control>
-                          <Checkbox.Indicator />
-                        </Checkbox.Control>
-                        <Checkbox.Label>
-                          <Badge colorScheme="orange" fontSize="xs">Warning</Badge>
-                        </Checkbox.Label>
-                      </Checkbox.Root>
-                      <Checkbox.Root
-                        checked={selectedSeverities.includes('error')}
-                        onCheckedChange={() => handleSeverityToggle('error')}
-                        colorPalette="red"
-                      >
-                        <Checkbox.HiddenInput />
-                        <Checkbox.Control>
-                          <Checkbox.Indicator />
-                        </Checkbox.Control>
-                        <Checkbox.Label>
-                          <Badge colorScheme="red" fontSize="xs">Error</Badge>
-                        </Checkbox.Label>
-                      </Checkbox.Root>
+                      {EVENT_SEVERITY_OPTIONS.map((option) => (
+                        <FilterCheckbox
+                          key={option.value}
+                          checked={tempSeverities.includes(option.value)}
+                          onCheckedChange={() => handleSeverityToggle(option.value)}
+                          label={option.label}
+                          badge={{ text: option.label, colorScheme: getSeverityColor(option.value as 'info' | 'warning' | 'error') }}
+                          colorPalette={getSeverityColor(option.value as 'info' | 'warning' | 'error')}
+                        />
+                      ))}
                     </Stack>
                   </Box>
+
+                  <Separator />
+
+                  <Flex gap={2}>
+                    <Button variant="outline" colorPalette="gray" flex={1} onClick={handleClear}>
+                      Clear
+                    </Button>
+                    <PopoverCloseTrigger asChild>
+                      <Button colorPalette="teal" flex={1} onClick={handleApply}>
+                        Apply
+                      </Button>
+                    </PopoverCloseTrigger>
+                  </Flex>
                 </Stack>
               </PopoverBody>
             </Box>
           }
-        />
+          />
+          {(selectedTypes.length > 0 || selectedSeverities.length > 0) && (
+            <Badge
+              position="absolute"
+              top="-1"
+              right="-1"
+              colorScheme="teal"
+              fontSize="2xs"
+              borderRadius="full"
+              px={1.5}
+              minW="20px"
+              textAlign="center"
+            >
+              {selectedTypes.length + selectedSeverities.length}
+            </Badge>
+          )}
+        </Box>
         <Text fontSize="xs" color="gray.400">
           Showing {displayEvents.length} of {filteredEvents.length} events
         </Text>
       </Flex>
 
-      {/* Timeline */}
-      {displayEvents.length === 0 ? (
+      {/* Timeline - Scrollable */}
+      <Box flex="1" overflowY="auto">
+        {displayEvents.length === 0 ? (
         <Box py={8} textAlign="center">
           <Text color="gray.400">
             {events.length === 0 ? APP_TEXT.DASHBOARD.NO_DATA : 'No events match the selected filters'}
@@ -282,6 +265,7 @@ export function EventTimeline({ events, maxEvents = 100 }: EventTimelineProps) {
           ))}
         </Timeline.Root>
       )}
+      </Box>
     </Box>
   )
 }

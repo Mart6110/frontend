@@ -41,28 +41,21 @@ export function DashboardHeader({
       direction={{ base: "column", lg: "row" }}
       align={{ base: "start", lg: "center" }}
       w="-webkit-fill-available"
-      gap={3}
+      gap={2}
       wrap="wrap"
-      position="sticky"
-      top={0}
-      zIndex={10}
-      bg="bg"
-      py={3}
+      pb={2}
       borderBottomWidth="1px"
       borderColor="rgba(0, 255, 170, 0.2)"
-      mx={-4}
-      px={4}
-      mt={-4}
     >
       {/* Left side controls */}
       {children}
 
-      <Flex gap={3} ml={{ base: 0, lg: "auto" }} wrap="wrap">
+      <Flex gap={2} ml={{ base: 0, lg: "auto" }} wrap="wrap">
         {/* Export Button */}
         {enableExport && !isLoading && dashboardData && (
           <Button 
             variant="outline" 
-            size={{ base: "sm", md: "md" }}
+            size="sm"
             onClick={handleExport}
             colorPalette="teal"
           >
@@ -77,7 +70,7 @@ export function DashboardHeader({
             placement="end"
             size={{ base: "full", md: "md" }}
             trigger={
-              <Button variant="outline" size={{ base: "sm", md: "md" }}>
+              <Button variant="outline" size="sm">
                 <LuHistory />
                 System Events ({events.length})
               </Button>

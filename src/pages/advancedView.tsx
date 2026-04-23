@@ -80,7 +80,7 @@ export function AdvancedViewPage() {
       dispatch(setAllData(initialData))
       dispatch(setIsLoading(false))
     }
-    
+
     loadData()
   }, [dispatch])
 
@@ -100,9 +100,9 @@ export function AdvancedViewPage() {
 
     isRealtimeUpdateRef.current = false
     dispatch(setIsFiltering(true))
-    
+
     let filteredData
-    
+
     if (viewMode === 'realtime') {
       // Realtime mode: show last X time from now
       const milliseconds = timeConfigToMilliseconds(realtimeConfig)
@@ -115,7 +115,7 @@ export function AdvancedViewPage() {
       }
       filteredData = mockDataService.getDataForDateRange(allData, startDate, endDate)
     }
-    
+
     dispatch(setDisplayData(filteredData))
     dispatch(setIsFiltering(false))
   }, [allData, viewMode, realtimeConfig, startDate, endDate, dispatch])
@@ -134,10 +134,10 @@ export function AdvancedViewPage() {
   }, [allData, dispatch])
 
   return (
-    <Box p={{ base: 4, md: 8 }}>
-      <VStack align="start" gap={6} w="-webkit-fill-available">
-        {/* Header with Time Controls */}
-        <DashboardHeader 
+    <Box display="flex" flexDirection="column" h="full">
+      {/* Fixed Header with Controls */}
+      <Box px={{ base: 4, md: 8 }} pt={{ base: 3 }}>
+        <DashboardHeader
           events={displayData?.events}
           isLoading={isLoading}
           maxEvents={100}
@@ -148,7 +148,7 @@ export function AdvancedViewPage() {
             value={viewMode}
             onChange={(value) => dispatch(setViewMode(value))}
             disabled={isLoading || isFiltering}
-            size="md"
+            size="sm"
           />
 
           {viewMode === 'realtime' && (
@@ -156,7 +156,7 @@ export function AdvancedViewPage() {
               value={realtimeConfig}
               onChange={(config) => dispatch(setRealtimeConfig(config))}
               disabled={isLoading || isFiltering}
-              size="md"
+              size="sm"
             />
           )}
 
@@ -171,213 +171,218 @@ export function AdvancedViewPage() {
             />
           )}
         </DashboardHeader>
-        
-        {/* KPI Cards Grid */}
-        <Grid
-          templateColumns={{ base: "1fr", sm: "repeat(2, 1fr)", lg: "repeat(5, 1fr)" }}
-          gap={4}
-          w="full"
-        >
-          <GridItem>
-            <KPICard
-              label={APP_TEXT.DASHBOARD.KPI.TEMPERATURE}
-              value={displayData?.currentTemperature.toFixed(1) ?? "0.0"}
-              unit={APP_TEXT.DASHBOARD.UNITS.TEMPERATURE}
-              status={
-                displayData 
-                  ? displayData.currentTemperature > 660 
-                    ? "error" 
-                    : displayData.currentTemperature > 640 
-                      ? "warning" 
-                      : displayData.currentTemperature < 560 
-                        ? "warning" 
-                        : "success"
-                  : "info"
-              }
-              isLoading={isLoading}
-            />
-          </GridItem>
-          
-          <GridItem>
-            <KPICard
-              label={APP_TEXT.DASHBOARD.KPI.POWER}
-              value={displayData?.currentPower.toFixed(1) ?? "0.0"}
-              unit={APP_TEXT.DASHBOARD.UNITS.POWER}
-              status={displayData?.isPumpActive ? "success" : "info"}
-              isLoading={isLoading}
-            />
-          </GridItem>
-          
-          <GridItem>
-            <KPICard
-              label={APP_TEXT.DASHBOARD.KPI.EFFICIENCY}
-              value={displayData?.currentEfficiency.toFixed(1) ?? "0.0"}
-              unit={APP_TEXT.DASHBOARD.UNITS.EFFICIENCY}
-              status={
-                displayData 
-                  ? displayData.currentEfficiency < 70 
-                    ? "error" 
-                    : displayData.currentEfficiency < 75 
-                      ? "warning" 
-                      : displayData.currentEfficiency > 85 
-                        ? "success" 
-                        : "info"
-                  : "info"
-              }
-              isLoading={isLoading}
-            />
-          </GridItem>
-          
-          <GridItem>
-            <KPICard
-              label={APP_TEXT.DASHBOARD.KPI.FLOW_RATE}
-              value={displayData?.currentFlow.toFixed(1) ?? "0.0"}
-              unit={APP_TEXT.DASHBOARD.UNITS.FLOW}
-              status={
-                displayData 
-                  ? displayData.currentFlow < 35 || displayData.currentFlow > 65 
-                    ? "warning" 
-                    : "success"
-                  : "info"
-              }
-              isLoading={isLoading}
-            />
-          </GridItem>
-          
-          <GridItem>
-            <KPICard
-              label={APP_TEXT.DASHBOARD.KPI.STATE_OF_CHARGE}
-              value={displayData?.stateOfCharge.toFixed(0) ?? "0"}
-              unit={APP_TEXT.DASHBOARD.UNITS.EFFICIENCY}
-              status={
-                displayData 
-                  ? displayData.stateOfCharge < 20 
-                    ? "error" 
-                    : displayData.stateOfCharge < 40 
-                      ? "warning" 
-                      : displayData.stateOfCharge > 80 
-                        ? "success" 
-                        : "info"
-                  : "info"
-              }
-              isLoading={isLoading}
-            />
-          </GridItem>
-        </Grid>
+      </Box>
 
-        {/* System Status and Energy KPIs */}
-        <Grid
-          templateColumns={{ base: "1fr", md: "repeat(3, 1fr)" }}
-          gap={4}
-          w="full"
-        >
-          <GridItem>
-            <PumpStatusCard 
-              isActive={displayData?.isPumpActive ?? false} 
-              size="lg"
-              isLoading={isLoading}
-            />
-          </GridItem>
-          
-          <GridItem>
-            <KPICard
-              label={APP_TEXT.DASHBOARD.KPI.ENERGY_IN}
-              value={displayData?.currentEnergyIn.toFixed(2) ?? "0.00"}
-              unit={APP_TEXT.DASHBOARD.UNITS.ENERGY}
-              status="info"
-              size="lg"
-              isLoading={isLoading}
-            />
-          </GridItem>
-          
-          <GridItem>
-            <KPICard
-              label={APP_TEXT.DASHBOARD.KPI.ENERGY_OUT}
-              value={displayData?.currentEnergyOut.toFixed(2) ?? "0.00"}
-              unit={APP_TEXT.DASHBOARD.UNITS.ENERGY}
-              status="success"
-              size="lg"
-              isLoading={isLoading}
-            />
-          </GridItem>
-        </Grid>
-
-        {/* Main Charts Grid */}
-        <Grid
-          templateColumns={{ base: "1fr", lg: "repeat(2, 1fr)" }}
-          gap={6}
-          w="full"
-        >
-          {isLoading ? (
-            <>
-              <GridItem><ChartSkeleton height="300px" /></GridItem>
-              <GridItem><ChartSkeleton height="300px" /></GridItem>
-              <GridItem><ChartSkeleton height="300px" /></GridItem>
-              <GridItem><ChartSkeleton height="300px" /></GridItem>
-            </>
-          ) : displayData && (
-            <>
-              {/* Temperature Chart */}
-              <GridItem>
-                <Widget>
-                  <TemperatureChart 
-                    data={displayData.temperatureHistory}
-                    height={300}
-                  />
-                </Widget>
-              </GridItem>
-
-              {/* Energy Transfer Chart */}
-              <GridItem>
-                <Widget>
-                  <EnergyChart 
-                    data={displayData.energyHistory}
-                    height={300}
-                  />
-                </Widget>
-              </GridItem>
-
-              {/* Flow Rate Chart */}
-              <GridItem>
-                <Widget>
-                  <FlowChart 
-                    data={displayData.flowHistory}
-                    height={300}
-                  />
-                </Widget>
-              </GridItem>
-
-              {/* Efficiency Trend Chart */}
-              <GridItem>
-                <Widget>
-                  <EfficiencyChart 
-                    data={displayData.energyHistory}
-                    height={300}
-                  />
-                </Widget>
-              </GridItem>
-            </>
-          )}
-        </Grid>
-
-        {/* Correlation Chart - Temperature vs Pump */}
-        <Grid templateColumns="1fr" w="full">
-          {isLoading ? (
-            <GridItem><ChartSkeleton height="300px" /></GridItem>
-          ) : displayData && (
+      {/* Scrollable Content */}
+      <Box flex="1" overflowY="auto" px={{ base: 4, md: 8 }} py={4}>
+        <VStack align="start" gap={4} w="-webkit-fill-available">
+          {/* KPI Cards Grid */}
+          <Grid
+            templateColumns={{ base: "1fr", sm: "repeat(2, 1fr)", lg: "repeat(5, 1fr)" }}
+            gap={4}
+            w="full"
+          >
             <GridItem>
-              <Widget>
-                <TemperatureVsPumpChart 
-                  temperatureData={displayData.temperatureHistory}
-                  pumpData={displayData.pumpHistory}
-                  height={300}
-                />
-              </Widget>
+              <KPICard
+                label={APP_TEXT.DASHBOARD.KPI.TEMPERATURE}
+                value={displayData?.currentTemperature.toFixed(1) ?? "0.0"}
+                unit={APP_TEXT.DASHBOARD.UNITS.TEMPERATURE}
+                status={
+                  displayData
+                    ? displayData.currentTemperature > 660
+                      ? "error"
+                      : displayData.currentTemperature > 640
+                        ? "warning"
+                        : displayData.currentTemperature < 560
+                          ? "warning"
+                          : "success"
+                    : "info"
+                }
+                isLoading={isLoading}
+              />
             </GridItem>
-          )}
-        </Grid>
 
-      </VStack>
+            <GridItem>
+              <KPICard
+                label={APP_TEXT.DASHBOARD.KPI.POWER}
+                value={displayData?.currentPower.toFixed(1) ?? "0.0"}
+                unit={APP_TEXT.DASHBOARD.UNITS.POWER}
+                status={displayData?.isPumpActive ? "success" : "info"}
+                isLoading={isLoading}
+              />
+            </GridItem>
+
+            <GridItem>
+              <KPICard
+                label={APP_TEXT.DASHBOARD.KPI.EFFICIENCY}
+                value={displayData?.currentEfficiency.toFixed(1) ?? "0.0"}
+                unit={APP_TEXT.DASHBOARD.UNITS.EFFICIENCY}
+                status={
+                  displayData
+                    ? displayData.currentEfficiency < 70
+                      ? "error"
+                      : displayData.currentEfficiency < 75
+                        ? "warning"
+                        : displayData.currentEfficiency > 85
+                          ? "success"
+                          : "info"
+                    : "info"
+                }
+                isLoading={isLoading}
+              />
+            </GridItem>
+
+            <GridItem>
+              <KPICard
+                label={APP_TEXT.DASHBOARD.KPI.FLOW_RATE}
+                value={displayData?.currentFlow.toFixed(1) ?? "0.0"}
+                unit={APP_TEXT.DASHBOARD.UNITS.FLOW}
+                status={
+                  displayData
+                    ? displayData.currentFlow < 35 || displayData.currentFlow > 65
+                      ? "warning"
+                      : "success"
+                    : "info"
+                }
+                isLoading={isLoading}
+              />
+            </GridItem>
+
+            <GridItem>
+              <KPICard
+                label={APP_TEXT.DASHBOARD.KPI.STATE_OF_CHARGE}
+                value={displayData?.stateOfCharge.toFixed(0) ?? "0"}
+                unit={APP_TEXT.DASHBOARD.UNITS.EFFICIENCY}
+                status={
+                  displayData
+                    ? displayData.stateOfCharge < 20
+                      ? "error"
+                      : displayData.stateOfCharge < 40
+                        ? "warning"
+                        : displayData.stateOfCharge > 80
+                          ? "success"
+                          : "info"
+                    : "info"
+                }
+                isLoading={isLoading}
+              />
+            </GridItem>
+          </Grid>
+
+          {/* System Status and Energy KPIs */}
+          <Grid
+            templateColumns={{ base: "1fr", md: "repeat(3, 1fr)" }}
+            gap={4}
+            w="full"
+          >
+            <GridItem>
+              <PumpStatusCard
+                isActive={displayData?.isPumpActive ?? false}
+                size="lg"
+                isLoading={isLoading}
+              />
+            </GridItem>
+
+            <GridItem>
+              <KPICard
+                label={APP_TEXT.DASHBOARD.KPI.ENERGY_IN}
+                value={displayData?.currentEnergyIn.toFixed(2) ?? "0.00"}
+                unit={APP_TEXT.DASHBOARD.UNITS.ENERGY}
+                status="info"
+                size="lg"
+                isLoading={isLoading}
+              />
+            </GridItem>
+
+            <GridItem>
+              <KPICard
+                label={APP_TEXT.DASHBOARD.KPI.ENERGY_OUT}
+                value={displayData?.currentEnergyOut.toFixed(2) ?? "0.00"}
+                unit={APP_TEXT.DASHBOARD.UNITS.ENERGY}
+                status="success"
+                size="lg"
+                isLoading={isLoading}
+              />
+            </GridItem>
+          </Grid>
+
+          {/* Main Charts Grid */}
+          <Grid
+            templateColumns={{ base: "1fr", lg: "repeat(2, 1fr)" }}
+            gap={6}
+            w="full"
+          >
+            {isLoading ? (
+              <>
+                <GridItem><ChartSkeleton height="300px" /></GridItem>
+                <GridItem><ChartSkeleton height="300px" /></GridItem>
+                <GridItem><ChartSkeleton height="300px" /></GridItem>
+                <GridItem><ChartSkeleton height="300px" /></GridItem>
+              </>
+            ) : displayData && (
+              <>
+                {/* Temperature Chart */}
+                <GridItem>
+                  <Widget>
+                    <TemperatureChart
+                      data={displayData.temperatureHistory}
+                      height={300}
+                    />
+                  </Widget>
+                </GridItem>
+
+                {/* Energy Transfer Chart */}
+                <GridItem>
+                  <Widget>
+                    <EnergyChart
+                      data={displayData.energyHistory}
+                      height={300}
+                    />
+                  </Widget>
+                </GridItem>
+
+                {/* Flow Rate Chart */}
+                <GridItem>
+                  <Widget>
+                    <FlowChart
+                      data={displayData.flowHistory}
+                      height={300}
+                    />
+                  </Widget>
+                </GridItem>
+
+                {/* Efficiency Trend Chart */}
+                <GridItem>
+                  <Widget>
+                    <EfficiencyChart
+                      data={displayData.energyHistory}
+                      height={300}
+                    />
+                  </Widget>
+                </GridItem>
+              </>
+            )}
+          </Grid>
+
+          {/* Correlation Chart - Temperature vs Pump */}
+          <Grid templateColumns="1fr" w="full">
+            {isLoading ? (
+              <GridItem><ChartSkeleton height="300px" /></GridItem>
+            ) : displayData && (
+              <GridItem>
+                <Widget>
+                  <TemperatureVsPumpChart
+                    temperatureData={displayData.temperatureHistory}
+                    pumpData={displayData.pumpHistory}
+                    height={300}
+                  />
+                </Widget>
+              </GridItem>
+            )}
+          </Grid>
+
+        </VStack>
+      </Box>
     </Box>
   )
 }

@@ -91,9 +91,9 @@ export function SimpleViewPage() {
   }, [allData, dispatch])
 
   return (
-    <Box p={{ base: 4, md: 8 }}>
-      <VStack align="start" gap={6} w="-webkit-fill-available">
-        {/* Header */}
+    <Box display="flex" flexDirection="column" h="full">
+      {/* Fixed Header with Controls */}
+      <Box px={{ base: 4, md: 8 }} pt={{ base: 3}}>
         <DashboardHeader 
           events={data?.events}
           isLoading={isLoading}
@@ -103,16 +103,20 @@ export function SimpleViewPage() {
             value={realtimeConfig}
             onChange={(config) => dispatch(setSimpleRealtimeConfig(config))}
             disabled={isLoading}
-            size="md"
+            size="sm"
           />
         </DashboardHeader>
-        
-        {/* KPI Cards Grid */}
-        <Grid
-          templateColumns={{ base: "1fr", sm: "repeat(2, 1fr)", lg: "repeat(4, 1fr)" }}
-          gap={4}
-          w="full"
-        >
+      </Box>
+      
+      {/* Scrollable Content */}
+      <Box flex="1" overflowY="auto" px={{ base: 4, md: 8 }} py={4}>
+        <VStack align="start" gap={4} w="-webkit-fill-available">
+          {/* KPI Cards Grid */}
+          <Grid
+            templateColumns={{ base: "1fr", sm: "repeat(2, 1fr)", lg: "repeat(4, 1fr)" }}
+            gap={4}
+            w="full"
+          >
           <GridItem>
             <KPICard
               label={APP_TEXT.DASHBOARD.KPI.TEMPERATURE}
@@ -250,6 +254,7 @@ export function SimpleViewPage() {
           )}
         </Grid>
       </VStack>
+      </Box>
     </Box>
   )
 }
