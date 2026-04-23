@@ -1,5 +1,6 @@
 import { useGetDashboardDataQuery } from '@/store/apiSlice'
-import { Box, Text, Spinner, Alert } from '@chakra-ui/react'
+import { Box, Text, Spinner } from '@chakra-ui/react'
+import { Button } from '@/components/ui/button'
 
 /**
  * Example component showing how to use RTK Query hooks
@@ -37,25 +38,33 @@ export function ExampleApiUsage() {
 
   if (isError) {
     return (
-      <Alert status="error">
-        <Text>
+      <Box
+        p={4}
+        borderRadius="md"
+        bg="red.500/10"
+        borderWidth="1px"
+        borderColor="red.500"
+      >
+        <Text color="red.500" fontWeight="medium">
           Error loading dashboard data. 
           {error && 'status' in error && ` Status: ${error.status}`}
         </Text>
-      </Alert>
+      </Box>
     )
   }
 
   return (
     <Box>
-      <Text fontSize="2xl" fontWeight="bold">
+      <Text fontSize="lg" fontWeight="bold" mb={2}>
         Current Temperature: {data?.currentTemperature}°C
       </Text>
-      <Text>Efficiency: {data?.currentEfficiency}%</Text>
-      <Text>Power: {data?.currentPower}kW</Text>
+      <Text fontSize="sm" mb={1}>Efficiency: {data?.currentEfficiency}%</Text>
+      <Text fontSize="sm" mb={3}>Power: {data?.currentPower}kW</Text>
       
       {/* Button to manually refetch */}
-      <button onClick={() => refetch()}>Refresh Data</button>
+      <Button onClick={() => refetch()} size="sm" colorPalette="blue">
+        Refresh Data
+      </Button>
     </Box>
   )
 }

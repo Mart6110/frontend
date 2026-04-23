@@ -1,7 +1,8 @@
-import { VStack, Grid, GridItem, Box } from "@chakra-ui/react"
+import { VStack, Grid, GridItem, Box, Text } from "@chakra-ui/react"
 import { useEffect, useRef, useMemo } from "react"
 import { APP_TEXT, APP_CONFIG } from "@/constants/text"
 import { mockDataService } from "@/services/mockData"
+import { ExampleApiUsage } from "@/components/ExampleApiUsage"
 import { KPICard } from "@/components/dashboard/KPICard"
 import { PumpStatusCard } from "@/components/dashboard/PumpStatusCard"
 import { TemperatureChart } from "@/components/dashboard/TemperatureChart"
@@ -176,6 +177,21 @@ export function AdvancedViewPage() {
       {/* Scrollable Content */}
       <Box flex="1" overflowY="auto" px={{ base: 4, md: 8 }} py={4}>
         <VStack align="start" gap={4} w="-webkit-fill-available">
+          {/* API Test Component */}
+          <Box 
+            w="full" 
+            p={4} 
+            borderRadius="md" 
+            bg="blue.500/10" 
+            borderWidth="1px" 
+            borderColor="blue.500"
+          >
+            <Text fontSize="sm" fontWeight="bold" color="blue.500" mb={3}>
+              🧪 API Test (RTK Query) - Remove after testing
+            </Text>
+            <ExampleApiUsage />
+          </Box>
+
           {/* KPI Cards Grid */}
           <Grid
             templateColumns={{ base: "1fr", sm: "repeat(2, 1fr)", lg: "repeat(5, 1fr)" }}
