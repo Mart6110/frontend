@@ -18,4 +18,6 @@ export default defineConfig({
       '@': resolve(__dirname, './src'),
     },
   },
+  // Handle SPA routing in dev and preview modes
+  appType: 'spa',
 })

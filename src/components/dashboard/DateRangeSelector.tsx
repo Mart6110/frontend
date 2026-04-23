@@ -271,20 +271,20 @@ export const DateRangeSelector = memo(function DateRangeSelector({
             boxShadow="0 4px 20px rgba(0, 255, 170, 0.2)"
           >
             <Flex
-              px={{ base: "3", sm: "4" }}
-              py={{ base: "3", sm: "4" }}
-              gap={{ base: "3", sm: "6" }}
+              px={{ base: "2", sm: "3" }}
+              py={{ base: "2", sm: "3" }}
+              gap={{ base: "2", sm: "3" }}
               flexDirection={{ base: "column", sm: "row" }}
             >
               <VStack
                 align="stretch"
-                gap={{ base: "1.5", sm: "2" }}
-                minW={{ base: "full", sm: "140px" }}
+                gap={{ base: "1", sm: "1.5" }}
+                minW={{ base: "full", sm: "110px" }}
                 height="100%"
               >
                 <Button 
                   variant="outline" 
-                  size="sm" 
+                  size="xs" 
                   width="100%"
                   onClick={() => handlePreset(7, 'last')}
                 >
@@ -292,7 +292,7 @@ export const DateRangeSelector = memo(function DateRangeSelector({
                 </Button>
                 <Button 
                   variant="outline" 
-                  size="sm" 
+                  size="xs" 
                   width="100%"
                   onClick={() => handlePreset(30, 'last')}
                 >
@@ -300,7 +300,7 @@ export const DateRangeSelector = memo(function DateRangeSelector({
                 </Button>
                 <Button 
                   variant="outline" 
-                  size="sm" 
+                  size="xs" 
                   width="100%"
                   onClick={() => handlePreset(0, 'thisMonth')}
                 >
@@ -308,7 +308,7 @@ export const DateRangeSelector = memo(function DateRangeSelector({
                 </Button>
                 <Button 
                   variant="outline" 
-                  size="sm" 
+                  size="xs" 
                   width="100%"
                   onClick={() => handlePreset(0, 'lastMonth')}
                 >
@@ -334,34 +334,34 @@ export const DateRangeSelector = memo(function DateRangeSelector({
               {/* Time Selection on the Right */}
               <VStack
                 align="stretch"
-                gap={3}
-                minW="120px"
+                gap={2}
+                minW="100px"
                 borderLeftWidth="1px"
                 borderColor="rgba(0, 255, 170, 0.3)"
-                pl={4}
+                pl={3}
               >
-                <VStack align="stretch" gap={1}>
-                  <Text fontSize="xs" fontWeight="medium" color="gray.400">
+                <VStack align="stretch" gap={0.5}>
+                  <Text fontSize="2xs" fontWeight="medium" color="gray.400">
                     Start Time
                   </Text>
                   <Input
                     type="time"
                     value={startTimeValue}
                     onChange={onStartTimeChange}
-                    size="sm"
+                    size="xs"
                     disabled={!value[0]}
                   />
                 </VStack>
                 
-                <VStack align="stretch" gap={1}>
-                  <Text fontSize="xs" fontWeight="medium" color="gray.400">
+                <VStack align="stretch" gap={0.5}>
+                  <Text fontSize="2xs" fontWeight="medium" color="gray.400">
                     End Time
                   </Text>
                   <Input
                     type="time"
                     value={endTimeValue}
                     onChange={onEndTimeChange}
-                    size="sm"
+                    size="xs"
                     disabled={!value[1]}
                   />
                 </VStack>
@@ -370,9 +370,9 @@ export const DateRangeSelector = memo(function DateRangeSelector({
             
             {/* Apply Button */}
             <Flex 
-              px={{ base: "3", sm: "4" }} 
-              pb={{ base: "3", sm: "4" }}
-              pt={0}
+              px={{ base: "2", sm: "3" }} 
+              pb={{ base: "2", sm: "3" }}
+              pt={2}
               borderTopWidth="1px"
               borderColor="rgba(0, 255, 170, 0.3)"
             >
@@ -380,7 +380,7 @@ export const DateRangeSelector = memo(function DateRangeSelector({
                 onClick={handleApply}
                 colorPalette="teal"
                 width="100%"
-                size="sm"
+                size="xs"
               >
                 Apply
               </Button>

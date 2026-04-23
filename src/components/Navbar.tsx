@@ -19,7 +19,13 @@ export function Navbar() {
     }
 
     return (
-        <Box px={{ base: 4, md: 8 }} py={4} borderBottom="1px solid" borderColor="gray.200">
+        <Box 
+            px={{ base: 4, md: 8 }} 
+            py={{ base: 2, md: 3 }} 
+            borderBottom="1px solid" 
+            borderColor="gray.200"
+            flexShrink={0}
+        >
             <Flex justify="space-between" align="center" gap={2}>
                 <Logo size={{ base: "md", md: "lg" }} />
                 {apiKey && (
