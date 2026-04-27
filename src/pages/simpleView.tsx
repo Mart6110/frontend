@@ -1,7 +1,9 @@
 import { VStack, Grid, GridItem, Box } from "@chakra-ui/react"
 import { useEffect, useRef } from "react"
+import { subHours } from "date-fns"
 import { APP_TEXT, APP_CONFIG } from "@/constants/text"
-import { mockDataService } from "@/services/mockData"
+import * as dashboardService from "@/services/dashboardService"
+import * as dataTransform from "@/services/dataTransform"
 import { KPICard } from "@/components/dashboard/KPICard"
 import { PumpStatusCard } from "@/components/dashboard/PumpStatusCard"
 import { TemperatureChart } from "@/components/dashboard/TemperatureChart"
@@ -44,14 +46,21 @@ export function SimpleViewPage() {
 
   // Initialize with historical data (30 days to support longer time ranges)
   useEffect(() => {
-    // Simulate realistic loading time
     const loadData = async () => {
       dispatch(setSimpleIsLoading(true))
-      await new Promise(resolve => setTimeout(resolve, 1000)) // 1 second delay
-      const initialData = mockDataService.generateHistoricalData(24 * 30) // 30 days
-      dispatch(setSimpleAllData(initialData))
-      dispatch(setSimpleData(initialData))
-      dispatch(setSimpleIsLoading(false))
+      try {
+        const to = new Date()
+        const from = subHours(to, 24 * 30) // 30 days
+        const interval = dashboardService.calculateInterval(from, to)
+        
+        const initialData = await dashboardService.fetchDashboardData({ from, to, interval })
+        dispatch(setSimpleAllData(initialData))
+        dispatch(setSimpleData(initialData))
+      } catch (error) {
+        console.error('Failed to load dashboard data:', error)
+      } finally {
+        dispatch(setSimpleIsLoading(false))
+      }
     }
     
     loadData()
@@ -65,14 +74,14 @@ export function SimpleViewPage() {
     if (isRealtimeUpdateRef.current) {
       isRealtimeUpdateRef.current = false
       const milliseconds = timeConfigToMilliseconds(realtimeConfig)
-      const filteredData = mockDataService.getDataForTimeRange(allData, milliseconds)
+      const filteredData = dataTransform.filterDataByTimeRange(allData, milliseconds)
       dispatch(setSimpleDisplayData(filteredData))
       dispatch(setSimpleData(filteredData))
       return
     }
 
     const milliseconds = timeConfigToMilliseconds(realtimeConfig)
-    const filteredData = mockDataService.getDataForTimeRange(allData, milliseconds)
+    const filteredData = dataTransform.filterDataByTimeRange(allData, milliseconds)
     dispatch(setSimpleDisplayData(filteredData))
     dispatch(setSimpleData(filteredData))
   }, [allData, realtimeConfig, dispatch])
@@ -81,10 +90,15 @@ export function SimpleViewPage() {
   useEffect(() => {
     if (!allData) return
 
-    const interval = setInterval(() => {
-      isRealtimeUpdateRef.current = true
-      const updatedData = mockDataService.generateRealtimeUpdate(allData)
-      dispatch(setSimpleAllData(updatedData))
+    const interval = setInterval(async () => {
+      try {
+        const { data, controlStatus, events } = await dashboardService.fetchLatestData()
+        isRealtimeUpdateRef.current = true
+        const updatedData = dashboardService.updateDashboardWithLatest(allData, data, controlStatus, events)
+        dispatch(setSimpleAllData(updatedData))
+      } catch (error) {
+        console.error('Failed to fetch latest data:', error)
+      }
     }, APP_CONFIG.DASHBOARD.UPDATE_INTERVALS.REAL_TIME)
 
     return () => clearInterval(interval)
@@ -113,7 +127,7 @@ export function SimpleViewPage() {
         <VStack align="start" gap={4} w="-webkit-fill-available">
           {/* KPI Cards Grid */}
           <Grid
-            templateColumns={{ base: "1fr", sm: "repeat(2, 1fr)", lg: "repeat(4, 1fr)" }}
+            templateColumns={{ base: "1fr", sm: "repeat(2, 1fr)", lg: "repeat(3, 1fr)" }}
             gap={4}
             w="full"
           >
@@ -124,11 +138,11 @@ export function SimpleViewPage() {
               unit={APP_TEXT.DASHBOARD.UNITS.TEMPERATURE}
               status={
                 data 
-                  ? data.currentTemperature > 660 
+                  ? data.currentTemperature > 70 
                     ? "error" 
-                    : data.currentTemperature > 640 
+                    : data.currentTemperature > 65 
                       ? "warning" 
-                      : data.currentTemperature < 560 
+                      : data.currentTemperature < 20 
                         ? "warning" 
                         : "success"
                   : "info"
@@ -140,7 +154,7 @@ export function SimpleViewPage() {
           <GridItem>
             <KPICard
               label={APP_TEXT.DASHBOARD.KPI.POWER}
-              value={data?.currentPower.toFixed(1) ?? "0.0"}
+              value={data?.currentPower.toFixed(0) ?? "0"}
               unit={APP_TEXT.DASHBOARD.UNITS.POWER}
               status={data?.isPumpActive ? "success" : "info"}
               isLoading={isLoading}
@@ -149,40 +163,10 @@ export function SimpleViewPage() {
           
           <GridItem>
             <KPICard
-              label={APP_TEXT.DASHBOARD.KPI.EFFICIENCY}
-              value={data?.currentEfficiency.toFixed(1) ?? "0.0"}
-              unit={APP_TEXT.DASHBOARD.UNITS.EFFICIENCY}
-              status={
-                data 
-                  ? data.currentEfficiency < 70 
-                    ? "error" 
-                    : data.currentEfficiency < 75 
-                      ? "warning" 
-                      : data.currentEfficiency > 85 
-                        ? "success" 
-                        : "info"
-                  : "info"
-              }
-              isLoading={isLoading}
-            />
-          </GridItem>
-          
-          <GridItem>
-            <KPICard
-              label={APP_TEXT.DASHBOARD.KPI.STATE_OF_CHARGE}
-              value={data?.stateOfCharge.toFixed(0) ?? "0"}
-              unit={APP_TEXT.DASHBOARD.UNITS.EFFICIENCY}
-              status={
-                data 
-                  ? data.stateOfCharge < 20 
-                    ? "error" 
-                    : data.stateOfCharge < 40 
-                      ? "warning" 
-                      : data.stateOfCharge > 80 
-                        ? "success" 
-                        : "info"
-                  : "info"
-              }
+              label="Energy"
+              value={data?.currentEnergy.toFixed(2) ?? "0.00"}
+              unit="kWh"
+              status="info"
               isLoading={isLoading}
             />
           </GridItem>
@@ -231,12 +215,12 @@ export function SimpleViewPage() {
               <GridItem><ChartSkeleton height="300px" /></GridItem>
               <GridItem><ChartSkeleton height="300px" /></GridItem>
             </>
-          ) : data && (
+          ) : (
             <>
               <GridItem>
                 <Widget>
                   <TemperatureChart 
-                    data={data.temperatureHistory}
+                    data={data?.temperatureHistory ?? []}
                     height={300}
                   />
                 </Widget>
@@ -245,7 +229,7 @@ export function SimpleViewPage() {
               <GridItem>
                 <Widget>
                   <EnergyChart 
-                    data={data.energyHistory}
+                    data={data?.energyHistory ?? []}
                     height={300}
                   />
                 </Widget>

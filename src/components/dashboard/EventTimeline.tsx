@@ -3,7 +3,7 @@ import { Popover, PopoverBody, PopoverCloseTrigger, PopoverHeader, PopoverTitle 
 import { FilterCheckbox } from "@/components/ui/filterCheckbox"
 import { useState } from "react"
 import { LuFilter, LuX } from "react-icons/lu"
-import type { SystemEvent } from "@/services/mockData"
+import type { DashboardEvent } from "@/services/dataTransform"
 import { APP_TEXT } from "@/constants/text"
 
 const EVENT_TYPE_OPTIONS = [
@@ -21,7 +21,7 @@ const EVENT_SEVERITY_OPTIONS = [
 ] as const
 
 interface EventTimelineProps {
-  events: SystemEvent[]
+  events: DashboardEvent[]
   maxEvents?: number
 }
 

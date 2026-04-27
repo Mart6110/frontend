@@ -48,32 +48,51 @@ A modern React-based dashboard for monitoring and controlling sand battery energ
 
 3. **Start development server:**
    ```bash
+   # Local development (proxy to localhost:8080)
    npm run dev
+   
+   # Development against production API
+   npm run dev:prod
    ```
 
    The app will be available at `http://localhost:5173`
 
 ## Environment Configuration
 
-### Local Development
+### Local Development (default)
 
 API requests are proxied through Vite dev server to `http://localhost:8080`:
 
 ```env
-# .env.local
-VITE_API_BASE_URL=/api
+# .env.development (default)
+VITE_API_BASE_URL=/api/v1
 ```
 
-### Production
+### Development Against Production API
+
+To develop against the production API (avoids CORS issues using Vite proxy):
+
+```bash
+npm run dev:prod
+# or
+bun run dev:prod
+```
+
+This proxies all `/api/v1/*` requests through Vite to `https://dunepower-api.acceptable.pro`.
+
+See [API_CONFIG.md](./API_CONFIG.md) for detailed configuration and CORS troubleshooting.
+
+### Production Build
 
 Direct API calls to production backend:
 
 ```env
 # .env.production
-VITE_API_BASE_URL=https://api.dunepower.acceptable.pro
+VITE_API_BASE_URL=https://dunepower-api.acceptable.pro/api/v1
 ```
 
-See [API_SETUP.md](./API_SETUP.md) for detailed configuration guide.
+**Environment file priority:** `.env.local (local backend via proxy)
+- `npm run dev:prod` - Start development server against production API` > `.env.development` > `.env`
 
 ## Available Scripts
 

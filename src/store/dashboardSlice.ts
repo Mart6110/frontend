@@ -1,7 +1,7 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit"
 import { subHours } from "date-fns"
 import { DEFAULT_VIEW_MODE, DEFAULT_REALTIME_CONFIG, type ViewMode, type RealtimeTimeConfig } from "@/constants/timeRanges"
-import type { DashboardData } from "@/services/mockData"
+import type { DashboardData } from "@/services/dataTransform"
 
 interface DashboardState {
   // Advanced View State

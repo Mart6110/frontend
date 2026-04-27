@@ -1,5 +1,5 @@
 import * as XLSX from 'xlsx'
-import type { DashboardData } from '@/services/mockData'
+import type { DashboardData } from '@/services/dataTransform'
 
 // Format timestamp to readable date string
 function formatTimestamp(timestamp: number): string {
@@ -24,13 +24,12 @@ export function exportDashboardToExcel(data: DashboardData, filename: string = '
     ['Export Date', new Date().toLocaleString()],
     [],
     ['Current Metrics'],
-    ['Temperature (°C)', data.currentTemperature.toFixed(1)],
-    ['Energy In (kWh)', data.currentEnergyIn.toFixed(2)],
-    ['Energy Out (kWh)', data.currentEnergyOut.toFixed(2)],
-    ['Efficiency (%)', data.currentEfficiency.toFixed(1)],
+    ['Sand Temperature (°C)', data.currentTemperature.toFixed(1)],
+    ['Water Temp In (°C)', data.currentWaterTempIn.toFixed(1)],
+    ['Water Temp Out (°C)', data.currentWaterTempOut.toFixed(1)],
     ['Flow (L/min)', data.currentFlow.toFixed(1)],
-    ['Power (kW)', data.currentPower.toFixed(1)],
-    ['State of Charge (%)', data.stateOfCharge.toFixed(0)],
+    ['Power (W)', data.currentPower.toFixed(0)],
+    ['Energy (kWh)', data.currentEnergy.toFixed(2)],
     ['Pump Status', data.isPumpActive ? 'Active' : 'Inactive'],
   ]
   const summarySheet = XLSX.utils.aoa_to_sheet(summaryData)
@@ -49,12 +48,11 @@ export function exportDashboardToExcel(data: DashboardData, filename: string = '
 
   // Sheet 3: Energy History
   const energyData = [
-    ['Timestamp', 'Energy In (kWh)', 'Energy Out (kWh)', 'Efficiency (%)'],
+    ['Timestamp', 'Power (kW)', 'Energy (kWh)'],
     ...data.energyHistory.map(item => [
       formatTimestamp(item.timestamp),
-      item.energyIn,
-      item.energyOut,
-      ((item.energyOut / item.energyIn) * 100).toFixed(2),
+      item.energyIn.toFixed(3),
+      item.energyOut.toFixed(2),
     ]),
   ]
   const energySheet = XLSX.utils.aoa_to_sheet(energyData)

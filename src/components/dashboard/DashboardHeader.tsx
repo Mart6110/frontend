@@ -3,12 +3,12 @@ import type { ReactNode } from "react"
 import { Drawer } from "@/components/ui/drawer"
 import { EventTimeline } from "./EventTimeline"
 import { LuHistory, LuDownload } from "react-icons/lu"
-import type { SystemEvent, DashboardData } from "@/services/mockData"
+import type { DashboardEvent, DashboardData } from "@/services/dataTransform"
 import { exportDashboardToExcel } from "@/utils/exportToExcel"
 
 interface DashboardHeaderProps {
   children?: ReactNode
-  events?: SystemEvent[]
+  events?: DashboardEvent[]
   isLoading?: boolean
   maxEvents?: number
   dashboardData?: DashboardData

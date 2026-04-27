@@ -3,6 +3,11 @@ import react from '@vitejs/plugin-react'
 import { tanstackRouter } from '@tanstack/router-plugin/vite'
 import { resolve } from 'node:path'
 
+// Configurable proxy target for development
+// Default: local backend
+// Production: set VITE_PROXY_TARGET=https://dunepower-api.acceptable.pro
+const proxyTarget = process.env.VITE_PROXY_TARGET || 'http://localhost:8080'
+
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [
@@ -22,12 +27,19 @@ export default defineConfig({
   appType: 'spa',
   server: {
     proxy: {
-      // Proxy API requests to backend in development
-      // Maps /api/v1/* -> http://localhost:8080/api/v1/*
+      // Proxy API requests to backend in development (avoids CORS issues)
+      // Maps /api/v1/* -> {proxyTarget}/api/v1/*
+      // Local: http://localhost:8080/api/v1/*
+      // Production: https://dunepower-api.acceptable.pro/api/v1/*
       '/api/v1': {
-        target: 'http://localhost:8080',
+        target: proxyTarget,
         changeOrigin: true,
         secure: false,
+        configure: (proxy) => {
+          proxy.on('proxyReq', (_proxyReq, req) => {
+            console.log(`🔄 Proxying: ${req.method} ${req.url} → ${proxyTarget}${req.url}`)
+          })
+        },
       },
     },
   },
