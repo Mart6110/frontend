@@ -42,6 +42,27 @@ export function PumpStatusCardSkeleton() {
   )
 }
 
+export function HeaterStatusCardSkeleton() {
+  return (
+    <Box
+      borderWidth="1px"
+      borderColor="rgba(117, 117, 117, 0.3)"
+      borderRadius="12px"
+      p={5}
+      backdropFilter="blur(5px)"
+      boxShadow="0 4px 20px rgba(0, 0, 0, 0.1)"
+      css={{
+        WebkitBackdropFilter: "blur(5px)"
+      }}
+      minH="100px"
+    >
+      <Center h="100%">
+        <Spinner size="lg" color="orange.500" />
+      </Center>
+    </Box>
+  )
+}
+
 export function ChartSkeleton({ height = "300px" }: { height?: string }) {
   return (
     <Box

@@ -6,76 +6,89 @@ export const APP_TEXT = {
   // Navigation
   NAV: {
     SIMPLE_VIEW: "Standard Dashboard",
-    ADVANCED_VIEW: "Advanced Dashboard",
-    SETTINGS: "Settings",
-    LOGOUT: "Logout",
+    ADVANCED_VIEW: "Avanceret Dashboard",
+    SETTINGS: "Indstillinger",
+    LOGOUT: "Log ud",
   },
 
   // Home Page
   HOME: {
-    WELCOME_TITLE: "Welcome",
-    WELCOME_MESSAGE: "Enter your Product Key to access the dashboard.",
-    API_KEY_PLACEHOLDER: "Product Key",
-    SUBMIT_BUTTON: "Apply",
+    WELCOME_TITLE: "Velkommen",
+    WELCOME_MESSAGE: "Indtast din produktnøgle for at få adgang til kontrolpanelet.",
+    API_KEY_PLACEHOLDER: "Produktnøgle",
+    SUBMIT_BUTTON: "Anvend",
+    VALIDATING: "Validerer...",
+    ERROR: {
+      INVALID_KEY: "Ugyldig produktnøgle. Tjek venligst og prøv igen.",
+      NETWORK_ERROR: "Kan ikke oprette forbindelse til serveren. Tjek venligst din forbindelse og prøv igen.",
+      SERVER_ERROR: "Serverfejl. Prøv venligst igen senere.",
+      UNKNOWN_ERROR: "Der opstod en uventet fejl. Prøv venligst igen.",
+    },
   },
 
   // Standard Dashboard Page
   SIMPLE_VIEW: {
     TITLE: "Standard Dashboard",
-    CONTENT: "Standard dashboard view content goes here.",
+    CONTENT: "Standard dashboard visningsindhold kommer her.",
   },
 
   // Advanced Dashboard Page
   ADVANCED_VIEW: {
-    TITLE: "Advanced Dashboard",
-    CONTENT: "Advanced dashboard view content goes here.",
+    TITLE: "Avanceret Dashboard",
+    CONTENT: "Avanceret dashboard visningsindhold kommer her.",
   },
 
   // Dashboard Common
   DASHBOARD: {
     // KPI Labels
     KPI: {
-      TEMPERATURE: "Temperature",
-      ENERGY_IN: "Energy In",
-      ENERGY_OUT: "Energy Out",
-      EFFICIENCY: "Efficiency",
-      PUMP_STATUS: "Pump Status",
-      FLOW_RATE: "Flow Rate",
-      STATE_OF_CHARGE: "State of Charge",
-      POWER: "Power",
+      TEMPERATURE: "Temperatur",
+      ENERGY_IN: "Energi Ind",
+      ENERGY_OUT: "Energi Ud",
+      ENERGY: "Energi",
+      EFFICIENCY: "Effektivitet",
+      PUMP_STATUS: "Pumpestatus",
+      HEATER_STATUS: "Varmerstatus",
+      FLOW_RATE: "Flowhastighed",
+      STATE_OF_CHARGE: "Ladetilstand",
+      POWER: "Effekt",
+      WATER_TEMP_IN: "Vandtemp Ind",
+      WATER_TEMP_OUT: "Vandtemp Ud",
     },
     
     // Chart Titles
     CHARTS: {
-      TEMPERATURE_HISTORY: "Temperature History",
-      ENERGY_TRANSFER: "Energy Transfer",
-      FLOW_RATE: "Flow Rate",
-      PUMP_ACTIVITY: "Pump Activity",
-      EFFICIENCY_TREND: "Efficiency Trend",
-      TEMPERATURE_VS_PUMP: "Temperature vs Pump Activity",
-      SYSTEM_OVERVIEW: "System Overview",
+      TEMPERATURE_HISTORY: "Temperaturhistorik",
+      ENERGY_TRANSFER: "Energioverførsel",
+      FLOW_RATE: "Flowhastighed",
+      PUMP_ACTIVITY: "Pumpeaktivitet",
+      EFFICIENCY_TREND: "Effektivitetstrend",
+      TEMPERATURE_VS_PUMP: "Temperatur vs Pumpeaktivitet",
+      SYSTEM_OVERVIEW: "Systemoversigt",
     },
     
     // Status Labels
     STATUS: {
-      PUMP_ON: "Running",
-      PUMP_OFF: "Stopped",
-      SYSTEM_ACTIVE: "Active",
-      SYSTEM_IDLE: "Idle",
-      CHARGING: "Charging",
-      DISCHARGING: "Discharging",
+      PUMP_ON: "Kører",
+      PUMP_OFF: "Stoppet",
+      HEATER_ON: "Tændt",
+      HEATER_OFF: "Slukket",
+      SYSTEM_ACTIVE: "Aktiv",
+      SYSTEM_IDLE: "Inaktiv",
+      CHARGING: "Oplader",
+      DISCHARGING: "Aflader",
       STANDBY: "Standby",
     },
     
     // Time Range Options
     TIME_RANGE: {
       LIVE: "Live",
-      ONE_HOUR: "1 Hour",
-      SIX_HOURS: "6 Hours",
-      TWELVE_HOURS: "12 Hours",
-      ONE_DAY: "1 Day",
-      ONE_WEEK: "1 Week",
-      ONE_MONTH: "1 Month",
+      ONE_HOUR: "1 Time",
+      SIX_HOURS: "6 Timer",
+      TWELVE_HOURS: "12 Timer",
+      ONE_DAY: "1 Dag",
+      ONE_WEEK: "1 Uge",
+      ONE_MONTH: "1 Måned",
     },
     
     // Units
@@ -90,83 +103,72 @@ export const APP_TEXT = {
     
     // Event Types
     EVENTS: {
-      PUMP_START: "Pump Started",
-      PUMP_STOP: "Pump Stopped",
-      TEMPERATURE_HIGH: "High Temperature",
-      TEMPERATURE_LOW: "Low Temperature",
-      CHARGING_START: "Charging Started",
-      CHARGING_STOP: "Charging Stopped",
-      DISCHARGING_START: "Discharging Started",
-      DISCHARGING_STOP: "Discharging Stopped",
-      ERROR: "Error",
-      WARNING: "Warning",
+      PUMP_START: "Pumpe Startet",
+      PUMP_STOP: "Pumpe Stoppet",
+      TEMPERATURE_HIGH: "Høj Temperatur",
+      TEMPERATURE_LOW: "Lav Temperatur",
+      CHARGING_START: "Opladning Startet",
+      CHARGING_STOP: "Opladning Stoppet",
+      DISCHARGING_START: "Afladning Startet",
+      DISCHARGING_STOP: "Afladning Stoppet",
+      ERROR: "Fejl",
+      WARNING: "Advarsel",
     },
     
     // Loading & Error States
-    LOADING: "Loading data...",
-    NO_DATA: "No data available",
-    ERROR: "Failed to load data",
-    UPDATING: "Updating...",
+    LOADING: "Indlæser data...",
+    NO_DATA: "Ingen data tilgængelig",
+    ERROR: "Kunne ikke indlæse data",
+    UPDATING: "Opdaterer...",
   },
 
   // Settings
   SETTINGS: {
-    TITLE: "Settings",
-    SECTION_TITLE: "Sand Battery Configuration",
-    SAVE_BUTTON: "Save Settings",
+    TITLE: "Indstillinger",
+    SECTION_TITLE: "Sandbatteri Konfiguration",
+    SAVE_BUTTON: "Gem Indstillinger",
+    LOADING: "Indlæser indstillinger...",
+    SUCCESS: "Indstillinger gemt",
+    ERROR: "Kunne ikke gemme indstillinger",
     
     // Form Fields
-    CAPACITY: {
-      LABEL: "Battery Capacity",
-      PLACEHOLDER: "100",
-      HELPER: "Total energy storage capacity in kWh",
+    MAX_SAND_TEMP: {
+      LABEL: "Maksimal Sandtemperatur",
+      PLACEHOLDER: "70",
+      HELPER: "Maksimal sandtemperatur i °C – varmelegeme deaktiveres ved overskridelse (max 70°C)",
     },
-    MAX_CHARGE_RATE: {
-      LABEL: "Max Charge Rate",
+    MIN_PUMP_TEMP: {
+      LABEL: "Minimum Pumpetemperatur",
       PLACEHOLDER: "50",
-      HELPER: "Maximum charging power in kW",
+      HELPER: "Minimumstemperatur i °C for aktivering af vandpumpe ved automatisk drift",
     },
-    MAX_DISCHARGE_RATE: {
-      LABEL: "Max Discharge Rate",
-      PLACEHOLDER: "50",
-      HELPER: "Maximum discharging power in kW",
+    PUMP_INTERVAL: {
+      LABEL: "Pumpeinterval",
+      PLACEHOLDER: "300",
+      HELPER: "Interval i sekunder for pulsbaseret pumpeaktivering",
     },
-    OPERATING_MODE: {
-      LABEL: "Operating Mode",
-      HELPER: "Battery operation mode",
-      OPTIONS: {
-        AUTO: "Automatic",
-        CHARGE: "Charge Only",
-        DISCHARGE: "Discharge Only",
-        STANDBY: "Standby",
-      },
+    PRICE_LIMIT: {
+      LABEL: "Prisgrænse",
+      PLACEHOLDER: "1.50",
+      HELPER: "Maksimal elpris i DKK/kWh for automatisk aktivering af varmelegeme",
     },
-    TARGET_TEMPERATURE: {
-      LABEL: "Target Temperature",
-      PLACEHOLDER: "600",
-      HELPER: "Target operating temperature in °C (200-800)",
+    AUTO_HEATING: {
+      LABEL: "Automatisk Varmestyring",
+      HELPER: "Aktivér/deaktivér automatisk styring af varmelegeme",
     },
-    EFFICIENCY: {
-      LABEL: "System Efficiency",
-      HELPER: "Round-trip energy efficiency (%)",
-    },
-    MIN_STATE_OF_CHARGE: {
-      LABEL: "Minimum State of Charge",
-      HELPER: "Minimum allowed battery charge level (%)",
-    },
-    MAX_STATE_OF_CHARGE: {
-      LABEL: "Maximum State of Charge",
-      HELPER: "Maximum allowed battery charge level (%)",
+    AUTO_PUMP: {
+      LABEL: "Automatisk Pumpstyring",
+      HELPER: "Aktivér/deaktivér automatisk pumpstyring",
     },
   },
 
   // Dialogs
   DIALOGS: {
     CLEAR_API_KEY: {
-      TITLE: "Clear Product Key",
-      MESSAGE: "Are you sure you want to clear your Product key? You will be logged out.",
-      CANCEL: "Cancel",
-      CONFIRM: "Clear",
+      TITLE: "Ryd Produktnøgle",
+      MESSAGE: "Er du sikker på, at du vil rydde din produktnøgle? Du vil blive logget ud.",
+      CANCEL: "Annuller",
+      CONFIRM: "Ryd",
     },
   },
 
@@ -178,87 +180,64 @@ export const APP_TEXT = {
   // Validation Messages
   VALIDATION: {
     API_KEY: {
-      REQUIRED: "Product key is required",
-      MIN_LENGTH: "Product key must be at least 10 characters",
+      REQUIRED: "Produktnøgle er påkrævet",
+      MIN_LENGTH: "Produktnøgle skal være mindst 10 tegn",
     },
-    CAPACITY: {
-      REQUIRED: "Capacity is required",
-      MIN: "Capacity must be at least 1 kWh",
-      MAX: "Capacity cannot exceed 10000 kWh",
+    MAX_SAND_TEMP: {
+      REQUIRED: "Maksimal sandtemperatur er påkrævet",
+      MIN: "Skal være mindst 1°C",
+      MAX: "Kan ikke overstige 70°C (kabelspecifikation)",
     },
-    MAX_CHARGE_RATE: {
-      REQUIRED: "Max charge rate is required",
-      MIN: "Must be at least 1 kW",
-      MAX: "Cannot exceed 1000 kW",
+    MIN_PUMP_TEMP: {
+      REQUIRED: "Minimum pumpetemperatur er påkrævet",
+      MIN: "Skal være mindst 1°C",
+      LESS_THAN_MAX: "Skal være mindre end maksimal sandtemperatur",
     },
-    MAX_DISCHARGE_RATE: {
-      REQUIRED: "Max discharge rate is required",
-      MIN: "Must be at least 1 kW",
-      MAX: "Cannot exceed 1000 kW",
+    PUMP_INTERVAL: {
+      REQUIRED: "Pumpeinterval er påkrævet",
+      MIN: "Skal være mindst 1 sekund",
     },
-    OPERATING_MODE: {
-      REQUIRED: "Operating mode is required",
-    },
-    TARGET_TEMPERATURE: {
-      REQUIRED: "Target temperature is required",
-      MIN: "Must be at least 200°C",
-      MAX: "Cannot exceed 800°C",
-    },
-    EFFICIENCY: {
-      REQUIRED: "Efficiency is required",
-    },
-    MIN_STATE_OF_CHARGE: {
-      REQUIRED: "Min state of charge is required",
-    },
-    MAX_STATE_OF_CHARGE: {
-      REQUIRED: "Max state of charge is required",
+    PRICE_LIMIT: {
+      REQUIRED: "Prisgrænse er påkrævet",
+      MIN: "Skal være mindst 0 DKK/kWh",
     },
   },
 
   // Aria Labels
   ARIA: {
-    SETTINGS_BUTTON: "Settings",
-    CLEAR_API_KEY_BUTTON: "Clear Product Key",
-    COLOR_MODE_BUTTON: "Toggle color mode",
+    SETTINGS_BUTTON: "Indstillinger",
+    CLEAR_API_KEY_BUTTON: "Ryd Produktnøgle",
+    COLOR_MODE_BUTTON: "Skift farvetilstand",
   },
 
   // Error Page
   ERROR: {
-    NOT_FOUND_TITLE: "Page Not Found",
-    NOT_FOUND_MESSAGE: "The page you're looking for doesn't exist or has been moved.",
-    GENERAL_TITLE: "Something Went Wrong",
-    GENERAL_MESSAGE: "An unexpected error occurred. Please try again later.",
-    GO_HOME: "Go to Home",
-    GO_BACK: "Go Back",
-    DEBUG_INFO: "Error Details (Development Mode):",
+    NOT_FOUND_TITLE: "Side Ikke Fundet",
+    NOT_FOUND_MESSAGE: "Den side du leder efter eksisterer ikke eller er blevet flyttet.",
+    GENERAL_TITLE: "Noget Gik Galt",
+    GENERAL_MESSAGE: "Der opstod en uventet fejl. Prøv venligst igen senere.",
+    GO_HOME: "Gå til Hjem",
+    GO_BACK: "Gå Tilbage",
+    DEBUG_INFO: "Fejldetaljer (Udviklingstilstand):",
   },
 }
 
 // Application Configuration Constants
 export const APP_CONFIG = {
   DEFAULT_VALUES: {
-    CAPACITY: 100,
-    MAX_CHARGE_RATE: 50,
-    MAX_DISCHARGE_RATE: 50,
-    OPERATING_MODE: "auto",
-    TARGET_TEMPERATURE: 600,
-    EFFICIENCY: 85,
-    MIN_STATE_OF_CHARGE: 10,
-    MAX_STATE_OF_CHARGE: 95,
+    MAX_SAND_TEMP: 70,
+    MIN_PUMP_TEMP: 50,
+    PUMP_INTERVAL_SECONDS: 300,
+    PRICE_LIMIT_DKK: 1.50,
+    AUTO_HEATING_ENABLED: true,
+    AUTO_PUMP_ENABLED: true,
   },
   
   LIMITS: {
-    CAPACITY: { MIN: 1, MAX: 10000 },
-    CHARGE_RATE: { MIN: 1, MAX: 1000 },
-    DISCHARGE_RATE: { MIN: 1, MAX: 1000 },
-    TEMPERATURE: { MIN: 200, MAX: 800 },
-    EFFICIENCY: { MIN: 0, MAX: 100 },
-    STATE_OF_CHARGE: { MIN: 0, MAX: 100 },
-  },
-  
-  SLIDER_STEPS: {
-    EFFICIENCY: 1,
-    STATE_OF_CHARGE: 5,
+    MAX_SAND_TEMP: { MIN: 1, MAX: 70 },
+    MIN_PUMP_TEMP: { MIN: 1, MAX: 69 },
+    PUMP_INTERVAL_SECONDS: { MIN: 1, MAX: 3600 },
+    PRICE_LIMIT_DKK: { MIN: 0, MAX: 10 },
   },
   
   // Dashboard Configuration

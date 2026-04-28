@@ -1,4 +1,4 @@
-import { Box, Flex, Text, Badge, Spinner } from "@chakra-ui/react"
+import { Box, Flex, Text, Spinner } from "@chakra-ui/react"
 import { memo } from "react"
 import type { ReactNode } from "react"
 
@@ -7,23 +7,15 @@ interface KPICardProps {
   value: string | number
   unit?: string
   icon?: ReactNode
-  status?: 'success' | 'warning' | 'error' | 'info'
   size?: 'sm' | 'md' | 'lg'
   isLoading?: boolean
 }
 
-export const KPICard = memo(function KPICard({ label, value, unit, icon, status, size = 'md', isLoading = false }: KPICardProps) {
+export const KPICard = memo(function KPICard({ label, value, unit, icon, size = 'md', isLoading = false }: KPICardProps) {
   const sizes = {
-    sm: { value: 'xl', label: 'sm', padding: 4 },
-    md: { value: '2xl', label: 'md', padding: 5 },
-    lg: { value: '3xl', label: 'lg', padding: 6 },
-  }
-
-  const statusColors = {
-    success: 'green',
-    warning: 'orange',
-    error: 'red',
-    info: 'blue',
+    sm: { value: 'xl', label: 'sm', padding: 4, minHeight: '110px' },
+    md: { value: '2xl', label: 'md', padding: 5, minHeight: '130px' },
+    lg: { value: '3xl', label: 'lg', padding: 6, minHeight: '150px' },
   }
 
   return (
@@ -32,6 +24,7 @@ export const KPICard = memo(function KPICard({ label, value, unit, icon, status,
       borderColor="rgba(0, 255, 170, 0.3)"
       borderRadius="12px"
       p={sizes[size].padding}
+      minH={sizes[size].minHeight}
       backdropFilter="blur(5px)"
       boxShadow="0 4px 20px rgba(0, 255, 170, 0.1)"
       css={{
@@ -67,18 +60,6 @@ export const KPICard = memo(function KPICard({ label, value, unit, icon, status,
             </>
           )}
         </Flex>
-        
-        {status && (
-          <Badge
-            colorScheme={statusColors[status]}
-            alignSelf="flex-start"
-            px={2}
-            py={1}
-            borderRadius="full"
-          >
-            {status.toUpperCase()}
-          </Badge>
-        )}
       </Flex>
     </Box>
   )

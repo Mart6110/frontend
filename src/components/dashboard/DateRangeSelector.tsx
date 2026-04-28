@@ -288,7 +288,7 @@ export const DateRangeSelector = memo(function DateRangeSelector({
                   width="100%"
                   onClick={() => handlePreset(7, 'last')}
                 >
-                  Last 7 days
+                  Sidste 7 dage
                 </Button>
                 <Button 
                   variant="outline" 
@@ -296,7 +296,7 @@ export const DateRangeSelector = memo(function DateRangeSelector({
                   width="100%"
                   onClick={() => handlePreset(30, 'last')}
                 >
-                  Last 30 days
+                  Sidste 30 dage
                 </Button>
                 <Button 
                   variant="outline" 
@@ -304,7 +304,7 @@ export const DateRangeSelector = memo(function DateRangeSelector({
                   width="100%"
                   onClick={() => handlePreset(0, 'thisMonth')}
                 >
-                  This month
+                  Denne måned
                 </Button>
                 <Button 
                   variant="outline" 
@@ -312,7 +312,7 @@ export const DateRangeSelector = memo(function DateRangeSelector({
                   width="100%"
                   onClick={() => handlePreset(0, 'lastMonth')}
                 >
-                  Last month
+                  Sidste måned
                 </Button>
               </VStack>
               
@@ -342,7 +342,7 @@ export const DateRangeSelector = memo(function DateRangeSelector({
               >
                 <VStack align="stretch" gap={0.5}>
                   <Text fontSize="2xs" fontWeight="medium" color="gray.400">
-                    Start Time
+                    Starttid
                   </Text>
                   <Input
                     type="time"
@@ -355,7 +355,7 @@ export const DateRangeSelector = memo(function DateRangeSelector({
                 
                 <VStack align="stretch" gap={0.5}>
                   <Text fontSize="2xs" fontWeight="medium" color="gray.400">
-                    End Time
+                    Sluttid
                   </Text>
                   <Input
                     type="time"
@@ -382,7 +382,7 @@ export const DateRangeSelector = memo(function DateRangeSelector({
                 width="100%"
                 size="xs"
               >
-                Apply
+                Anvend
               </Button>
             </Flex>
           </DatePicker.Content>

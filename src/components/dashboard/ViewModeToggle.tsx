@@ -29,7 +29,7 @@ export function ViewModeToggle({
         }}
       >
         <LuClock />
-        Realtime
+        Realtid
       </Button>
       <Button 
         onClick={() => onChange('dateRange')}
@@ -43,7 +43,7 @@ export function ViewModeToggle({
         }}
       >
         <LuCalendar />
-        Date Range
+        Datointerval
       </Button>
     </ButtonGroup>
   )

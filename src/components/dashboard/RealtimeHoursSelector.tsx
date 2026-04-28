@@ -28,9 +28,9 @@ export function RealtimeTimeSelector({
 
   const units = createListCollection({
     items: [
-      { label: 'Minutes', value: 'minutes' },
-      { label: 'Hours', value: 'hours' },
-      { label: 'Days', value: 'days' }
+      { label: 'Minutter', value: 'minutes' },
+      { label: 'Timer', value: 'hours' },
+      { label: 'Dage', value: 'days' }
     ]
   })
 
@@ -69,8 +69,10 @@ export function RealtimeTimeSelector({
   const getDisplayText = () => {
     const val = clampedValue
     const unitText = pendingConfig.unit === 'minutes' ? 'min' : 
-                     pendingConfig.unit === 'hours' ? 'hr' : 'day'
-    return `Last ${val} ${unitText}${val > 1 ? 's' : ''}`
+                     pendingConfig.unit === 'hours' ? 'time' : 'dag'
+    const plural = val > 1 && pendingConfig.unit === 'hours' ? 'r' : 
+                   val > 1 && pendingConfig.unit === 'days' ? 'e' : ''
+    return `Sidste ${val} ${unitText}${plural}`
   }
 
   return (
@@ -138,7 +140,7 @@ export function RealtimeTimeSelector({
         colorPalette={hasChanges ? "teal" : "gray"}
         variant={hasChanges ? "solid" : "outline"}
       >
-        Apply
+        Anvend
       </Button>
     </Flex>
   )

@@ -1,151 +1,178 @@
-import { VStack } from "@chakra-ui/react"
+import { VStack, Text, Spinner, Box } from "@chakra-ui/react"
 import { Formik, Form } from "formik"
 import * as Yup from "yup"
 import { FormikField } from "@/components/ui/formikField"
-import { FormikSelect } from "@/components/ui/formikSelect"
-import { FormikSlider } from "@/components/ui/formikSlider"
+import { FormikCheckbox } from "@/components/ui/formikCheckbox"
 import { Button } from "@/components/ui/button"
 import { APP_TEXT, APP_CONFIG } from "@/constants/text"
+import { getSettings, updateSettings, type Settings as SettingsType } from "@/services/api"
+import { useState, useEffect } from "react"
+import { toaster } from "@/components/ui/toaster"
 
 const settingsSchema = Yup.object().shape({
-    capacity: Yup.number()
-        .required(APP_TEXT.VALIDATION.CAPACITY.REQUIRED)
-        .min(APP_CONFIG.LIMITS.CAPACITY.MIN, APP_TEXT.VALIDATION.CAPACITY.MIN)
-        .max(APP_CONFIG.LIMITS.CAPACITY.MAX, APP_TEXT.VALIDATION.CAPACITY.MAX),
-    maxChargeRate: Yup.number()
-        .required(APP_TEXT.VALIDATION.MAX_CHARGE_RATE.REQUIRED)
-        .min(APP_CONFIG.LIMITS.CHARGE_RATE.MIN, APP_TEXT.VALIDATION.MAX_CHARGE_RATE.MIN)
-        .max(APP_CONFIG.LIMITS.CHARGE_RATE.MAX, APP_TEXT.VALIDATION.MAX_CHARGE_RATE.MAX),
-    maxDischargeRate: Yup.number()
-        .required(APP_TEXT.VALIDATION.MAX_DISCHARGE_RATE.REQUIRED)
-        .min(APP_CONFIG.LIMITS.DISCHARGE_RATE.MIN, APP_TEXT.VALIDATION.MAX_DISCHARGE_RATE.MIN)
-        .max(APP_CONFIG.LIMITS.DISCHARGE_RATE.MAX, APP_TEXT.VALIDATION.MAX_DISCHARGE_RATE.MAX),
-    operatingMode: Yup.string().required(APP_TEXT.VALIDATION.OPERATING_MODE.REQUIRED),
-    targetTemperature: Yup.number()
-        .required(APP_TEXT.VALIDATION.TARGET_TEMPERATURE.REQUIRED)
-        .min(APP_CONFIG.LIMITS.TEMPERATURE.MIN, APP_TEXT.VALIDATION.TARGET_TEMPERATURE.MIN)
-        .max(APP_CONFIG.LIMITS.TEMPERATURE.MAX, APP_TEXT.VALIDATION.TARGET_TEMPERATURE.MAX),
-    efficiency: Yup.number()
-        .required(APP_TEXT.VALIDATION.EFFICIENCY.REQUIRED)
-        .min(APP_CONFIG.LIMITS.EFFICIENCY.MIN)
-        .max(APP_CONFIG.LIMITS.EFFICIENCY.MAX),
-    minStateOfCharge: Yup.number()
-        .required(APP_TEXT.VALIDATION.MIN_STATE_OF_CHARGE.REQUIRED)
-        .min(APP_CONFIG.LIMITS.STATE_OF_CHARGE.MIN)
-        .max(APP_CONFIG.LIMITS.STATE_OF_CHARGE.MAX),
-    maxStateOfCharge: Yup.number()
-        .required(APP_TEXT.VALIDATION.MAX_STATE_OF_CHARGE.REQUIRED)
-        .min(APP_CONFIG.LIMITS.STATE_OF_CHARGE.MIN)
-        .max(APP_CONFIG.LIMITS.STATE_OF_CHARGE.MAX),
+    max_sand_temp: Yup.number()
+        .required(APP_TEXT.VALIDATION.MAX_SAND_TEMP.REQUIRED)
+        .min(APP_CONFIG.LIMITS.MAX_SAND_TEMP.MIN, APP_TEXT.VALIDATION.MAX_SAND_TEMP.MIN)
+        .max(APP_CONFIG.LIMITS.MAX_SAND_TEMP.MAX, APP_TEXT.VALIDATION.MAX_SAND_TEMP.MAX),
+    min_pump_temp: Yup.number()
+        .required(APP_TEXT.VALIDATION.MIN_PUMP_TEMP.REQUIRED)
+        .min(APP_CONFIG.LIMITS.MIN_PUMP_TEMP.MIN, APP_TEXT.VALIDATION.MIN_PUMP_TEMP.MIN)
+        .test('less-than-max', APP_TEXT.VALIDATION.MIN_PUMP_TEMP.LESS_THAN_MAX, function(value) {
+            const { max_sand_temp } = this.parent
+            return value === undefined || max_sand_temp === undefined || value < max_sand_temp
+        }),
+    pump_interval_seconds: Yup.number()
+        .required(APP_TEXT.VALIDATION.PUMP_INTERVAL.REQUIRED)
+        .min(APP_CONFIG.LIMITS.PUMP_INTERVAL_SECONDS.MIN, APP_TEXT.VALIDATION.PUMP_INTERVAL.MIN),
+    price_limit_dkk: Yup.number()
+        .required(APP_TEXT.VALIDATION.PRICE_LIMIT.REQUIRED)
+        .min(APP_CONFIG.LIMITS.PRICE_LIMIT_DKK.MIN, APP_TEXT.VALIDATION.PRICE_LIMIT.MIN),
+    auto_heating_enabled: Yup.boolean(),
+    auto_pump_enabled: Yup.boolean(),
 })
 
 export function Settings() {
+    const [initialValues, setInitialValues] = useState<SettingsType | null>(null)
+    const [isLoading, setIsLoading] = useState(true)
+    const [error, setError] = useState<string | null>(null)
+
+    useEffect(() => {
+        async function loadSettings() {
+            try {
+                setIsLoading(true)
+                setError(null)
+                const settings = await getSettings()
+                setInitialValues(settings)
+            } catch (err) {
+                console.error('Failed to load settings:', err)
+                setError(APP_TEXT.SETTINGS.ERROR)
+                // Use default values if API fails
+                setInitialValues({
+                    max_sand_temp: APP_CONFIG.DEFAULT_VALUES.MAX_SAND_TEMP,
+                    min_pump_temp: APP_CONFIG.DEFAULT_VALUES.MIN_PUMP_TEMP,
+                    pump_interval_seconds: APP_CONFIG.DEFAULT_VALUES.PUMP_INTERVAL_SECONDS,
+                    price_limit_dkk: APP_CONFIG.DEFAULT_VALUES.PRICE_LIMIT_DKK,
+                    auto_heating_enabled: APP_CONFIG.DEFAULT_VALUES.AUTO_HEATING_ENABLED,
+                    auto_pump_enabled: APP_CONFIG.DEFAULT_VALUES.AUTO_PUMP_ENABLED,
+                })
+            } finally {
+                setIsLoading(false)
+            }
+        }
+
+        loadSettings()
+    }, [])
+
+    if (isLoading || !initialValues) {
+        return (
+            <VStack align="center" justify="center" minH="200px">
+                <Spinner size="lg" color="teal.500" />
+                <Text color="gray.500">{APP_TEXT.SETTINGS.LOADING}</Text>
+            </VStack>
+        )
+    }
+
     return (
         <VStack align="start" gap={6} w="full">
+            {error && (
+                <Box 
+                    w="full" 
+                    p={3} 
+                    bg="red.500/10" 
+                    borderWidth="1px" 
+                    borderColor="red.500/30" 
+                    borderRadius="md"
+                >
+                    <Text color="red.400" fontSize="sm">{error}</Text>
+                </Box>
+            )}
+            
             <Formik
-                initialValues={{
-                    capacity: APP_CONFIG.DEFAULT_VALUES.CAPACITY,
-                    maxChargeRate: APP_CONFIG.DEFAULT_VALUES.MAX_CHARGE_RATE,
-                    maxDischargeRate: APP_CONFIG.DEFAULT_VALUES.MAX_DISCHARGE_RATE,
-                    operatingMode: APP_CONFIG.DEFAULT_VALUES.OPERATING_MODE,
-                    targetTemperature: APP_CONFIG.DEFAULT_VALUES.TARGET_TEMPERATURE,
-                    efficiency: APP_CONFIG.DEFAULT_VALUES.EFFICIENCY,
-                    minStateOfCharge: APP_CONFIG.DEFAULT_VALUES.MIN_STATE_OF_CHARGE,
-                    maxStateOfCharge: APP_CONFIG.DEFAULT_VALUES.MAX_STATE_OF_CHARGE,
-                }}
+                initialValues={initialValues}
                 validationSchema={settingsSchema}
-                onSubmit={(values) => {
-                    console.log("Settings saved:", values)
-                    // TODO: Save settings to backend/state
+                onSubmit={async (values, { setSubmitting }) => {
+                    try {
+                        await updateSettings(values)
+                        toaster.create({
+                            title: APP_TEXT.SETTINGS.SUCCESS,
+                            type: "success",
+                            duration: 3000,
+                        })
+                        setError(null)
+                    } catch (err) {
+                        console.error("Failed to save settings:", err)
+                        toaster.create({
+                            title: APP_TEXT.SETTINGS.ERROR,
+                            type: "error",
+                            duration: 5000,
+                        })
+                    } finally {
+                        setSubmitting(false)
+                    }
                 }}
             >
                 {({ isSubmitting, isValid, dirty }) => (
                     <Form style={{ width: "100%" }}>
                         <VStack gap={4} w="full">
                             <FormikField
-                                name="capacity"
-                                label={APP_TEXT.SETTINGS.CAPACITY.LABEL}
+                                name="max_sand_temp"
+                                label={APP_TEXT.SETTINGS.MAX_SAND_TEMP.LABEL}
                                 type="number"
-                                placeholder={APP_TEXT.SETTINGS.CAPACITY.PLACEHOLDER}
-                                helperText={APP_TEXT.SETTINGS.CAPACITY.HELPER}
+                                step="0.1"
+                                placeholder={APP_TEXT.SETTINGS.MAX_SAND_TEMP.PLACEHOLDER}
+                                helperText={APP_TEXT.SETTINGS.MAX_SAND_TEMP.HELPER}
                                 required
                             />
 
                             <FormikField
-                                name="maxChargeRate"
-                                label={APP_TEXT.SETTINGS.MAX_CHARGE_RATE.LABEL}
+                                name="min_pump_temp"
+                                label={APP_TEXT.SETTINGS.MIN_PUMP_TEMP.LABEL}
                                 type="number"
-                                placeholder={APP_TEXT.SETTINGS.MAX_CHARGE_RATE.PLACEHOLDER}
-                                helperText={APP_TEXT.SETTINGS.MAX_CHARGE_RATE.HELPER}
+                                step="0.1"
+                                placeholder={APP_TEXT.SETTINGS.MIN_PUMP_TEMP.PLACEHOLDER}
+                                helperText={APP_TEXT.SETTINGS.MIN_PUMP_TEMP.HELPER}
                                 required
                             />
 
                             <FormikField
-                                name="maxDischargeRate"
-                                label={APP_TEXT.SETTINGS.MAX_DISCHARGE_RATE.LABEL}
+                                name="pump_interval_seconds"
+                                label={APP_TEXT.SETTINGS.PUMP_INTERVAL.LABEL}
                                 type="number"
-                                placeholder={APP_TEXT.SETTINGS.MAX_DISCHARGE_RATE.PLACEHOLDER}
-                                helperText={APP_TEXT.SETTINGS.MAX_DISCHARGE_RATE.HELPER}
-                                required
-                            />
-
-                            <FormikSelect
-                                name="operatingMode"
-                                label={APP_TEXT.SETTINGS.OPERATING_MODE.LABEL}
-                                options={[
-                                    { label: APP_TEXT.SETTINGS.OPERATING_MODE.OPTIONS.AUTO, value: "auto" },
-                                    { label: APP_TEXT.SETTINGS.OPERATING_MODE.OPTIONS.CHARGE, value: "charge" },
-                                    { label: APP_TEXT.SETTINGS.OPERATING_MODE.OPTIONS.DISCHARGE, value: "discharge" },
-                                    { label: APP_TEXT.SETTINGS.OPERATING_MODE.OPTIONS.STANDBY, value: "standby" },
-                                ]}
-                                helperText={APP_TEXT.SETTINGS.OPERATING_MODE.HELPER}
+                                step="1"
+                                placeholder={APP_TEXT.SETTINGS.PUMP_INTERVAL.PLACEHOLDER}
+                                helperText={APP_TEXT.SETTINGS.PUMP_INTERVAL.HELPER}
                                 required
                             />
 
                             <FormikField
-                                name="targetTemperature"
-                                label={APP_TEXT.SETTINGS.TARGET_TEMPERATURE.LABEL}
+                                name="price_limit_dkk"
+                                label={APP_TEXT.SETTINGS.PRICE_LIMIT.LABEL}
                                 type="number"
-                                placeholder={APP_TEXT.SETTINGS.TARGET_TEMPERATURE.PLACEHOLDER}
-                                helperText={APP_TEXT.SETTINGS.TARGET_TEMPERATURE.HELPER}
+                                step="0.01"
+                                placeholder={APP_TEXT.SETTINGS.PRICE_LIMIT.PLACEHOLDER}
+                                helperText={APP_TEXT.SETTINGS.PRICE_LIMIT.HELPER}
                                 required
                             />
 
-                            <FormikSlider
-                                name="efficiency"
-                                label={APP_TEXT.SETTINGS.EFFICIENCY.LABEL}
-                                min={APP_CONFIG.LIMITS.EFFICIENCY.MIN}
-                                max={APP_CONFIG.LIMITS.EFFICIENCY.MAX}
-                                step={APP_CONFIG.SLIDER_STEPS.EFFICIENCY}
-                                helperText={APP_TEXT.SETTINGS.EFFICIENCY.HELPER}
-                                required
+                            <FormikCheckbox
+                                name="auto_heating_enabled"
+                                label={APP_TEXT.SETTINGS.AUTO_HEATING.LABEL}
+                                helperText={APP_TEXT.SETTINGS.AUTO_HEATING.HELPER}
                             />
 
-                            <FormikSlider
-                                name="minStateOfCharge"
-                                label={APP_TEXT.SETTINGS.MIN_STATE_OF_CHARGE.LABEL}
-                                min={APP_CONFIG.LIMITS.STATE_OF_CHARGE.MIN}
-                                max={APP_CONFIG.LIMITS.STATE_OF_CHARGE.MAX}
-                                step={APP_CONFIG.SLIDER_STEPS.STATE_OF_CHARGE}
-                                helperText={APP_TEXT.SETTINGS.MIN_STATE_OF_CHARGE.HELPER}
-                                required
-                            />
-
-                            <FormikSlider
-                                name="maxStateOfCharge"
-                                label={APP_TEXT.SETTINGS.MAX_STATE_OF_CHARGE.LABEL}
-                                min={APP_CONFIG.LIMITS.STATE_OF_CHARGE.MIN}
-                                max={APP_CONFIG.LIMITS.STATE_OF_CHARGE.MAX}
-                                step={APP_CONFIG.SLIDER_STEPS.STATE_OF_CHARGE}
-                                helperText={APP_TEXT.SETTINGS.MAX_STATE_OF_CHARGE.HELPER}
-                                required
+                            <FormikCheckbox
+                                name="auto_pump_enabled"
+                                label={APP_TEXT.SETTINGS.AUTO_PUMP.LABEL}
+                                helperText={APP_TEXT.SETTINGS.AUTO_PUMP.HELPER}
                             />
                         </VStack>
                         <Button
                             type="submit"
                             disabled={isSubmitting || !isValid || !dirty}
                             w="full"
-                            mt={2}
+                            mt={6}
+                            loading={isSubmitting}
+                            colorPalette="teal"
                         >
                             {APP_TEXT.SETTINGS.SAVE_BUTTON}
                         </Button>

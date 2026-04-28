@@ -2,21 +2,25 @@ import { Box, Flex, Text, Spinner } from "@chakra-ui/react"
 import { APP_TEXT } from "@/constants/text"
 import { memo, useState, useEffect } from "react"
 
-interface PumpStatusCardProps {
+interface HeaterStatusCardProps {
   isActive: boolean
   lastChanged?: number
   size?: 'sm' | 'md' | 'lg'
   isLoading?: boolean
   controlButton?: React.ReactNode
+  activeCount?: number
+  totalCount?: number
 }
 
-export const PumpStatusCard = memo(function PumpStatusCard({ 
+export const HeaterStatusCard = memo(function HeaterStatusCard({ 
   isActive, 
   lastChanged, 
   size = 'md', 
   isLoading = false,
-  controlButton
-}: PumpStatusCardProps) {
+  controlButton,
+  activeCount,
+  totalCount = 3
+}: HeaterStatusCardProps) {
   const [now, setNow] = useState(() => Date.now())
   
   useEffect(() => {
@@ -56,7 +60,7 @@ export const PumpStatusCard = memo(function PumpStatusCard({
       <Flex direction="column" gap={1}>
         <Flex justify="space-between" align="center">
           <Text fontSize={sizes[size].label} color="gray.300">
-            {APP_TEXT.DASHBOARD.KPI.PUMP_STATUS}
+            {APP_TEXT.DASHBOARD.KPI.HEATER_STATUS}
           </Text>
           <Box
             w="12px"
@@ -72,9 +76,16 @@ export const PumpStatusCard = memo(function PumpStatusCard({
           {isLoading ? (
             <Spinner size="md" color="teal.500" />
           ) : (
-            <Text fontSize={sizes[size].value} fontWeight="bold" color={isActive ? "green.400" : "gray.400"}>
-              {isActive ? APP_TEXT.DASHBOARD.STATUS.PUMP_ON : APP_TEXT.DASHBOARD.STATUS.PUMP_OFF}
-            </Text>
+            <Flex align="baseline" gap={2}>
+              <Text fontSize={sizes[size].value} fontWeight="bold" color={isActive ? "green.400" : "gray.400"}>
+                {isActive ? APP_TEXT.DASHBOARD.STATUS.HEATER_ON : APP_TEXT.DASHBOARD.STATUS.HEATER_OFF}
+              </Text>
+              {activeCount !== undefined && (
+                <Text fontSize="md" color="gray.400">
+                  ({activeCount}/{totalCount})
+                </Text>
+              )}
+            </Flex>
           )}
           {controlButton}
         </Flex>

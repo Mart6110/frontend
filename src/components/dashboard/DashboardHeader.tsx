@@ -60,7 +60,7 @@ export function DashboardHeader({
             colorPalette="teal"
           >
             <LuDownload />
-            Export to Excel
+            Eksportér til Excel
           </Button>
         )}
 
@@ -72,10 +72,10 @@ export function DashboardHeader({
             trigger={
               <Button variant="outline" size="sm">
                 <LuHistory />
-                System Events ({events.length})
+                Systemhændelser ({events.length})
               </Button>
             }
-            title="System Event Timeline"
+            title="Systemhændelser Tidslinje"
           >
             <EventTimeline events={events} maxEvents={maxEvents} />
           </Drawer>

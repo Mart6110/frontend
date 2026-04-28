@@ -4,6 +4,24 @@ import ReactDOM from "react-dom/client";
 import { Provider as ReduxProvider } from "react-redux";
 import { store } from "./store";
 import { routeTree } from "./routeTree.gen"
+import { setLocale } from "yup"
+
+// Set Yup locale to Danish
+setLocale({
+  mixed: {
+    required: "Dette felt er påkrævet",
+    notType: "Ugyldig værdi",
+  },
+  string: {
+    min: "Skal være mindst ${min} tegn",
+    max: "Må højst være ${max} tegn",
+    email: "Skal være en gyldig e-mail",
+  },
+  number: {
+    min: "Skal være mindst ${min}",
+    max: "Må højst være ${max}",
+  },
+})
 
 const router = createRouter({ routeTree })
 

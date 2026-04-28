@@ -6,6 +6,8 @@ import * as dashboardService from "@/services/dashboardService"
 import * as dataTransform from "@/services/dataTransform"
 import { KPICard } from "@/components/dashboard/KPICard"
 import { PumpStatusCard } from "@/components/dashboard/PumpStatusCard"
+import { HeaterStatusCard } from "@/components/dashboard/HeaterStatusCard"
+import { ControlModal } from "@/components/dashboard/ControlModal"
 import { TemperatureChart } from "@/components/dashboard/TemperatureChart"
 import { EnergyChart } from "@/components/dashboard/EnergyChart"
 import { FlowChart } from "@/components/dashboard/FlowChart"
@@ -17,6 +19,7 @@ import { RealtimeTimeSelector } from "@/components/dashboard/RealtimeHoursSelect
 import { DateRangeSelector } from "@/components/dashboard/DateRangeSelector"
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader"
 import { Widget } from "@/components/ui/widget"
+import { Button } from "@/components/ui/button"
 import { useAppDispatch, useAppSelector } from "@/store/hooks"
 import type { RealtimeTimeConfig } from "@/constants/timeRanges"
 import {
@@ -60,6 +63,16 @@ export function AdvancedViewPage() {
 
   // Track if this is a realtime update vs user-triggered filter change
   const isRealtimeUpdateRef = useRef(false)
+
+  // Control handler for modal updates
+  const handleControlUpdate = async () => {
+    // Refresh data after any control action from modal
+    if (viewMode === 'realtime') {
+      const { data: latestData, controlStatus, events } = await dashboardService.fetchLatestData()
+      const updatedData = dashboardService.updateDashboardWithLatest(allData!, latestData, controlStatus, events)
+      dispatch(setAllData(updatedData))
+    }
+  }
 
   // Convert ISO strings back to Date objects - memoized to prevent infinite loops
   const startDate = useMemo(
@@ -202,17 +215,6 @@ export function AdvancedViewPage() {
                 label={APP_TEXT.DASHBOARD.KPI.TEMPERATURE}
                 value={displayData?.currentTemperature.toFixed(1) ?? "0.0"}
                 unit={APP_TEXT.DASHBOARD.UNITS.TEMPERATURE}
-                status={
-                  displayData
-                    ? displayData.currentTemperature > 70
-                      ? "error"
-                      : displayData.currentTemperature > 65
-                        ? "warning"
-                        : displayData.currentTemperature < 20
-                          ? "warning"
-                          : "success"
-                    : "info"
-                }
                 isLoading={isLoading}
               />
             </GridItem>
@@ -222,7 +224,6 @@ export function AdvancedViewPage() {
                 label={APP_TEXT.DASHBOARD.KPI.POWER}
                 value={displayData?.currentPower.toFixed(0) ?? "0"}
                 unit={APP_TEXT.DASHBOARD.UNITS.POWER}
-                status={displayData?.isPumpActive ? "success" : "info"}
                 isLoading={isLoading}
               />
             </GridItem>
@@ -232,23 +233,15 @@ export function AdvancedViewPage() {
                 label={APP_TEXT.DASHBOARD.KPI.FLOW_RATE}
                 value={displayData?.currentFlow.toFixed(1) ?? "0.0"}
                 unit={APP_TEXT.DASHBOARD.UNITS.FLOW}
-                status={
-                  displayData
-                    ? displayData.currentFlow < 1
-                      ? "warning"
-                      : "success"
-                    : "info"
-                }
                 isLoading={isLoading}
               />
             </GridItem>
 
             <GridItem>
               <KPICard
-                label="Energy"
+                label={APP_TEXT.DASHBOARD.KPI.ENERGY}
                 value={displayData?.currentEnergy.toFixed(2) ?? "0.00"}
-                unit="kWh"
-                status="info"
+                unit={APP_TEXT.DASHBOARD.UNITS.ENERGY}
                 isLoading={isLoading}
               />
             </GridItem>
@@ -256,7 +249,7 @@ export function AdvancedViewPage() {
 
           {/* System Status and Water Temperature */}
           <Grid
-            templateColumns={{ base: "1fr", md: "repeat(3, 1fr)" }}
+            templateColumns={{ base: "1fr", md: "repeat(2, 1fr)", lg: "repeat(4, 1fr)" }}
             gap={4}
             w="full"
           >
@@ -265,15 +258,52 @@ export function AdvancedViewPage() {
                 isActive={displayData?.isPumpActive ?? false}
                 size="lg"
                 isLoading={isLoading}
+                controlButton={
+                  <ControlModal
+                    trigger={
+                      <Button size="sm">
+                        Kontrol
+                      </Button>
+                    }
+                    isPumpActive={displayData?.isPumpActive ?? false}
+                    heater1Active={displayData?.isHeaterActive ?? false}
+                    heater2Active={displayData?.isHeaterActive ?? false}
+                    heater3Active={displayData?.isHeaterActive ?? false}
+                    onUpdate={handleControlUpdate}
+                  />
+                }
+              />
+            </GridItem>
+
+            <GridItem>
+              <HeaterStatusCard
+                isActive={displayData?.isHeaterActive ?? false}
+                size="lg"
+                isLoading={isLoading}
+                activeCount={displayData?.isHeaterActive ? 3 : 0}
+                totalCount={3}
+                controlButton={
+                  <ControlModal
+                    trigger={
+                      <Button size="sm">
+                        Kontrol
+                      </Button>
+                    }
+                    isPumpActive={displayData?.isPumpActive ?? false}
+                    heater1Active={displayData?.isHeaterActive ?? false}
+                    heater2Active={displayData?.isHeaterActive ?? false}
+                    heater3Active={displayData?.isHeaterActive ?? false}
+                    onUpdate={handleControlUpdate}
+                  />
+                }
               />
             </GridItem>
 
             <GridItem>
               <KPICard
-                label="Water Temp In"
+                label={APP_TEXT.DASHBOARD.KPI.WATER_TEMP_IN}
                 value={displayData?.currentWaterTempIn.toFixed(1) ?? "0.0"}
                 unit={APP_TEXT.DASHBOARD.UNITS.TEMPERATURE}
-                status="info"
                 size="lg"
                 isLoading={isLoading}
               />
@@ -281,18 +311,9 @@ export function AdvancedViewPage() {
 
             <GridItem>
               <KPICard
-                label="Water Temp Out"
+                label={APP_TEXT.DASHBOARD.KPI.WATER_TEMP_OUT}
                 value={displayData?.currentWaterTempOut.toFixed(1) ?? "0.0"}
                 unit={APP_TEXT.DASHBOARD.UNITS.TEMPERATURE}
-                status={
-                  displayData
-                    ? displayData.currentWaterTempOut > 40
-                      ? "success"
-                      : displayData.currentWaterTempOut > 30
-                        ? "warning"
-                        : "info"
-                    : "info"
-                }
                 size="lg"
                 isLoading={isLoading}
               />

@@ -10,6 +10,7 @@ interface FormikFieldProps {
   helperText?: string
   required?: boolean
   colorPalette?: string
+  step?: string | number
 }
 
 export function FormikField({
@@ -20,6 +21,7 @@ export function FormikField({
   helperText,
   required = false,
   colorPalette = "teal",
+  step,
 }: FormikFieldProps) {
   const [field, meta] = useField(name)
   const isInvalid = meta.touched && !!meta.error
@@ -37,6 +39,7 @@ export function FormikField({
         type={type}
         placeholder={placeholder}
         colorPalette={colorPalette}
+        step={step}
       />
       {helperText && !isInvalid && <Field.HelperText>{helperText}</Field.HelperText>}
       {isInvalid && <FieldErrorText>{meta.error}</FieldErrorText>}

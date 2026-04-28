@@ -44,6 +44,7 @@ export interface DashboardData {
   currentWaterTempOut: number
   currentFlow: number
   isPumpActive: boolean
+  isHeaterActive: boolean
   currentPower: number
   currentEnergy: number
   temperatureHistory: TemperatureData[]
@@ -109,6 +110,7 @@ export function convertHistoryToDashboard(
       currentWaterTempOut: 0,
       currentFlow: 0,
       isPumpActive: false,
+      isHeaterActive: false,
       currentPower: 0,
       currentEnergy: 0,
       temperatureHistory: [],
@@ -151,6 +153,7 @@ export function convertHistoryToDashboard(
     currentWaterTempOut: latest.water_temp_out,
     currentFlow: latest.flow_rate,
     isPumpActive: controlStatus.pump.active,
+    isHeaterActive: controlStatus.heater.active,
     currentPower: latest.power_w,
     currentEnergy: latest.energy_kwh,
     temperatureHistory,
@@ -177,6 +180,7 @@ export function convertLatestToDashboard(
     currentWaterTempOut: latest.water_temp_out,
     currentFlow: latest.flow_rate,
     isPumpActive: controlStatus.pump.active,
+    isHeaterActive: controlStatus.heater.active,
     currentPower: latest.power_w,
     currentEnergy: latest.energy_kwh,
     temperatureHistory: [{
@@ -212,30 +216,42 @@ export function mergeLatestData(
 ): DashboardData {
   const timestamp = new Date(latest.timestamp).getTime()
   
-  // Add new data points to histories (keeping max points)
-  const temperatureHistory = [
-    ...existingData.temperatureHistory.slice(-maxHistoryPoints + 1),
-    { timestamp, temperature: latest.sand_temp }
-  ]
+  // Check if this timestamp already exists (prevent duplicates)
+  const lastTempTimestamp = existingData.temperatureHistory[existingData.temperatureHistory.length - 1]?.timestamp
+  const isNewData = !lastTempTimestamp || timestamp > lastTempTimestamp
   
-  const energyHistory = [
-    ...existingData.energyHistory.slice(-maxHistoryPoints + 1),
-    { 
-      timestamp, 
-      energyIn: latest.power_w / 1000,
-      energyOut: latest.energy_kwh
-    }
-  ]
+  // Only add new data points if the timestamp is actually newer
+  const temperatureHistory = isNewData
+    ? [
+        ...existingData.temperatureHistory.slice(-maxHistoryPoints + 1),
+        { timestamp, temperature: latest.sand_temp }
+      ]
+    : existingData.temperatureHistory
   
-  const flowHistory = [
-    ...existingData.flowHistory.slice(-maxHistoryPoints + 1),
-    { timestamp, flow: latest.flow_rate }
-  ]
+  const energyHistory = isNewData
+    ? [
+        ...existingData.energyHistory.slice(-maxHistoryPoints + 1),
+        { 
+          timestamp, 
+          energyIn: latest.power_w / 1000,
+          energyOut: latest.energy_kwh
+        }
+      ]
+    : existingData.energyHistory
   
-  const pumpHistory = [
-    ...existingData.pumpHistory.slice(-maxHistoryPoints + 1),
-    { timestamp, active: controlStatus.pump.active }
-  ]
+  const flowHistory = isNewData
+    ? [
+        ...existingData.flowHistory.slice(-maxHistoryPoints + 1),
+        { timestamp, flow: latest.flow_rate }
+      ]
+    : existingData.flowHistory
+  
+  const pumpHistory = isNewData
+    ? [
+        ...existingData.pumpHistory.slice(-maxHistoryPoints + 1),
+        { timestamp, active: controlStatus.pump.active }
+      ]
+    : existingData.pumpHistory
   
   // Merge events (keep last 1000)
   const events = [
@@ -249,6 +265,7 @@ export function mergeLatestData(
     currentWaterTempOut: latest.water_temp_out,
     currentFlow: latest.flow_rate,
     isPumpActive: controlStatus.pump.active,
+    isHeaterActive: controlStatus.heater.active,
     currentPower: latest.power_w,
     currentEnergy: latest.energy_kwh,
     temperatureHistory,

@@ -6,12 +6,15 @@ import * as dashboardService from "@/services/dashboardService"
 import * as dataTransform from "@/services/dataTransform"
 import { KPICard } from "@/components/dashboard/KPICard"
 import { PumpStatusCard } from "@/components/dashboard/PumpStatusCard"
+import { HeaterStatusCard } from "@/components/dashboard/HeaterStatusCard"
+import { ControlModal } from "@/components/dashboard/ControlModal"
 import { TemperatureChart } from "@/components/dashboard/TemperatureChart"
 import { EnergyChart } from "@/components/dashboard/EnergyChart"
 import { ChartSkeleton } from "@/components/dashboard/Skeletons"
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader"
 import { RealtimeTimeSelector } from "@/components/dashboard/RealtimeHoursSelector"
 import { Widget } from "@/components/ui/widget"
+import { Button } from "@/components/ui/button"
 import { useAppDispatch, useAppSelector } from "@/store/hooks"
 import type { RealtimeTimeConfig } from "@/constants/timeRanges"
 import { 
@@ -43,6 +46,14 @@ export function SimpleViewPage() {
   
   // Track if this is a realtime update vs user-triggered filter change
   const isRealtimeUpdateRef = useRef(false)
+
+  // Control handler for modal updates
+  const handleControlUpdate = async () => {
+    // Refresh data after any control action from modal
+    const { data: latestData, controlStatus, events } = await dashboardService.fetchLatestData()
+    const updatedData = dashboardService.updateDashboardWithLatest(allData!, latestData, controlStatus, events)
+    dispatch(setSimpleAllData(updatedData))
+  }
 
   // Initialize with historical data (30 days to support longer time ranges)
   useEffect(() => {
@@ -136,17 +147,6 @@ export function SimpleViewPage() {
               label={APP_TEXT.DASHBOARD.KPI.TEMPERATURE}
               value={data?.currentTemperature.toFixed(1) ?? "0.0"}
               unit={APP_TEXT.DASHBOARD.UNITS.TEMPERATURE}
-              status={
-                data 
-                  ? data.currentTemperature > 70 
-                    ? "error" 
-                    : data.currentTemperature > 65 
-                      ? "warning" 
-                      : data.currentTemperature < 20 
-                        ? "warning" 
-                        : "success"
-                  : "info"
-              }
               isLoading={isLoading}
             />
           </GridItem>
@@ -156,25 +156,23 @@ export function SimpleViewPage() {
               label={APP_TEXT.DASHBOARD.KPI.POWER}
               value={data?.currentPower.toFixed(0) ?? "0"}
               unit={APP_TEXT.DASHBOARD.UNITS.POWER}
-              status={data?.isPumpActive ? "success" : "info"}
               isLoading={isLoading}
             />
           </GridItem>
           
           <GridItem>
             <KPICard
-              label="Energy"
+              label={APP_TEXT.DASHBOARD.KPI.ENERGY}
               value={data?.currentEnergy.toFixed(2) ?? "0.00"}
-              unit="kWh"
-              status="info"
+              unit={APP_TEXT.DASHBOARD.UNITS.ENERGY}
               isLoading={isLoading}
             />
           </GridItem>
         </Grid>
 
-        {/* Pump Status */}
+        {/* Pump & Heater Status */}
         <Grid
-          templateColumns={{ base: "1fr", md: "repeat(2, 1fr)" }}
+          templateColumns={{ base: "1fr", md: "repeat(2, 1fr)", lg: "repeat(3, 1fr)" }}
           gap={4}
           w="full"
         >
@@ -183,21 +181,52 @@ export function SimpleViewPage() {
               isActive={data?.isPumpActive ?? false} 
               size="lg"
               isLoading={isLoading}
+              controlButton={
+                <ControlModal
+                  trigger={
+                    <Button size="sm">
+                      Control
+                    </Button>
+                  }
+                  isPumpActive={data?.isPumpActive ?? false}
+                  heater1Active={data?.isHeaterActive ?? false}
+                  heater2Active={data?.isHeaterActive ?? false}
+                  heater3Active={data?.isHeaterActive ?? false}
+                  onUpdate={handleControlUpdate}
+                />
+              }
             />
           </GridItem>
           
+          <GridItem>
+            <HeaterStatusCard
+              isActive={data?.isHeaterActive ?? false}
+              size="lg"
+              isLoading={isLoading}
+              activeCount={data?.isHeaterActive ? 3 : 0}
+              totalCount={3}
+              controlButton={
+                <ControlModal
+                  trigger={
+                    <Button size="sm">
+                      Kontrol
+                    </Button>
+                  }
+                  isPumpActive={data?.isPumpActive ?? false}
+                  heater1Active={data?.isHeaterActive ?? false}
+                  heater2Active={data?.isHeaterActive ?? false}
+                  heater3Active={data?.isHeaterActive ?? false}
+                  onUpdate={handleControlUpdate}
+                />
+              }
+            />
+          </GridItem>
+
           <GridItem>
             <KPICard
               label={APP_TEXT.DASHBOARD.KPI.FLOW_RATE}
               value={data?.currentFlow.toFixed(1) ?? "0.0"}
               unit={APP_TEXT.DASHBOARD.UNITS.FLOW}
-              status={
-                data 
-                  ? data.currentFlow < 35 || data.currentFlow > 65 
-                    ? "warning" 
-                    : "success"
-                  : "info"
-              }
               size="lg"
               isLoading={isLoading}
             />
