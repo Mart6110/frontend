@@ -123,6 +123,8 @@ export function SimpleViewPage() {
           events={data?.events}
           isLoading={isLoading}
           maxEvents={50}
+          dashboardData={data ?? undefined}
+          enableExport={true}
         >
           <RealtimeTimeSelector
             value={realtimeConfig}

@@ -52,12 +52,13 @@ export function DashboardHeader({
 
       <Flex gap={2} ml={{ base: 0, lg: "auto" }} wrap="wrap">
         {/* Export Button */}
-        {enableExport && !isLoading && dashboardData && (
+        {enableExport && (
           <Button 
             variant="outline" 
             size="sm"
             onClick={handleExport}
             colorPalette="teal"
+            disabled={isLoading || !dashboardData}
           >
             <LuDownload />
             Eksportér til Excel
@@ -65,21 +66,19 @@ export function DashboardHeader({
         )}
 
         {/* System Events Drawer */}
-        {!isLoading && events && (
-          <Drawer
-            placement="end"
-            size={{ base: "full", md: "md" }}
-            trigger={
-              <Button variant="outline" size="sm">
-                <LuHistory />
-                Systemhændelser ({events.length})
-              </Button>
-            }
-            title="Systemhændelser Tidslinje"
-          >
-            <EventTimeline events={events} maxEvents={maxEvents} />
-          </Drawer>
-        )}
+        <Drawer
+          placement="end"
+          size={{ base: "full", md: "md" }}
+          trigger={
+            <Button variant="outline" size="sm" disabled={isLoading}>
+              <LuHistory />
+              Systemhændelser ({events?.length ?? 0})
+            </Button>
+          }
+          title="Systemhændelser Tidslinje"
+        >
+          <EventTimeline events={events ?? []} maxEvents={maxEvents} />
+        </Drawer>
       </Flex>
     </Flex>
   )
