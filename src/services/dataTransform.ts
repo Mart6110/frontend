@@ -3,6 +3,45 @@
 
 import type { SensorData, HistoryResponse, ControlStatus, SystemEvent } from './api'
 
+// Helper functions to extract temperature values from sensor data
+function getSandTemp(data: SensorData): number {
+  // Look for temperature with "sand" label
+  const sandTemp = data.temperatures.find(t => 
+    t.label.toLowerCase().includes('sand')
+  )
+  if (sandTemp) return sandTemp.value
+  
+  // Fallback to first temperature if no sand label found
+  return data.temperatures[0]?.value ?? 0
+}
+
+function getWaterTempIn(data: SensorData): number {
+  // Look for temperature with "in" or "ind" label
+  const waterTempIn = data.temperatures.find(t => 
+    t.label.toLowerCase().includes('in') || t.label.toLowerCase().includes('ind')
+  )
+  if (waterTempIn) return waterTempIn.value
+  
+  // Fallback to second temperature if available
+  return data.temperatures[1]?.value ?? 0
+}
+
+function getWaterTempOut(data: SensorData): number {
+  // Look for temperature with "out" or "ud" label
+  const waterTempOut = data.temperatures.find(t => 
+    t.label.toLowerCase().includes('out') || t.label.toLowerCase().includes('ud')
+  )
+  if (waterTempOut) return waterTempOut.value
+  
+  // Fallback to third temperature if available
+  return data.temperatures[2]?.value ?? 0
+}
+
+function getFlowRate(data: SensorData): number {
+  // Get the first flow rate reading
+  return data.flow_rates[0]?.value ?? 0
+}
+
 // Dashboard data structures expected by components
 export interface DataPoint {
   timestamp: number
@@ -137,7 +176,7 @@ export function convertHistoryToDashboard(
   // Convert history arrays
   const temperatureHistory: TemperatureData[] = data.map(d => ({
     timestamp: new Date(d.timestamp).getTime(),
-    temperature: d.sand_temp,
+    temperature: getSandTemp(d),
   }))
   
   const energyHistory: EnergyData[] = data.map(d => ({
@@ -148,7 +187,7 @@ export function convertHistoryToDashboard(
   
   const flowHistory: FlowData[] = data.map(d => ({
     timestamp: new Date(d.timestamp).getTime(),
-    flow: d.flow_rate,
+    flow: getFlowRate(d),
   }))
   
   // Build pump history from control status
@@ -158,10 +197,10 @@ export function convertHistoryToDashboard(
   }))
   
   return {
-    currentTemperature: latest.sand_temp,
-    currentWaterTempIn: latest.water_temp_in,
-    currentWaterTempOut: latest.water_temp_out,
-    currentFlow: latest.flow_rate,
+    currentTemperature: getSandTemp(latest),
+    currentWaterTempIn: getWaterTempIn(latest),
+    currentWaterTempOut: getWaterTempOut(latest),
+    currentFlow: getFlowRate(latest),
     isPumpActive: controlStatus.pump.active,
     pumpLastChanged: new Date(controlStatus.pump.last_changed).getTime(),
     heaters: controlStatus.heaters.map(h => ({
@@ -190,10 +229,10 @@ export function convertLatestToDashboard(
   const timestamp = new Date(latest.timestamp).getTime()
   
   return {
-    currentTemperature: latest.sand_temp,
-    currentWaterTempIn: latest.water_temp_in,
-    currentWaterTempOut: latest.water_temp_out,
-    currentFlow: latest.flow_rate,
+    currentTemperature: getSandTemp(latest),
+    currentWaterTempIn: getWaterTempIn(latest),
+    currentWaterTempOut: getWaterTempOut(latest),
+    currentFlow: getFlowRate(latest),
     isPumpActive: controlStatus.pump.active,
     pumpLastChanged: new Date(controlStatus.pump.last_changed).getTime(),
     heaters: controlStatus.heaters.map(h => ({
@@ -205,7 +244,7 @@ export function convertLatestToDashboard(
     currentEnergy: latest.energy_kwh,
     temperatureHistory: [{
       timestamp,
-      temperature: latest.sand_temp,
+      temperature: getSandTemp(latest),
     }],
     energyHistory: [{
       timestamp,
@@ -214,7 +253,7 @@ export function convertLatestToDashboard(
     }],
     flowHistory: [{
       timestamp,
-      flow: latest.flow_rate,
+      flow: getFlowRate(latest),
     }],
     pumpHistory: [{
       timestamp,
@@ -244,7 +283,7 @@ export function mergeLatestData(
   const temperatureHistory = isNewData
     ? [
         ...existingData.temperatureHistory.slice(-maxHistoryPoints + 1),
-        { timestamp, temperature: latest.sand_temp }
+        { timestamp, temperature: getSandTemp(latest) }
       ]
     : existingData.temperatureHistory
   
@@ -262,7 +301,7 @@ export function mergeLatestData(
   const flowHistory = isNewData
     ? [
         ...existingData.flowHistory.slice(-maxHistoryPoints + 1),
-        { timestamp, flow: latest.flow_rate }
+        { timestamp, flow: getFlowRate(latest) }
       ]
     : existingData.flowHistory
   
@@ -280,10 +319,10 @@ export function mergeLatestData(
   ]
   
   return {
-    currentTemperature: latest.sand_temp,
-    currentWaterTempIn: latest.water_temp_in,
-    currentWaterTempOut: latest.water_temp_out,
-    currentFlow: latest.flow_rate,
+    currentTemperature: getSandTemp(latest),
+    currentWaterTempIn: getWaterTempIn(latest),
+    currentWaterTempOut: getWaterTempOut(latest),
+    currentFlow: getFlowRate(latest),
     isPumpActive: controlStatus.pump.active,
     pumpLastChanged: new Date(controlStatus.pump.last_changed).getTime(),
     heaters: controlStatus.heaters.map(h => ({

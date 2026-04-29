@@ -57,13 +57,22 @@ async function apiRequest<T>(
 // Type Definitions
 // ============================================================================
 
+export interface TemperatureReading {
+  index: number
+  label: string
+  value: number
+}
+
+export interface FlowRateReading {
+  index: number
+  value: number
+}
+
 export interface SensorData {
   timestamp: string // ISO 8601 UTC
   product_key: string
-  sand_temp: number
-  water_temp_in: number
-  water_temp_out: number
-  flow_rate: number
+  temperatures: TemperatureReading[]
+  flow_rates: FlowRateReading[]
   power_w: number
   energy_kwh: number
   status: 'OK' | 'WARNING' | 'CRITICAL' | 'ERROR'
