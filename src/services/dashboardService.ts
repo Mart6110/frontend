@@ -91,8 +91,8 @@ export async function controlPump(action: 'start' | 'stop'): Promise<api.Control
 /**
  * Control heater (on/off)
  */
-export async function controlHeater(action: 'on' | 'off'): Promise<api.ControlResponse> {
-  return api.controlHeater(action, 'manual')
+export async function controlHeater(index: number, action: 'on' | 'off'): Promise<api.ControlResponse> {
+  return api.controlHeater(index, action, 'manual')
 }
 
 /**

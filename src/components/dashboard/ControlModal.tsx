@@ -4,27 +4,26 @@ import { Dialog } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import * as dashboardService from "@/services/dashboardService"
 
+interface HeaterStatus {
+  index: number
+  active: boolean
+}
+
 interface ControlModalProps {
   trigger: React.ReactNode
   isPumpActive: boolean
-  heater1Active: boolean
-  heater2Active: boolean
-  heater3Active: boolean
+  heaters: HeaterStatus[]
   onUpdate?: () => Promise<void>
 }
 
 export function ControlModal({ 
   trigger, 
   isPumpActive,
-  heater1Active,
-  heater2Active,
-  heater3Active,
+  heaters,
   onUpdate 
 }: ControlModalProps) {
   const [isTogglingPump, setIsTogglingPump] = useState(false)
-  const [isTogglingHeater1, setIsTogglingHeater1] = useState(false)
-  const [isTogglingHeater2, setIsTogglingHeater2] = useState(false)
-  const [isTogglingHeater3, setIsTogglingHeater3] = useState(false)
+  const [togglingHeaterIndex, setTogglingHeaterIndex] = useState<number | null>(null)
 
   const handleTogglePump = async () => {
     setIsTogglingPump(true)
@@ -37,36 +36,14 @@ export function ControlModal({
     }
   }
 
-  const handleToggleHeater1 = async () => {
-    setIsTogglingHeater1(true)
+  const handleToggleHeater = async (heater: HeaterStatus) => {
+    setTogglingHeaterIndex(heater.index)
     try {
-      const action = heater1Active ? 'off' : 'on'
-      await dashboardService.controlHeater(action)
+      const action = heater.active ? 'off' : 'on'
+      await dashboardService.controlHeater(heater.index, action)
       if (onUpdate) await onUpdate()
     } finally {
-      setIsTogglingHeater1(false)
-    }
-  }
-
-  const handleToggleHeater2 = async () => {
-    setIsTogglingHeater2(true)
-    try {
-      const action = heater2Active ? 'off' : 'on'
-      await dashboardService.controlHeater(action)
-      if (onUpdate) await onUpdate()
-    } finally {
-      setIsTogglingHeater2(false)
-    }
-  }
-
-  const handleToggleHeater3 = async () => {
-    setIsTogglingHeater3(true)
-    try {
-      const action = heater3Active ? 'off' : 'on'
-      await dashboardService.controlHeater(action)
-      if (onUpdate) await onUpdate()
-    } finally {
-      setIsTogglingHeater3(false)
+      setTogglingHeaterIndex(null)
     }
   }
 
@@ -154,34 +131,25 @@ export function ControlModal({
                 color="green"
               />
 
-              <Box pt={2}>
-                <Text fontSize="sm" fontWeight="medium" mb={2} color="gray.300">
-                  Varmesystem (3-delt)
-                </Text>
-                <VStack gap={2}>
-                  <ControlRow
-                    label="Varmer 1"
-                    isActive={heater1Active}
-                    onToggle={handleToggleHeater1}
-                    isLoading={isTogglingHeater1}
-                    color="orange"
-                  />
-                  <ControlRow
-                    label="Varmer 2"
-                    isActive={heater2Active}
-                    onToggle={handleToggleHeater2}
-                    isLoading={isTogglingHeater2}
-                    color="orange"
-                  />
-                  <ControlRow
-                    label="Varmer 3"
-                    isActive={heater3Active}
-                    onToggle={handleToggleHeater3}
-                    isLoading={isTogglingHeater3}
-                    color="orange"
-                  />
-                </VStack>
-              </Box>
+              {heaters.length > 0 && (
+                <Box pt={2}>
+                  <Text fontSize="sm" fontWeight="medium" mb={2} color="gray.300">
+                    Varmesystem {heaters.length > 1 ? `(${heaters.length}-delt)` : ''}
+                  </Text>
+                  <VStack gap={2}>
+                    {heaters.map(heater => (
+                      <ControlRow
+                        key={heater.index}
+                        label={`Varmer ${heater.index + 1}`}
+                        isActive={heater.active}
+                        onToggle={() => handleToggleHeater(heater)}
+                        isLoading={togglingHeaterIndex === heater.index}
+                        color="green"
+                      />
+                    ))}
+                  </VStack>
+                </Box>
+              )}
             </VStack>
           </Dialog.Body>
           <Dialog.Footer>

@@ -266,9 +266,7 @@ export function AdvancedViewPage() {
                       </Button>
                     }
                     isPumpActive={displayData?.isPumpActive ?? false}
-                    heater1Active={displayData?.isHeaterActive ?? false}
-                    heater2Active={displayData?.isHeaterActive ?? false}
-                    heater3Active={displayData?.isHeaterActive ?? false}
+                    heaters={displayData?.heaters?.map(h => ({ index: h.index, active: h.active })) ?? []}
                     onUpdate={handleControlUpdate}
                   />
                 }
@@ -277,11 +275,11 @@ export function AdvancedViewPage() {
 
             <GridItem>
               <HeaterStatusCard
-                isActive={displayData?.isHeaterActive ?? false}
+                isActive={displayData?.heaters?.some(h => h.active) ?? false}
                 size="lg"
                 isLoading={isLoading}
-                activeCount={displayData?.isHeaterActive ? 3 : 0}
-                totalCount={3}
+                activeCount={displayData?.heaters?.filter(h => h.active).length ?? 0}
+                totalCount={displayData?.heaters?.length ?? 0}
                 controlButton={
                   <ControlModal
                     trigger={
@@ -290,9 +288,7 @@ export function AdvancedViewPage() {
                       </Button>
                     }
                     isPumpActive={displayData?.isPumpActive ?? false}
-                    heater1Active={displayData?.isHeaterActive ?? false}
-                    heater2Active={displayData?.isHeaterActive ?? false}
-                    heater3Active={displayData?.isHeaterActive ?? false}
+                    heaters={displayData?.heaters?.map(h => ({ index: h.index, active: h.active })) ?? []}
                     onUpdate={handleControlUpdate}
                   />
                 }

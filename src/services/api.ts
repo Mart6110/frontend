@@ -78,12 +78,14 @@ export interface HistoryResponse {
 }
 
 export interface ControlStatus {
-  heater: {
+  heaters: {
+    index: number
     active: boolean
     source: 'manual' | 'rule'
     last_changed: string
-  }
+  }[]
   pump: {
+    index: number
     active: boolean
     source: 'manual' | 'rule'
     last_changed: string
@@ -223,10 +225,10 @@ export async function controlPump(action: 'start' | 'stop', source: 'manual' | '
 /**
  * Control the heater
  */
-export async function controlHeater(action: 'on' | 'off', source: 'manual' | 'rule'): Promise<ControlResponse> {
+export async function controlHeater(index: number, action: 'on' | 'off', source: 'manual' | 'rule'): Promise<ControlResponse> {
   return apiRequest<ControlResponse>('/control/heater', {
     method: 'POST',
-    body: JSON.stringify({ action, source }),
+    body: JSON.stringify({ index, action, source }),
   })
 }
 

@@ -44,7 +44,12 @@ export interface DashboardData {
   currentWaterTempOut: number
   currentFlow: number
   isPumpActive: boolean
-  isHeaterActive: boolean
+  pumpLastChanged?: number
+  heaters: {
+    index: number
+    active: boolean
+    lastChanged?: number
+  }[]
   currentPower: number
   currentEnergy: number
   temperatureHistory: TemperatureData[]
@@ -110,7 +115,12 @@ export function convertHistoryToDashboard(
       currentWaterTempOut: 0,
       currentFlow: 0,
       isPumpActive: false,
-      isHeaterActive: false,
+      pumpLastChanged: undefined,
+      heaters: controlStatus.heaters.map(h => ({
+        index: h.index,
+        active: h.active,
+        lastChanged: new Date(h.last_changed).getTime(),
+      })),
       currentPower: 0,
       currentEnergy: 0,
       temperatureHistory: [],
@@ -153,7 +163,12 @@ export function convertHistoryToDashboard(
     currentWaterTempOut: latest.water_temp_out,
     currentFlow: latest.flow_rate,
     isPumpActive: controlStatus.pump.active,
-    isHeaterActive: controlStatus.heater.active,
+    pumpLastChanged: new Date(controlStatus.pump.last_changed).getTime(),
+    heaters: controlStatus.heaters.map(h => ({
+      index: h.index,
+      active: h.active,
+      lastChanged: new Date(h.last_changed).getTime(),
+    })),
     currentPower: latest.power_w,
     currentEnergy: latest.energy_kwh,
     temperatureHistory,
@@ -180,7 +195,12 @@ export function convertLatestToDashboard(
     currentWaterTempOut: latest.water_temp_out,
     currentFlow: latest.flow_rate,
     isPumpActive: controlStatus.pump.active,
-    isHeaterActive: controlStatus.heater.active,
+    pumpLastChanged: new Date(controlStatus.pump.last_changed).getTime(),
+    heaters: controlStatus.heaters.map(h => ({
+      index: h.index,
+      active: h.active,
+      lastChanged: new Date(h.last_changed).getTime(),
+    })),
     currentPower: latest.power_w,
     currentEnergy: latest.energy_kwh,
     temperatureHistory: [{
@@ -265,7 +285,12 @@ export function mergeLatestData(
     currentWaterTempOut: latest.water_temp_out,
     currentFlow: latest.flow_rate,
     isPumpActive: controlStatus.pump.active,
-    isHeaterActive: controlStatus.heater.active,
+    pumpLastChanged: new Date(controlStatus.pump.last_changed).getTime(),
+    heaters: controlStatus.heaters.map(h => ({
+      index: h.index,
+      active: h.active,
+      lastChanged: new Date(h.last_changed).getTime(),
+    })),
     currentPower: latest.power_w,
     currentEnergy: latest.energy_kwh,
     temperatureHistory,
