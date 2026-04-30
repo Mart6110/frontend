@@ -9,7 +9,7 @@ import { ControlModal } from "@/components/dashboard/ControlModal"
 import { TemperatureChart } from "@/components/dashboard/TemperatureChart"
 import { EnergyChart } from "@/components/dashboard/EnergyChart"
 import { FlowChart } from "@/components/dashboard/FlowChart"
-import { EfficiencyChart } from "@/components/dashboard/EfficiencyChart"
+import { ElectricityPriceChart } from "@/components/dashboard/ElectricityPriceChart"
 import { TemperatureVsPumpChart } from "@/components/dashboard/TemperatureVsPumpChart"
 import { ChartSkeleton } from "@/components/dashboard/Skeletons"
 import { ViewModeToggle } from "@/components/dashboard/ViewModeToggle"
@@ -20,6 +20,7 @@ import { DashboardHeader } from "@/components/dashboard/DashboardHeader"
 import { Widget } from "@/components/ui/widget"
 import { Button } from "@/components/ui/button"
 import { useAppDispatch, useAppSelector } from "@/store/hooks"
+import { api } from "@/store/apiSlice"
 import type { RealtimeTimeConfig } from "@/constants/timeRanges"
 import {
   setAllData,
@@ -60,6 +61,10 @@ export function AdvancedViewPage() {
     startDate: startDateISO,
     endDate: endDateISO,
   } = useAppSelector((state) => state.dashboard.advanced)
+
+  // Fetch electricity price data for today
+  const today = new Date().toISOString().split('T')[0]
+  const { data: electricityPriceData } = api.useGetElectricityPriceQuery({ date: today, area: 'DK2' })
 
   // Track if this is a realtime update vs user-triggered filter change
   const isRealtimeUpdateRef = useRef(false)
@@ -390,12 +395,14 @@ export function AdvancedViewPage() {
                   </Widget>
                 </GridItem>
 
-                {/* Efficiency Trend Chart */}
+                {/* Electricity Price Chart */}
                 <GridItem>
                   <Widget>
-                    <EfficiencyChart
-                      data={displayData?.energyHistory ?? []}
+                    <ElectricityPriceChart
+                      data={electricityPriceData?.prices ?? []}
                       height={300}
+                      area={electricityPriceData?.area}
+                      date={electricityPriceData?.date}
                     />
                   </Widget>
                 </GridItem>
