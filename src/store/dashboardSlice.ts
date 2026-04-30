@@ -36,7 +36,7 @@ const initialState: DashboardState = {
     isFiltering: false,
     viewMode: DEFAULT_VIEW_MODE,
     realtimeConfig: DEFAULT_REALTIME_CONFIG,
-    interval: 'auto',
+    interval: '',
     startDate: subHours(new Date(), DEFAULT_REALTIME_CONFIG.value).toISOString(),
     endDate: new Date().toISOString(),
   },
@@ -46,7 +46,7 @@ const initialState: DashboardState = {
     data: null,
     isLoading: true,
     realtimeConfig: DEFAULT_REALTIME_CONFIG,
-    interval: 'auto',
+    interval: '',
   },
 }
 

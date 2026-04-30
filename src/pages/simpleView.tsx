@@ -64,7 +64,7 @@ export function SimpleViewPage() {
         const from = new Date(to.getTime() - milliseconds)
         
         // Use selected interval or let backend auto-calculate (undefined)
-        const selectedInterval = interval === 'auto' ? undefined : interval
+        const selectedInterval = interval === '' ? undefined : interval
         
         const initialData = await dashboardService.fetchDashboardData({ from, to, interval: selectedInterval })
         dispatch(setSimpleAllData(initialData))

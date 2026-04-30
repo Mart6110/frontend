@@ -2,7 +2,7 @@ import { HStack, Text } from "@chakra-ui/react"
 import { SelectRoot, Select } from "@/components/ui/select"
 import { createListCollection } from "@chakra-ui/react"
 
-export type DataInterval = '1m' | '5m' | '15m' | '30m' | '1h' | '6h' | '1d' | 'auto'
+export type DataInterval = '1m' | '5m' | '15m' | '30m' | '1h' | '6h' | '1d' | ''
 
 interface IntervalSelectorProps {
   value: DataInterval
@@ -13,7 +13,7 @@ interface IntervalSelectorProps {
 
 const intervals = createListCollection({
   items: [
-    { label: "Auto", value: "auto" },
+    { label: "Auto", value: "" },
     { label: "1 minute", value: "1m" },
     { label: "5 minutes", value: "5m" },
     { label: "15 minutes", value: "15m" },
@@ -31,6 +31,9 @@ export function IntervalSelector({ value, onChange, disabled = false, size = "md
     }
   }
 
+  // Use the value directly or default to empty string
+  const displayValue = value || ""
+
   return (
     <HStack gap={2} align="center">
       <Text fontSize={size} fontWeight="medium" color="fg.muted" whiteSpace="nowrap">
@@ -38,7 +41,7 @@ export function IntervalSelector({ value, onChange, disabled = false, size = "md
       </Text>
       <SelectRoot
         collection={intervals}
-        value={[value]}
+        value={[displayValue]}
         onValueChange={handleChange}
         disabled={disabled}
         size={size}
@@ -49,7 +52,7 @@ export function IntervalSelector({ value, onChange, disabled = false, size = "md
         </Select.Trigger>
         <Select.Content>
           {intervals.items.map((interval) => (
-            <Select.Item key={interval.value} item={interval}>
+            <Select.Item key={interval.value || "auto"} item={interval}>
               {interval.label}
             </Select.Item>
           ))}
