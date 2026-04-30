@@ -46,7 +46,7 @@ export function exportDashboardToExcel(data: DashboardData, filename: string = '
   const temperatureData = [
     ['Timestamp', ...sensorLabelsArray.map(label => `${label} (°C)`)],
     ...data.temperatureHistory.map(item => {
-      const row = [formatTimestamp(item.timestamp)]
+      const row: (string | number)[] = [formatTimestamp(item.timestamp)]
       sensorLabelsArray.forEach(label => {
         const temp = item.temperatures.find(t => t.label === label)
         row.push(temp?.value ?? '')
