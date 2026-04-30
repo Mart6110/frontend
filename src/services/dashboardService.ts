@@ -16,8 +16,10 @@ export async function fetchDashboardData(params: {
   interval?: '1m' | '5m' | '15m' | '30m' | '1h' | '6h' | '1d'
 }): Promise<DashboardData> {
   try {
-    // Fetch data in parallel
-    const [history, energyHistory, controlStatus, eventsResponse] = await Promise.all([
+    // Fetch data in parallel - always get absolute latest for current KPIs
+    const [latestData, latestEnergy, history, energyHistory, controlStatus, eventsResponse] = await Promise.all([
+      api.getLatestData(),
+      api.getLatestEnergy(),
       api.getHistoryData({
         from: params.from.toISOString(),
         to: params.to.toISOString(),
@@ -37,7 +39,9 @@ export async function fetchDashboardData(params: {
       }),
     ])
     
-    return transform.convertHistoryToDashboard(
+    return transform.convertHistoryToDashboardWithLatest(
+      latestData,
+      latestEnergy,
       history,
       energyHistory,
       controlStatus,

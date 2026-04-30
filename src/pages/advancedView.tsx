@@ -66,6 +66,21 @@ export function AdvancedViewPage() {
   const today = new Date().toISOString().split('T')[0]
   const { data: electricityPriceData } = api.useGetElectricityPriceQuery({ date: today, area: 'DK2' })
 
+  // Get current hour's electricity price
+  const currentPrice = useMemo(() => {
+    if (!electricityPriceData?.prices) return null
+    const now = new Date()
+    const currentHour = now.getHours()
+    
+    // Find the price entry for the current hour
+    const priceEntry = electricityPriceData.prices.find(p => {
+      const entryHour = new Date(p.hour).getHours()
+      return entryHour === currentHour
+    })
+    
+    return priceEntry?.price_dkk_kwh ?? null
+  }, [electricityPriceData])
+
   // Track if this is a realtime update vs user-triggered filter change
   const isRealtimeUpdateRef = useRef(false)
 
@@ -275,9 +290,9 @@ export function AdvancedViewPage() {
 
             <GridItem>
               <KPICard
-                label={APP_TEXT.DASHBOARD.KPI.POWER}
-                value={displayData?.currentPower.toFixed(0) ?? "0"}
-                unit={APP_TEXT.DASHBOARD.UNITS.POWER}
+                label="Elpris"
+                value={currentPrice !== null ? currentPrice.toFixed(3) : "—"}
+                unit="DKK/kWh"
                 isLoading={isLoading}
               />
             </GridItem>

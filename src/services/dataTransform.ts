@@ -261,6 +261,113 @@ export function convertHistoryToDashboard(
 }
 
 /**
+ * Convert API history response to dashboard data format with absolute latest sensor data
+ * Uses absolute latest sensor reading for current KPIs, historical data for charts
+ */
+export function convertHistoryToDashboardWithLatest(
+  latestData: SensorData,
+  latestEnergy: EnergyReading,
+  history: HistoryResponse,
+  energyHistory: EnergyHistoryResponse,
+  controlStatus: ControlStatus,
+  events: SystemEvent[]
+): DashboardData {
+  const { data } = history
+  const { data: energyData } = energyHistory
+  
+  if (data.length === 0) {
+    // Return empty dashboard data but with latest sensor values
+    return {
+      currentTemperature: getSandTemp(latestData),
+      currentSandSide: getSandSide(latestData),
+      currentSandCore: getSandCore(latestData),
+      currentWaterTempIn: getWaterTempIn(latestData),
+      currentWaterTempOut: getWaterTempOut(latestData),
+      currentFlow: getFlowRate(latestData),
+      isPumpActive: controlStatus.pump.active,
+      pumpLastChanged: new Date(controlStatus.pump.last_changed).getTime(),
+      heaters: controlStatus.heaters.map(h => ({
+        index: h.index,
+        active: h.active,
+        lastChanged: new Date(h.last_changed).getTime(),
+      })),
+      currentPower: latestData.power_w,
+      currentEnergy: latestEnergy.energy_kwh,
+      temperatureHistory: [],
+      energyHistory: [],
+      flowHistory: [],
+      pumpHistory: [],
+      events: events.map(convertEvent),
+    }
+  }
+  
+  // Convert history arrays
+  const temperatureHistory: TemperatureData[] = data.map(d => ({
+    timestamp: new Date(d.timestamp).getTime(),
+    temperatures: d.temperatures.map(t => ({
+      label: t.label,
+      value: t.value,
+    })),
+  }))
+  
+  // Convert energy history from dedicated energy endpoint
+  const energyHistoryConverted: EnergyData[] = energyData.map(e => ({
+    timestamp: new Date(e.timestamp).getTime(),
+    energyIn: 0, // No longer available from energy endpoint
+    energyOut: e.energy_kwh,
+  }))
+  
+  // If we need power data, merge it from sensor history
+  const energyHistoryWithPower: EnergyData[] = data.map(d => {
+    const timestamp = new Date(d.timestamp).getTime()
+    // Find matching energy reading by timestamp
+    const matchingEnergy = energyHistoryConverted.find(e => 
+      Math.abs(e.timestamp - timestamp) < 60000 // Within 1 minute
+    )
+    return {
+      timestamp,
+      energyIn: d.power_w / 1000, // Convert W to kW for power
+      energyOut: matchingEnergy?.energyOut ?? 0,
+    }
+  })
+  
+  const flowHistory: FlowData[] = data.map(d => ({
+    timestamp: new Date(d.timestamp).getTime(),
+    flow: getFlowRate(d),
+  }))
+  
+  // Build pump history from control status
+  const pumpHistory: PumpStatus[] = data.map(d => ({
+    timestamp: new Date(d.timestamp).getTime(),
+    active: controlStatus.pump.active,
+  }))
+  
+  // Use absolute latest sensor data for current KPIs
+  return {
+    currentTemperature: getSandTemp(latestData),
+    currentSandSide: getSandSide(latestData),
+    currentSandCore: getSandCore(latestData),
+    currentWaterTempIn: getWaterTempIn(latestData),
+    currentWaterTempOut: getWaterTempOut(latestData),
+    currentFlow: getFlowRate(latestData),
+    isPumpActive: controlStatus.pump.active,
+    pumpLastChanged: new Date(controlStatus.pump.last_changed).getTime(),
+    heaters: controlStatus.heaters.map(h => ({
+      index: h.index,
+      active: h.active,
+      lastChanged: new Date(h.last_changed).getTime(),
+    })),
+    currentPower: latestData.power_w,
+    currentEnergy: latestEnergy.energy_kwh,
+    temperatureHistory,
+    energyHistory: energyHistoryWithPower,
+    flowHistory,
+    pumpHistory,
+    events: events.map(convertEvent),
+  }
+}
+
+/**
  * Convert single sensor reading to dashboard data
  */
 export function convertLatestToDashboard(
