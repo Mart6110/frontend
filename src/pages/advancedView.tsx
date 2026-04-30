@@ -206,7 +206,7 @@ export function AdvancedViewPage() {
         <VStack align="start" gap={4} w="-webkit-fill-available">
           {/* KPI Cards Grid */}
           <Grid
-            templateColumns={{ base: "1fr", sm: "repeat(2, 1fr)", lg: "repeat(4, 1fr)" }}
+            templateColumns={{ base: "1fr", sm: "repeat(2, 1fr)", md: "repeat(4, 1fr)", lg: "repeat(4, 1fr)" }}
             gap={4}
             w="full"
           >

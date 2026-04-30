@@ -140,7 +140,7 @@ export function SimpleViewPage() {
         <VStack align="start" gap={4} w="-webkit-fill-available">
           {/* KPI Cards Grid */}
           <Grid
-            templateColumns={{ base: "1fr", sm: "repeat(2, 1fr)", lg: "repeat(3, 1fr)" }}
+            templateColumns={{ base: "1fr", sm: "repeat(2, 1fr)", md: "repeat(3, 1fr)", lg: "repeat(3, 1fr)" }}
             gap={4}
             w="full"
           >
