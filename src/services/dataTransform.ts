@@ -342,6 +342,37 @@ export function convertHistoryToDashboardWithLatest(
     active: controlStatus.pump.active,
   }))
   
+  // Add the absolute latest data point to history arrays if it's newer than the last historical point
+  const latestTimestamp = new Date(latestData.timestamp).getTime()
+  const lastHistoricalTimestamp = data.length > 0 ? new Date(data[data.length - 1].timestamp).getTime() : 0
+  
+  if (latestTimestamp > lastHistoricalTimestamp) {
+    // Append latest data point to ensure charts match KPI values
+    temperatureHistory.push({
+      timestamp: latestTimestamp,
+      temperatures: latestData.temperatures.map(t => ({
+        label: t.label,
+        value: t.value,
+      })),
+    })
+    
+    energyHistoryWithPower.push({
+      timestamp: latestTimestamp,
+      energyIn: latestData.power_w / 1000,
+      energyOut: latestEnergy.energy_kwh,
+    })
+    
+    flowHistory.push({
+      timestamp: latestTimestamp,
+      flow: getFlowRate(latestData),
+    })
+    
+    pumpHistory.push({
+      timestamp: latestTimestamp,
+      active: controlStatus.pump.active,
+    })
+  }
+  
   // Use absolute latest sensor data for current KPIs
   return {
     currentTemperature: getSandTemp(latestData),
