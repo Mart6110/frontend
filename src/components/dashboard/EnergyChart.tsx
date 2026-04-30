@@ -21,7 +21,7 @@ export const EnergyChart = memo(function EnergyChart({
   enableTableView = true 
 }: EnergyChartProps) {
   const getOption = useCallback((chartData: typeof data, legend: boolean): EChartsOption => {
-    const sampledData = sampleData(chartData, 500)
+    const sampledData = sampleData(chartData, 5000)
     const timestamps = sampledData.map(point => formatTimestamp(point.timestamp))
     
     return createBaseChartConfig({

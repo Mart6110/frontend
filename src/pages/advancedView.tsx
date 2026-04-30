@@ -1,9 +1,7 @@
 import { VStack, Grid, GridItem, Box } from "@chakra-ui/react"
 import { useEffect, useRef, useMemo } from "react"
-import { subHours } from "date-fns"
 import { APP_TEXT, APP_CONFIG } from "@/constants/text"
 import * as dashboardService from "@/services/dashboardService"
-import * as dataTransform from "@/services/dataTransform"
 import { KPICard } from "@/components/dashboard/KPICard"
 import { PumpStatusCard } from "@/components/dashboard/PumpStatusCard"
 import { HeaterStatusCard } from "@/components/dashboard/HeaterStatusCard"
@@ -26,7 +24,6 @@ import {
   setAllData,
   setDisplayData,
   setIsLoading,
-  setIsFiltering,
   setViewMode,
   setRealtimeConfig,
   setStartDate,
@@ -84,64 +81,53 @@ export function AdvancedViewPage() {
     [endDateISO]
   )
 
-  // Initialize with historical data
+  // Fetch data based on view mode and parameters
   useEffect(() => {
     const loadData = async () => {
       dispatch(setIsLoading(true))
       try {
-        // Fetch 30 days of historical data
-        const to = new Date()
-        const from = subHours(to, 24 * 30) // 30 days
+        let from: Date
+        let to: Date
+
+        if (viewMode === 'realtime') {
+          // Fetch data based on realtime config
+          to = new Date()
+          const milliseconds = timeConfigToMilliseconds(realtimeConfig)
+          from = new Date(to.getTime() - milliseconds)
+        } else {
+          // Fetch data based on date range
+          if (!startDate || !endDate) {
+            dispatch(setIsLoading(false))
+            return
+          }
+          from = startDate
+          to = endDate
+        }
+
         const interval = dashboardService.calculateInterval(from, to)
-        
-        const initialData = await dashboardService.fetchDashboardData({ from, to, interval })
-        dispatch(setAllData(initialData))
+        const fetchedData = await dashboardService.fetchDashboardData({ from, to, interval })
+        dispatch(setAllData(fetchedData))
+        dispatch(setDisplayData(fetchedData))
       } catch (error) {
         console.error('Failed to load dashboard data:', error)
-        // Could dispatch an error action here
       } finally {
         dispatch(setIsLoading(false))
       }
     }
 
     loadData()
-  }, [dispatch])
+  }, [dispatch, viewMode, realtimeConfig, startDate, endDate])
 
-  // Update display data when parameters change
+  // Update display data when realtime updates come in
   useEffect(() => {
     if (!allData) return
 
-    // Skip filtering if this is just a realtime data update in realtime mode
+    // Only update display if this is a realtime update
     if (isRealtimeUpdateRef.current && viewMode === 'realtime') {
       isRealtimeUpdateRef.current = false
-      // Just update displayData directly from allData for realtime mode
-      const milliseconds = timeConfigToMilliseconds(realtimeConfig)
-      const filteredData = dataTransform.filterDataByTimeRange(allData, milliseconds)
-      dispatch(setDisplayData(filteredData))
-      return
+      dispatch(setDisplayData(allData))
     }
-
-    isRealtimeUpdateRef.current = false
-    dispatch(setIsFiltering(true))
-
-    let filteredData
-
-    if (viewMode === 'realtime') {
-      // Realtime mode: show last X time from now
-      const milliseconds = timeConfigToMilliseconds(realtimeConfig)
-      filteredData = dataTransform.filterDataByTimeRange(allData, milliseconds)
-    } else {
-      // Date range mode: show specific date range
-      if (!startDate || !endDate) {
-        dispatch(setIsFiltering(false))
-        return
-      }
-      filteredData = dataTransform.filterDataByDateRange(allData, startDate, endDate)
-    }
-
-    dispatch(setDisplayData(filteredData))
-    dispatch(setIsFiltering(false))
-  }, [allData, viewMode, realtimeConfig, startDate, endDate, dispatch])
+  }, [allData, viewMode, dispatch])
 
   // Real-time updates every 30 seconds
   useEffect(() => {
@@ -168,7 +154,6 @@ export function AdvancedViewPage() {
         <DashboardHeader
           events={displayData?.events}
           isLoading={isLoading}
-          maxEvents={100}
           dashboardData={displayData ?? undefined}
           enableExport={true}
         >
@@ -206,7 +191,7 @@ export function AdvancedViewPage() {
         <VStack align="start" gap={4} w="-webkit-fill-available">
           {/* KPI Cards Grid */}
           <Grid
-            templateColumns={{ base: "1fr", sm: "repeat(2, 1fr)", md: "repeat(4, 1fr)", lg: "repeat(4, 1fr)" }}
+            templateColumns={{ base: "1fr", sm: "repeat(4, 1fr)", md: "repeat(4, 1fr)", lg: "repeat(4, 1fr)" }}
             gap={4}
             w="full"
           >

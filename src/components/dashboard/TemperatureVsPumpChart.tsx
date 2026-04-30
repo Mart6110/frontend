@@ -38,7 +38,7 @@ export const TemperatureVsPumpChart = memo(function TemperatureVsPumpChart({
 
   const option = useMemo((): EChartsOption => {
     // Sample data for better performance
-    const sampledTempData = sampleData(temperatureData, 500)
+    const sampledTempData = sampleData(temperatureData, 5000)
     const timestamps = sampledTempData.map(point => formatTimestamp(point.timestamp))
     const temperatures = sampledTempData.map(point => getSandCoreTemp(point.temperatures))
     const pumpStatus = sampledTempData.map(tempPoint => {

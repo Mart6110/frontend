@@ -1,9 +1,7 @@
 import { VStack, Grid, GridItem, Box } from "@chakra-ui/react"
 import { useEffect, useRef } from "react"
-import { subHours } from "date-fns"
 import { APP_TEXT, APP_CONFIG } from "@/constants/text"
 import * as dashboardService from "@/services/dashboardService"
-import * as dataTransform from "@/services/dataTransform"
 import { KPICard } from "@/components/dashboard/KPICard"
 import { PumpStatusCard } from "@/components/dashboard/PumpStatusCard"
 import { HeaterStatusCard } from "@/components/dashboard/HeaterStatusCard"
@@ -19,7 +17,6 @@ import { useAppDispatch, useAppSelector } from "@/store/hooks"
 import type { RealtimeTimeConfig } from "@/constants/timeRanges"
 import { 
   setSimpleAllData,
-  setSimpleDisplayData, 
   setSimpleData, 
   setSimpleIsLoading,
   setSimpleRealtimeConfig 
@@ -55,13 +52,14 @@ export function SimpleViewPage() {
     dispatch(setSimpleAllData(updatedData))
   }
 
-  // Initialize with historical data (30 days to support longer time ranges)
+  // Initialize with historical data based on initial realtime config
   useEffect(() => {
     const loadData = async () => {
       dispatch(setSimpleIsLoading(true))
       try {
         const to = new Date()
-        const from = subHours(to, 24 * 30) // 30 days
+        const milliseconds = timeConfigToMilliseconds(realtimeConfig)
+        const from = new Date(to.getTime() - milliseconds)
         const interval = dashboardService.calculateInterval(from, to)
         
         const initialData = await dashboardService.fetchDashboardData({ from, to, interval })
@@ -75,7 +73,7 @@ export function SimpleViewPage() {
     }
     
     loadData()
-  }, [dispatch])
+  }, [dispatch, realtimeConfig])
 
   // Update display data when realtimeConfig changes
   useEffect(() => {
@@ -84,18 +82,10 @@ export function SimpleViewPage() {
     // Skip filtering if this is just a realtime data update
     if (isRealtimeUpdateRef.current) {
       isRealtimeUpdateRef.current = false
-      const milliseconds = timeConfigToMilliseconds(realtimeConfig)
-      const filteredData = dataTransform.filterDataByTimeRange(allData, milliseconds)
-      dispatch(setSimpleDisplayData(filteredData))
-      dispatch(setSimpleData(filteredData))
+      dispatch(setSimpleData(allData))
       return
     }
-
-    const milliseconds = timeConfigToMilliseconds(realtimeConfig)
-    const filteredData = dataTransform.filterDataByTimeRange(allData, milliseconds)
-    dispatch(setSimpleDisplayData(filteredData))
-    dispatch(setSimpleData(filteredData))
-  }, [allData, realtimeConfig, dispatch])
+  }, [allData, dispatch])
 
   // Real-time updates every 15 seconds
   useEffect(() => {
@@ -122,7 +112,6 @@ export function SimpleViewPage() {
         <DashboardHeader 
           events={data?.events}
           isLoading={isLoading}
-          maxEvents={50}
           dashboardData={data ?? undefined}
           enableExport={true}
         >
@@ -140,7 +129,7 @@ export function SimpleViewPage() {
         <VStack align="start" gap={4} w="-webkit-fill-available">
           {/* KPI Cards Grid */}
           <Grid
-            templateColumns={{ base: "1fr", sm: "repeat(2, 1fr)", md: "repeat(3, 1fr)", lg: "repeat(3, 1fr)" }}
+            templateColumns={{ base: "1fr", sm: "repeat(3, 1fr)", md: "repeat(3, 1fr)", lg: "repeat(3, 1fr)" }}
             gap={4}
             w="full"
           >

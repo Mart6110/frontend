@@ -51,7 +51,7 @@ export const TemperatureChart = memo(function TemperatureChart({
   }
 
   const getOption = useCallback((chartData: typeof data, legend: boolean): EChartsOption => {
-    const sampledData = sampleData(chartData, 500)
+    const sampledData = sampleData(chartData, 5000)
     const timestamps = sampledData.map(point => formatTimestamp(point.timestamp))
     
     // Create a series for each temperature sensor
