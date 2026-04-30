@@ -11,6 +11,7 @@ import { EnergyChart } from "@/components/dashboard/EnergyChart"
 import { ChartSkeleton } from "@/components/dashboard/Skeletons"
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader"
 import { RealtimeTimeSelector } from "@/components/dashboard/RealtimeHoursSelector"
+import { IntervalSelector } from "@/components/dashboard/IntervalSelector"
 import { Widget } from "@/components/ui/widget"
 import { Button } from "@/components/ui/button"
 import { useAppDispatch, useAppSelector } from "@/store/hooks"
@@ -19,7 +20,8 @@ import {
   setSimpleAllData,
   setSimpleData, 
   setSimpleIsLoading,
-  setSimpleRealtimeConfig 
+  setSimpleRealtimeConfig,
+  setSimpleInterval
 } from "@/store/dashboardSlice"
 
 // Helper function to convert time config to milliseconds
@@ -39,7 +41,7 @@ function timeConfigToMilliseconds(config: RealtimeTimeConfig): number {
 
 export function SimpleViewPage() {
   const dispatch = useAppDispatch()
-  const { allData, data, isLoading, realtimeConfig } = useAppSelector((state) => state.dashboard.simple)
+  const { allData, data, isLoading, realtimeConfig, interval } = useAppSelector((state) => state.dashboard.simple)
   
   // Track if this is a realtime update vs user-triggered filter change
   const isRealtimeUpdateRef = useRef(false)
@@ -60,9 +62,11 @@ export function SimpleViewPage() {
         const to = new Date()
         const milliseconds = timeConfigToMilliseconds(realtimeConfig)
         const from = new Date(to.getTime() - milliseconds)
-        const interval = dashboardService.calculateInterval(from, to)
         
-        const initialData = await dashboardService.fetchDashboardData({ from, to, interval })
+        // Use selected interval or let backend auto-calculate (undefined)
+        const selectedInterval = interval === 'auto' ? undefined : interval
+        
+        const initialData = await dashboardService.fetchDashboardData({ from, to, interval: selectedInterval })
         dispatch(setSimpleAllData(initialData))
         dispatch(setSimpleData(initialData))
       } catch (error) {
@@ -73,7 +77,7 @@ export function SimpleViewPage() {
     }
     
     loadData()
-  }, [dispatch, realtimeConfig])
+  }, [dispatch, realtimeConfig, interval])
 
   // Update display data when realtimeConfig changes
   useEffect(() => {
@@ -118,6 +122,12 @@ export function SimpleViewPage() {
           <RealtimeTimeSelector
             value={realtimeConfig}
             onChange={(config) => dispatch(setSimpleRealtimeConfig(config))}
+            disabled={isLoading}
+            size="sm"
+          />
+          <IntervalSelector
+            value={interval}
+            onChange={(value) => dispatch(setSimpleInterval(value))}
             disabled={isLoading}
             size="sm"
           />

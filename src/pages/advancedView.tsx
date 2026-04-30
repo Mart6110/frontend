@@ -15,6 +15,7 @@ import { ChartSkeleton } from "@/components/dashboard/Skeletons"
 import { ViewModeToggle } from "@/components/dashboard/ViewModeToggle"
 import { RealtimeTimeSelector } from "@/components/dashboard/RealtimeHoursSelector"
 import { DateRangeSelector } from "@/components/dashboard/DateRangeSelector"
+import { IntervalSelector } from "@/components/dashboard/IntervalSelector"
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader"
 import { Widget } from "@/components/ui/widget"
 import { Button } from "@/components/ui/button"
@@ -28,6 +29,7 @@ import {
   setRealtimeConfig,
   setStartDate,
   setEndDate,
+  setInterval as setDataInterval,
 } from "@/store/dashboardSlice"
 
 // Helper function to convert time config to milliseconds
@@ -54,6 +56,7 @@ export function AdvancedViewPage() {
     isFiltering,
     viewMode,
     realtimeConfig,
+    interval,
     startDate: startDateISO,
     endDate: endDateISO,
   } = useAppSelector((state) => state.dashboard.advanced)
@@ -104,8 +107,10 @@ export function AdvancedViewPage() {
           to = endDate
         }
 
-        const interval = dashboardService.calculateInterval(from, to)
-        const fetchedData = await dashboardService.fetchDashboardData({ from, to, interval })
+        // Use selected interval or let backend auto-calculate (undefined)
+        const selectedInterval = interval === 'auto' ? undefined : interval
+
+        const fetchedData = await dashboardService.fetchDashboardData({ from, to, interval: selectedInterval })
         dispatch(setAllData(fetchedData))
         dispatch(setDisplayData(fetchedData))
       } catch (error) {
@@ -116,7 +121,7 @@ export function AdvancedViewPage() {
     }
 
     loadData()
-  }, [dispatch, viewMode, realtimeConfig, startDate, endDate])
+  }, [dispatch, viewMode, realtimeConfig, interval, startDate, endDate])
 
   // Update display data when realtime updates come in
   useEffect(() => {
@@ -133,7 +138,7 @@ export function AdvancedViewPage() {
   useEffect(() => {
     if (!allData) return
 
-    const interval = setInterval(async () => {
+    const updateInterval = setInterval(async () => {
       try {
         const { data, energyData, controlStatus, events } = await dashboardService.fetchLatestData()
         isRealtimeUpdateRef.current = true
@@ -144,7 +149,7 @@ export function AdvancedViewPage() {
       }
     }, APP_CONFIG.DASHBOARD.UPDATE_INTERVALS.REAL_TIME)
 
-    return () => clearInterval(interval)
+    return () => clearInterval(updateInterval)
   }, [allData, dispatch])
 
   return (
@@ -183,6 +188,13 @@ export function AdvancedViewPage() {
               showTime
             />
           )}
+
+          <IntervalSelector
+            value={interval}
+            onChange={(value) => dispatch(setDataInterval(value))}
+            disabled={isLoading || isFiltering}
+            size="sm"
+          />
         </DashboardHeader>
       </Box>
 

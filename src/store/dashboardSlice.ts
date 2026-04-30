@@ -2,6 +2,7 @@ import { createSlice, type PayloadAction } from "@reduxjs/toolkit"
 import { subHours } from "date-fns"
 import { DEFAULT_VIEW_MODE, DEFAULT_REALTIME_CONFIG, type ViewMode, type RealtimeTimeConfig } from "@/constants/timeRanges"
 import type { DashboardData } from "@/services/dataTransform"
+import type { DataInterval } from "@/components/dashboard/IntervalSelector"
 
 interface DashboardState {
   // Advanced View State
@@ -12,6 +13,7 @@ interface DashboardState {
     isFiltering: boolean
     viewMode: ViewMode
     realtimeConfig: RealtimeTimeConfig
+    interval: DataInterval
     startDate: string | null // ISO string for serialization
     endDate: string | null // ISO string for serialization
   }
@@ -22,6 +24,7 @@ interface DashboardState {
     data: DashboardData | null
     isLoading: boolean
     realtimeConfig: RealtimeTimeConfig
+    interval: DataInterval
   }
 }
 
@@ -33,6 +36,7 @@ const initialState: DashboardState = {
     isFiltering: false,
     viewMode: DEFAULT_VIEW_MODE,
     realtimeConfig: DEFAULT_REALTIME_CONFIG,
+    interval: 'auto',
     startDate: subHours(new Date(), DEFAULT_REALTIME_CONFIG.value).toISOString(),
     endDate: new Date().toISOString(),
   },
@@ -42,6 +46,7 @@ const initialState: DashboardState = {
     data: null,
     isLoading: true,
     realtimeConfig: DEFAULT_REALTIME_CONFIG,
+    interval: 'auto',
   },
 }
 
@@ -98,6 +103,12 @@ const dashboardSlice = createSlice({
     setSimpleRealtimeConfig(state, action: PayloadAction<RealtimeTimeConfig>) {
       state.simple.realtimeConfig = action.payload
     },
+    setInterval(state, action: PayloadAction<DataInterval>) {
+      state.advanced.interval = action.payload
+    },
+    setSimpleInterval(state, action: PayloadAction<DataInterval>) {
+      state.simple.interval = action.payload
+    },
   },
 })
 
@@ -112,11 +123,13 @@ export const {
   setStartDate,
   setEndDate,
   setDateRange,
+  setInterval,
   setSimpleAllData,
   setSimpleDisplayData,
   setSimpleData,
   setSimpleIsLoading,
   setSimpleRealtimeConfig,
+  setSimpleInterval,
 } = dashboardSlice.actions
 
 export default dashboardSlice.reducer
