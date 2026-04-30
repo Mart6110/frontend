@@ -66,11 +66,36 @@ export function AdvancedViewPage() {
 
   // Control handler for modal updates
   const handleControlUpdate = async () => {
-    // Refresh data after any control action from modal
-    if (viewMode === 'realtime') {
-      const { data: latestData, energyData, controlStatus, events } = await dashboardService.fetchLatestData()
-      const updatedData = dashboardService.updateDashboardWithLatest(allData!, latestData, energyData, controlStatus, events)
-      dispatch(setAllData(updatedData))
+    // Refetch full dashboard data after control action to update UI
+    try {
+      dispatch(setIsLoading(true))
+      
+      if (viewMode === 'realtime') {
+        const to = new Date()
+        const milliseconds = timeConfigToMilliseconds(realtimeConfig)
+        const from = new Date(to.getTime() - milliseconds)
+        const selectedInterval = interval === '' ? undefined : interval
+        
+        const updatedData = await dashboardService.fetchDashboardData({ from, to, interval: selectedInterval })
+        dispatch(setAllData(updatedData))
+        dispatch(setDisplayData(updatedData))
+      } else {
+        // Date range mode
+        if (startDate && endDate) {
+          const selectedInterval = interval === '' ? undefined : interval
+          const updatedData = await dashboardService.fetchDashboardData({ 
+            from: startDate, 
+            to: endDate,
+            interval: selectedInterval 
+          })
+          dispatch(setAllData(updatedData))
+          dispatch(setDisplayData(updatedData))
+        }
+      }
+    } catch (error) {
+      console.error('Failed to refresh dashboard data:', error)
+    } finally {
+      dispatch(setIsLoading(false))
     }
   }
 

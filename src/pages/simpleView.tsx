@@ -48,10 +48,19 @@ export function SimpleViewPage() {
 
   // Control handler for modal updates
   const handleControlUpdate = async () => {
-    // Refresh data after any control action from modal
-    const { data: latestData, energyData, controlStatus, events } = await dashboardService.fetchLatestData()
-    const updatedData = dashboardService.updateDashboardWithLatest(allData!, latestData, energyData, controlStatus, events)
-    dispatch(setSimpleAllData(updatedData))
+    // Refetch full dashboard data after control action to update UI
+    try {
+      const to = new Date()
+      const milliseconds = timeConfigToMilliseconds(realtimeConfig)
+      const from = new Date(to.getTime() - milliseconds)
+      const selectedInterval = interval === '' ? undefined : interval
+      
+      const updatedData = await dashboardService.fetchDashboardData({ from, to, interval: selectedInterval })
+      dispatch(setSimpleAllData(updatedData))
+      dispatch(setSimpleData(updatedData))
+    } catch (error) {
+      console.error('Failed to refresh dashboard data:', error)
+    }
   }
 
   // Initialize with historical data based on initial realtime config
