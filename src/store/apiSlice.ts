@@ -94,11 +94,12 @@ export const api = createApi({
         method: 'POST',
         body,
       }),
-      invalidatesTags: ['Control', 'Events'],
+      invalidatesTags: ['Control', 'Events', 'Data'],
     }),
     
     // POST /control/heater - Control heater
     controlHeater: builder.mutation<ControlActionResponse, {
+      index: number
       action: HeaterAction
       source: ActionSource
     }>({
@@ -107,7 +108,7 @@ export const api = createApi({
         method: 'POST',
         body,
       }),
-      invalidatesTags: ['Control', 'Events'],
+      invalidatesTags: ['Control', 'Events', 'Data'],
     }),
     
     // GET /control/status - Get pump and heater status

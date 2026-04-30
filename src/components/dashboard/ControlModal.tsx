@@ -2,7 +2,7 @@ import { useState } from "react"
 import { Box, Text, VStack, HStack, Portal } from "@chakra-ui/react"
 import { Dialog } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
-import * as dashboardService from "@/services/dashboardService"
+import { useControlPumpMutation, useControlHeaterMutation } from "@/store/apiSlice"
 
 interface HeaterStatus {
   index: number
@@ -22,6 +22,8 @@ export function ControlModal({
   heaters,
   onUpdate 
 }: ControlModalProps) {
+  const [controlPump] = useControlPumpMutation()
+  const [controlHeater] = useControlHeaterMutation()
   const [isTogglingPump, setIsTogglingPump] = useState(false)
   const [togglingHeaterIndex, setTogglingHeaterIndex] = useState<number | null>(null)
 
@@ -29,7 +31,8 @@ export function ControlModal({
     setIsTogglingPump(true)
     try {
       const action = isPumpActive ? 'stop' : 'start'
-      await dashboardService.controlPump(action)
+      await controlPump({ action, source: 'manual' }).unwrap()
+      // RTK Query will automatically invalidate cache tags, triggering refetch of queries
       if (onUpdate) await onUpdate()
     } finally {
       setIsTogglingPump(false)
@@ -40,7 +43,8 @@ export function ControlModal({
     setTogglingHeaterIndex(heater.index)
     try {
       const action = heater.active ? 'off' : 'on'
-      await dashboardService.controlHeater(heater.index, action)
+      await controlHeater({ index: heater.index, action, source: 'manual' }).unwrap()
+      // RTK Query will automatically invalidate cache tags, triggering refetch of queries
       if (onUpdate) await onUpdate()
     } finally {
       setTogglingHeaterIndex(null)
