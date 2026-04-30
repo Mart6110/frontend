@@ -50,8 +50,8 @@ export function SimpleViewPage() {
   // Control handler for modal updates
   const handleControlUpdate = async () => {
     // Refresh data after any control action from modal
-    const { data: latestData, controlStatus, events } = await dashboardService.fetchLatestData()
-    const updatedData = dashboardService.updateDashboardWithLatest(allData!, latestData, controlStatus, events)
+    const { data: latestData, energyData, controlStatus, events } = await dashboardService.fetchLatestData()
+    const updatedData = dashboardService.updateDashboardWithLatest(allData!, latestData, energyData, controlStatus, events)
     dispatch(setSimpleAllData(updatedData))
   }
 
@@ -103,9 +103,9 @@ export function SimpleViewPage() {
 
     const interval = setInterval(async () => {
       try {
-        const { data, controlStatus, events } = await dashboardService.fetchLatestData()
+        const { data, energyData, controlStatus, events } = await dashboardService.fetchLatestData()
         isRealtimeUpdateRef.current = true
-        const updatedData = dashboardService.updateDashboardWithLatest(allData, data, controlStatus, events)
+        const updatedData = dashboardService.updateDashboardWithLatest(allData, data, energyData, controlStatus, events)
         dispatch(setSimpleAllData(updatedData))
       } catch (error) {
         console.error('Failed to fetch latest data:', error)

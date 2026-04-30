@@ -1,7 +1,7 @@
 // Data Transformation Service
 // Converts API responses to dashboard data format
 
-import type { SensorData, HistoryResponse, ControlStatus, SystemEvent } from './api'
+import type { SensorData, HistoryResponse, EnergyHistoryResponse, EnergyReading, ControlStatus, SystemEvent } from './api'
 
 // Helper functions to extract temperature values from sensor data
 function getSandTemp(data: SensorData): number {
@@ -141,10 +141,12 @@ function convertEvent(event: SystemEvent): DashboardEvent {
  */
 export function convertHistoryToDashboard(
   history: HistoryResponse,
+  energyHistory: EnergyHistoryResponse,
   controlStatus: ControlStatus,
   events: SystemEvent[]
 ): DashboardData {
   const { data } = history
+  const { data: energyData } = energyHistory
   
   if (data.length === 0) {
     // Return empty dashboard data
@@ -161,7 +163,7 @@ export function convertHistoryToDashboard(
         lastChanged: new Date(h.last_changed).getTime(),
       })),
       currentPower: 0,
-      currentEnergy: 0,
+      currentEnergy: energyData.length > 0 ? energyData[energyData.length - 1].energy_kwh : 0,
       temperatureHistory: [],
       energyHistory: [],
       flowHistory: [],
@@ -172,6 +174,7 @@ export function convertHistoryToDashboard(
   
   // Get latest data point
   const latest = data[data.length - 1]
+  const latestEnergy = energyData.length > 0 ? energyData[energyData.length - 1] : null
   
   // Convert history arrays
   const temperatureHistory: TemperatureData[] = data.map(d => ({
@@ -179,11 +182,26 @@ export function convertHistoryToDashboard(
     temperature: getSandTemp(d),
   }))
   
-  const energyHistory: EnergyData[] = data.map(d => ({
-    timestamp: new Date(d.timestamp).getTime(),
-    energyIn: d.power_w / 1000, // Convert W to kW for power
-    energyOut: d.energy_kwh, // Accumulated energy in kWh
+  // Convert energy history from dedicated energy endpoint
+  const energyHistoryConverted: EnergyData[] = energyData.map(e => ({
+    timestamp: new Date(e.timestamp).getTime(),
+    energyIn: 0, // No longer available from energy endpoint
+    energyOut: e.energy_kwh,
   }))
+  
+  // If we need power data, merge it from sensor history
+  const energyHistoryWithPower: EnergyData[] = data.map(d => {
+    const timestamp = new Date(d.timestamp).getTime()
+    // Find matching energy reading by timestamp
+    const matchingEnergy = energyHistoryConverted.find(e => 
+      Math.abs(e.timestamp - timestamp) < 60000 // Within 1 minute
+    )
+    return {
+      timestamp,
+      energyIn: d.power_w / 1000, // Convert W to kW for power
+      energyOut: matchingEnergy?.energyOut ?? 0,
+    }
+  })
   
   const flowHistory: FlowData[] = data.map(d => ({
     timestamp: new Date(d.timestamp).getTime(),
@@ -209,9 +227,9 @@ export function convertHistoryToDashboard(
       lastChanged: new Date(h.last_changed).getTime(),
     })),
     currentPower: latest.power_w,
-    currentEnergy: latest.energy_kwh,
+    currentEnergy: latestEnergy?.energy_kwh ?? 0,
     temperatureHistory,
-    energyHistory,
+    energyHistory: energyHistoryWithPower,
     flowHistory,
     pumpHistory,
     events: events.map(convertEvent),
@@ -223,6 +241,7 @@ export function convertHistoryToDashboard(
  */
 export function convertLatestToDashboard(
   latest: SensorData,
+  latestEnergy: EnergyReading,
   controlStatus: ControlStatus,
   events: SystemEvent[]
 ): DashboardData {
@@ -241,7 +260,7 @@ export function convertLatestToDashboard(
       lastChanged: new Date(h.last_changed).getTime(),
     })),
     currentPower: latest.power_w,
-    currentEnergy: latest.energy_kwh,
+    currentEnergy: latestEnergy.energy_kwh,
     temperatureHistory: [{
       timestamp,
       temperature: getSandTemp(latest),
@@ -249,7 +268,7 @@ export function convertLatestToDashboard(
     energyHistory: [{
       timestamp,
       energyIn: latest.power_w / 1000,
-      energyOut: latest.energy_kwh,
+      energyOut: latestEnergy.energy_kwh,
     }],
     flowHistory: [{
       timestamp,
@@ -269,6 +288,7 @@ export function convertLatestToDashboard(
 export function mergeLatestData(
   existingData: DashboardData,
   latest: SensorData,
+  latestEnergy: EnergyReading,
   controlStatus: ControlStatus,
   newEvents: SystemEvent[],
   maxHistoryPoints: number = 5000
@@ -293,7 +313,7 @@ export function mergeLatestData(
         { 
           timestamp, 
           energyIn: latest.power_w / 1000,
-          energyOut: latest.energy_kwh
+          energyOut: latestEnergy.energy_kwh
         }
       ]
     : existingData.energyHistory
@@ -331,7 +351,7 @@ export function mergeLatestData(
       lastChanged: new Date(h.last_changed).getTime(),
     })),
     currentPower: latest.power_w,
-    currentEnergy: latest.energy_kwh,
+    currentEnergy: latestEnergy.energy_kwh,
     temperatureHistory,
     energyHistory,
     flowHistory,

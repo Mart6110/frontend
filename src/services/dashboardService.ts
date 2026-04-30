@@ -17,11 +17,16 @@ export async function fetchDashboardData(params: {
 }): Promise<DashboardData> {
   try {
     // Fetch data in parallel
-    const [history, controlStatus, eventsResponse] = await Promise.all([
+    const [history, energyHistory, controlStatus, eventsResponse] = await Promise.all([
       api.getHistoryData({
         from: params.from.toISOString(),
         to: params.to.toISOString(),
         interval: params.interval,
+        limit: 5000,
+      }),
+      api.getEnergyHistory({
+        from: params.from.toISOString(),
+        to: params.to.toISOString(),
         limit: 5000,
       }),
       api.getControlStatus(),
@@ -34,6 +39,7 @@ export async function fetchDashboardData(params: {
     
     return transform.convertHistoryToDashboard(
       history,
+      energyHistory,
       controlStatus,
       eventsResponse.events
     )
@@ -48,18 +54,21 @@ export async function fetchDashboardData(params: {
  */
 export async function fetchLatestData(): Promise<{
   data: api.SensorData
+  energyData: api.EnergyReading
   controlStatus: api.ControlStatus
   events: api.SystemEvent[]
 }> {
   try {
-    const [data, controlStatus, eventsResponse] = await Promise.all([
+    const [data, energyData, controlStatus, eventsResponse] = await Promise.all([
       api.getLatestData(),
+      api.getLatestEnergy(),
       api.getControlStatus(),
       api.getEvents({ limit: 100 }),
     ])
     
     return {
       data,
+      energyData,
       controlStatus,
       events: eventsResponse.events,
     }
@@ -75,10 +84,11 @@ export async function fetchLatestData(): Promise<{
 export function updateDashboardWithLatest(
   existingData: DashboardData,
   latest: api.SensorData,
+  energyData: api.EnergyReading,
   controlStatus: api.ControlStatus,
   events: api.SystemEvent[]
 ): DashboardData {
-  return transform.mergeLatestData(existingData, latest, controlStatus, events)
+  return transform.mergeLatestData(existingData, latest, energyData, controlStatus, events)
 }
 
 /**

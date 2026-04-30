@@ -45,6 +45,24 @@ export interface HistoryDataParams {
   limit?: number
 }
 
+export interface EnergyReading {
+  timestamp: string // ISO 8601
+  energy_kwh: number
+}
+
+export interface EnergyHistoryResponse {
+  from: string // ISO 8601
+  to: string // ISO 8601
+  count: number
+  data: EnergyReading[]
+}
+
+export interface EnergyHistoryParams {
+  from: string // ISO 8601
+  to: string // ISO 8601
+  limit?: number
+}
+
 // === /control endpoints ===
 
 export interface ControlStatusResponse {

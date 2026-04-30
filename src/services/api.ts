@@ -178,6 +178,18 @@ export interface ValidateKeyResponse {
   error?: string
 }
 
+export interface EnergyReading {
+  timestamp: string // ISO 8601
+  energy_kwh: number
+}
+
+export interface EnergyHistoryResponse {
+  from: string // ISO 8601
+  to: string // ISO 8601
+  count: number
+  data: EnergyReading[]
+}
+
 // ============================================================================
 // API Functions - /data endpoints
 // ============================================================================
@@ -212,6 +224,39 @@ export async function getHistoryData(params: {
  */
 export async function postSensorData(data: Omit<SensorData, 'status'>): Promise<void> {
   return apiRequest<void>('/data', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  })
+}
+
+/**
+ * Get the latest energy reading
+ */
+export async function getLatestEnergy(): Promise<EnergyReading> {
+  return apiRequest<EnergyReading>('/data/energy/latest')
+}
+
+/**
+ * Get historical energy data
+ */
+export async function getEnergyHistory(params: {
+  from: string // ISO 8601
+  to: string // ISO 8601
+  limit?: number
+}): Promise<EnergyHistoryResponse> {
+  const queryParams = new URLSearchParams()
+  queryParams.append('from', params.from)
+  queryParams.append('to', params.to)
+  if (params.limit) queryParams.append('limit', params.limit.toString())
+  
+  return apiRequest<EnergyHistoryResponse>(`/data/energy/history?${queryParams.toString()}`)
+}
+
+/**
+ * Post new energy reading
+ */
+export async function postEnergyReading(data: EnergyReading): Promise<EnergyReading> {
+  return apiRequest<EnergyReading>('/data/energy', {
     method: 'POST',
     body: JSON.stringify(data),
   })

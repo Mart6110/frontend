@@ -4,6 +4,9 @@ import type {
   LatestDataResponse,
   HistoryDataResponse,
   HistoryDataParams,
+  EnergyReading,
+  EnergyHistoryResponse,
+  EnergyHistoryParams,
   ControlStatusResponse,
   ControlActionResponse,
   SettingsResponse,
@@ -52,6 +55,31 @@ export const api = createApi({
         params,
       }),
       providesTags: ['Data'],
+    }),
+    
+    // GET /data/energy/latest - Get latest energy reading
+    getLatestEnergy: builder.query<EnergyReading, void>({
+      query: () => '/data/energy/latest',
+      providesTags: ['Data'],
+    }),
+    
+    // GET /data/energy/history - Get energy history
+    getEnergyHistory: builder.query<EnergyHistoryResponse, EnergyHistoryParams>({
+      query: (params) => ({
+        url: '/data/energy/history',
+        params,
+      }),
+      providesTags: ['Data'],
+    }),
+    
+    // POST /data/energy - Post new energy reading
+    postEnergyReading: builder.mutation<EnergyReading, EnergyReading>({
+      query: (body) => ({
+        url: '/data/energy',
+        method: 'POST',
+        body,
+      }),
+      invalidatesTags: ['Data'],
     }),
     
     // === /control endpoints ===
@@ -162,6 +190,9 @@ export const api = createApi({
 export const {
   useGetLatestDataQuery,
   useGetHistoryDataQuery,
+  useGetLatestEnergyQuery,
+  useGetEnergyHistoryQuery,
+  usePostEnergyReadingMutation,
   useControlPumpMutation,
   useControlHeaterMutation,
   useGetControlStatusQuery,
