@@ -48,9 +48,14 @@ export interface DataPoint {
   value: number
 }
 
+export interface TemperatureReading {
+  label: string
+  value: number
+}
+
 export interface TemperatureData {
   timestamp: number
-  temperature: number
+  temperatures: TemperatureReading[]
 }
 
 export interface EnergyData {
@@ -179,7 +184,10 @@ export function convertHistoryToDashboard(
   // Convert history arrays
   const temperatureHistory: TemperatureData[] = data.map(d => ({
     timestamp: new Date(d.timestamp).getTime(),
-    temperature: getSandTemp(d),
+    temperatures: d.temperatures.map(t => ({
+      label: t.label,
+      value: t.value,
+    })),
   }))
   
   // Convert energy history from dedicated energy endpoint
@@ -263,7 +271,10 @@ export function convertLatestToDashboard(
     currentEnergy: latestEnergy.energy_kwh,
     temperatureHistory: [{
       timestamp,
-      temperature: getSandTemp(latest),
+      temperatures: latest.temperatures.map(t => ({
+        label: t.label,
+        value: t.value,
+      })),
     }],
     energyHistory: [{
       timestamp,
@@ -303,7 +314,13 @@ export function mergeLatestData(
   const temperatureHistory = isNewData
     ? [
         ...existingData.temperatureHistory.slice(-maxHistoryPoints + 1),
-        { timestamp, temperature: getSandTemp(latest) }
+        { 
+          timestamp, 
+          temperatures: latest.temperatures.map(t => ({
+            label: t.label,
+            value: t.value,
+          })) 
+        }
       ]
     : existingData.temperatureHistory
   

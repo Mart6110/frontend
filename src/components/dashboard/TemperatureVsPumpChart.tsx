@@ -7,8 +7,13 @@ import { ChartWithTableWrapper, type Column } from "./ChartWithTableWrapper"
 import { DataTable, formatBoolean } from "./DataTable"
 import type { EChartsOption } from "echarts"
 
+interface TemperatureReading {
+  label: string
+  value: number
+}
+
 interface TemperatureVsPumpChartProps {
-  temperatureData: Array<{ timestamp: number; temperature: number }>
+  temperatureData: Array<{ timestamp: number; temperatures: TemperatureReading[] }>
   pumpData: Array<{ timestamp: number; active: boolean }>
   height?: number
   title?: string
@@ -22,11 +27,20 @@ export const TemperatureVsPumpChart = memo(function TemperatureVsPumpChart({
   title = APP_TEXT.DASHBOARD.CHARTS.TEMPERATURE_VS_PUMP,
   enableTableView = true 
 }: TemperatureVsPumpChartProps) {
+  // Extract sand core temperature (or first available) for comparison with pump
+  const getSandCoreTemp = (temps: TemperatureReading[]): number => {
+    const sandCore = temps.find(t => t.label === 'sand_core')
+    if (sandCore) return sandCore.value
+    const sand = temps.find(t => t.label.includes('sand'))
+    if (sand) return sand.value
+    return temps[0]?.value ?? 0
+  }
+
   const option = useMemo((): EChartsOption => {
     // Sample data for better performance
     const sampledTempData = sampleData(temperatureData, 500)
     const timestamps = sampledTempData.map(point => formatTimestamp(point.timestamp))
-    const temperatures = sampledTempData.map(point => point.temperature)
+    const temperatures = sampledTempData.map(point => getSandCoreTemp(point.temperatures))
     const pumpStatus = sampledTempData.map(tempPoint => {
       const pumpPoint = pumpData.find(p => p.timestamp === tempPoint.timestamp)
       return pumpPoint?.active ? 1 : 0
@@ -237,7 +251,7 @@ export const TemperatureVsPumpChart = memo(function TemperatureVsPumpChart({
       const pumpPoint = pumpData.find(p => p.timestamp === tempPoint.timestamp)
       return {
         timestamp: tempPoint.timestamp,
-        temperature: tempPoint.temperature,
+        temperature: getSandCoreTemp(tempPoint.temperatures),
         pumpActive: pumpPoint?.active ?? false
       }
     }),

@@ -36,12 +36,23 @@ export function exportDashboardToExcel(data: DashboardData, filename: string = '
   XLSX.utils.book_append_sheet(workbook, summarySheet, 'Summary')
 
   // Sheet 2: Temperature History
+  // Extract all unique sensor labels
+  const allSensorLabels = new Set<string>()
+  data.temperatureHistory.forEach(item => {
+    item.temperatures.forEach(temp => allSensorLabels.add(temp.label))
+  })
+  const sensorLabelsArray = Array.from(allSensorLabels).sort()
+  
   const temperatureData = [
-    ['Timestamp', 'Temperature (°C)'],
-    ...data.temperatureHistory.map(item => [
-      formatTimestamp(item.timestamp),
-      item.temperature,
-    ]),
+    ['Timestamp', ...sensorLabelsArray.map(label => `${label} (°C)`)],
+    ...data.temperatureHistory.map(item => {
+      const row = [formatTimestamp(item.timestamp)]
+      sensorLabelsArray.forEach(label => {
+        const temp = item.temperatures.find(t => t.label === label)
+        row.push(temp?.value ?? '')
+      })
+      return row
+    }),
   ]
   const temperatureSheet = XLSX.utils.aoa_to_sheet(temperatureData)
   XLSX.utils.book_append_sheet(workbook, temperatureSheet, 'Temperature')
@@ -98,10 +109,17 @@ export function exportDashboardToExcel(data: DashboardData, filename: string = '
 }
 
 export function exportDashboardToCSV(data: DashboardData, filename: string = 'dashboard-export') {
+  // Extract all unique sensor labels
+  const allSensorLabels = new Set<string>()
+  data.temperatureHistory.forEach(item => {
+    item.temperatures.forEach(temp => allSensorLabels.add(temp.label))
+  })
+  const sensorLabelsArray = Array.from(allSensorLabels).sort()
+  
   // Combine all data into a single comprehensive CSV
   const headers = [
     'Timestamp',
-    'Temperature (°C)',
+    ...sensorLabelsArray.map(label => `${label} (°C)`),
     'Energy In (kWh)',
     'Energy Out (kWh)',
     'Flow (L/min)',
@@ -116,7 +134,10 @@ export function exportDashboardToCSV(data: DashboardData, filename: string = 'da
     if (!dataMap.has(item.timestamp)) {
       dataMap.set(item.timestamp, { timestamp: item.timestamp })
     }
-    dataMap.get(item.timestamp)!.temperature = item.temperature
+    const entry = dataMap.get(item.timestamp)!
+    item.temperatures.forEach(temp => {
+      entry[`temp_${temp.label}`] = temp.value
+    })
   })
 
   // Add energy data
@@ -150,14 +171,20 @@ export function exportDashboardToCSV(data: DashboardData, filename: string = 'da
 
   const csvRows = [
     headers.join(','),
-    ...sortedData.map(row => [
-      formatTimestamp(row.timestamp),
-      row.temperature ?? '',
-      row.energyIn ?? '',
-      row.energyOut ?? '',
-      row.flow ?? '',
-      row.pumpActive !== undefined ? (row.pumpActive ? 'Yes' : 'No') : '',
-    ].join(',')),
+    ...sortedData.map(row => {
+      const values = [formatTimestamp(row.timestamp)]
+      // Add temperature values for each sensor
+      sensorLabelsArray.forEach(label => {
+        values.push(row[`temp_${label}`] ?? '')
+      })
+      values.push(
+        row.energyIn ?? '',
+        row.energyOut ?? '',
+        row.flow ?? '',
+        row.pumpActive !== undefined ? (row.pumpActive ? 'Yes' : 'No') : ''
+      )
+      return values.join(',')
+    }),
   ]
 
   // Create and download CSV

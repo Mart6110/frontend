@@ -3,14 +3,28 @@ import { BaseChart, createBaseChartConfig, createXAxis, createYAxis, formatTimes
 import { ChartWithTableWrapper, type Column } from "./ChartWithTableWrapper"
 import { DataTable } from "./DataTable"
 import type { EChartsOption } from "echarts"
-import { memo, useCallback } from "react"
+import { memo, useCallback, useMemo } from "react"
+
+interface TemperatureReading {
+  label: string
+  value: number
+}
 
 interface TemperatureChartProps {
-  data: Array<{ timestamp: number; temperature: number }>
+  data: Array<{ timestamp: number; temperatures: TemperatureReading[] }>
   height?: number
   showLegend?: boolean
   title?: string
   enableTableView?: boolean
+}
+
+// Color palette for different temperature sensors
+const TEMP_COLORS: Record<string, string> = {
+  sand_side: '#FF6B6B',
+  sand_core: '#FFA500',
+  water_in: '#4ECDC4',
+  water_out: '#45B7D1',
+  sand: '#FF6B6B', // fallback for generic sand reading
 }
 
 export const TemperatureChart = memo(function TemperatureChart({ 
@@ -20,13 +34,54 @@ export const TemperatureChart = memo(function TemperatureChart({
   title = APP_TEXT.DASHBOARD.CHARTS.TEMPERATURE_HISTORY,
   enableTableView = true 
 }: TemperatureChartProps) {
+  // Extract unique temperature sensor labels
+  const sensorLabels = useMemo(() => {
+    const labels = new Set<string>()
+    data.forEach(point => {
+      point.temperatures.forEach(temp => labels.add(temp.label))
+    })
+    return Array.from(labels).sort()
+  }, [data])
+
+  // Format label for display
+  const formatLabel = (label: string): string => {
+    return label.split('_').map(word => 
+      word.charAt(0).toUpperCase() + word.slice(1)
+    ).join(' ')
+  }
+
   const getOption = useCallback((chartData: typeof data, legend: boolean): EChartsOption => {
     const sampledData = sampleData(chartData, 500)
     const timestamps = sampledData.map(point => formatTimestamp(point.timestamp))
     
+    // Create a series for each temperature sensor
+    const series = sensorLabels.map(label => {
+      const formattedLabel = formatLabel(label)
+      const color = TEMP_COLORS[label] || APP_CONFIG.DASHBOARD.COLORS.TEMPERATURE
+      
+      return {
+        name: `${formattedLabel} (${APP_TEXT.DASHBOARD.UNITS.TEMPERATURE})`,
+        type: 'line' as const,
+        smooth: true,
+        symbol: 'none',
+        itemStyle: {
+          color,
+        },
+        lineStyle: {
+          color,
+          width: 2,
+        },
+        data: sampledData.map(point => {
+          const temp = point.temperatures.find(t => t.label === label)
+          return temp?.value ?? null
+        }),
+        animationDuration: APP_CONFIG.DASHBOARD.CHART.ANIMATION_DURATION,
+      }
+    })
+    
     return createBaseChartConfig({
       legend: legend ? {
-        data: [`${APP_TEXT.DASHBOARD.KPI.TEMPERATURE} (${APP_TEXT.DASHBOARD.UNITS.TEMPERATURE})`],
+        data: series.map(s => s.name),
         top: 0,
         textStyle: {
           color: '#aaa',
@@ -34,46 +89,29 @@ export const TemperatureChart = memo(function TemperatureChart({
       } : undefined,
       xAxis: createXAxis(timestamps),
       yAxis: createYAxis(APP_TEXT.DASHBOARD.UNITS.TEMPERATURE),
-      series: [
-        {
-          name: `${APP_TEXT.DASHBOARD.KPI.TEMPERATURE} (${APP_TEXT.DASHBOARD.UNITS.TEMPERATURE})`,
-          type: 'line',
-          smooth: true,
-          symbol: 'none',
-          itemStyle: {
-            color: APP_CONFIG.DASHBOARD.COLORS.TEMPERATURE,
-          },
-          lineStyle: {
-            color: APP_CONFIG.DASHBOARD.COLORS.TEMPERATURE,
-            width: 2,
-          },
-          areaStyle: {
-            color: {
-              type: 'linear',
-              x: 0,
-              y: 0,
-              x2: 0,
-              y2: 1,
-              colorStops: [
-                { offset: 0, color: `${APP_CONFIG.DASHBOARD.COLORS.TEMPERATURE}40` },
-                { offset: 1, color: `${APP_CONFIG.DASHBOARD.COLORS.TEMPERATURE}00` },
-              ],
-            },
-          },
-          data: sampledData.map(point => point.temperature),
-          animationDuration: APP_CONFIG.DASHBOARD.CHART.ANIMATION_DURATION,
-        },
-      ],
+      series,
     })
-  }, [])
+  }, [sensorLabels])
+
+  // Flatten data for table view
+  const flattenedData = useMemo(() => {
+    return data.flatMap(point => 
+      point.temperatures.map(temp => ({
+        timestamp: point.timestamp,
+        sensor: formatLabel(temp.label),
+        value: temp.value,
+      }))
+    )
+  }, [data])
 
   const tableColumns: Column[] = [
     { key: 'timestamp', label: 'Time' },
-    { key: 'temperature', label: APP_TEXT.DASHBOARD.KPI.TEMPERATURE, unit: APP_TEXT.DASHBOARD.UNITS.TEMPERATURE },
+    { key: 'sensor', label: 'Sensor' },
+    { key: 'value', label: 'Temperature', unit: APP_TEXT.DASHBOARD.UNITS.TEMPERATURE },
   ]
 
   const chartComponent = <BaseChart data={data} height={height} showLegend={showLegend} getOption={getOption} />
-  const tableComponent = <DataTable data={data} columns={tableColumns} height={height} />
+  const tableComponent = <DataTable data={flattenedData} columns={tableColumns} height={height} />
 
   if (!enableTableView) {
     return (
