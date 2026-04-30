@@ -146,8 +146,35 @@ export function SimpleViewPage() {
           >
           <GridItem>
             <KPICard
-              label={APP_TEXT.DASHBOARD.KPI.TEMPERATURE}
-              value={data?.currentTemperature.toFixed(1) ?? "0.0"}
+              label={APP_TEXT.DASHBOARD.KPI.SAND_SIDE}
+              value={data?.currentSandSide.toFixed(1) ?? "0.0"}
+              unit={APP_TEXT.DASHBOARD.UNITS.TEMPERATURE}
+              isLoading={isLoading}
+            />
+          </GridItem>
+          
+          <GridItem>
+            <KPICard
+              label={APP_TEXT.DASHBOARD.KPI.SAND_CORE}
+              value={data?.currentSandCore.toFixed(1) ?? "0.0"}
+              unit={APP_TEXT.DASHBOARD.UNITS.TEMPERATURE}
+              isLoading={isLoading}
+            />
+          </GridItem>
+          
+          <GridItem>
+            <KPICard
+              label={APP_TEXT.DASHBOARD.KPI.WATER_TEMP_IN}
+              value={data?.currentWaterTempIn.toFixed(1) ?? "0.0"}
+              unit={APP_TEXT.DASHBOARD.UNITS.TEMPERATURE}
+              isLoading={isLoading}
+            />
+          </GridItem>
+          
+          <GridItem>
+            <KPICard
+              label={APP_TEXT.DASHBOARD.KPI.WATER_TEMP_OUT}
+              value={data?.currentWaterTempOut.toFixed(1) ?? "0.0"}
               unit={APP_TEXT.DASHBOARD.UNITS.TEMPERATURE}
               isLoading={isLoading}
             />

@@ -15,6 +15,16 @@ function getSandTemp(data: SensorData): number {
   return data.temperatures[0]?.value ?? 0
 }
 
+function getSandSide(data: SensorData): number {
+  const sandSide = data.temperatures.find(t => t.label === 'sand_side')
+  return sandSide?.value ?? 0
+}
+
+function getSandCore(data: SensorData): number {
+  const sandCore = data.temperatures.find(t => t.label === 'sand_core')
+  return sandCore?.value ?? 0
+}
+
 function getWaterTempIn(data: SensorData): number {
   // Look for temperature with "in" or "ind" label
   const waterTempIn = data.temperatures.find(t => 
@@ -84,6 +94,8 @@ export interface DashboardEvent {
 
 export interface DashboardData {
   currentTemperature: number
+  currentSandSide: number
+  currentSandCore: number
   currentWaterTempIn: number
   currentWaterTempOut: number
   currentFlow: number
@@ -157,6 +169,8 @@ export function convertHistoryToDashboard(
     // Return empty dashboard data
     return {
       currentTemperature: 0,
+      currentSandSide: 0,
+      currentSandCore: 0,
       currentWaterTempIn: 0,
       currentWaterTempOut: 0,
       currentFlow: 0,
@@ -224,6 +238,8 @@ export function convertHistoryToDashboard(
   
   return {
     currentTemperature: getSandTemp(latest),
+    currentSandSide: getSandSide(latest),
+    currentSandCore: getSandCore(latest),
     currentWaterTempIn: getWaterTempIn(latest),
     currentWaterTempOut: getWaterTempOut(latest),
     currentFlow: getFlowRate(latest),
@@ -257,6 +273,8 @@ export function convertLatestToDashboard(
   
   return {
     currentTemperature: getSandTemp(latest),
+    currentSandSide: getSandSide(latest),
+    currentSandCore: getSandCore(latest),
     currentWaterTempIn: getWaterTempIn(latest),
     currentWaterTempOut: getWaterTempOut(latest),
     currentFlow: getFlowRate(latest),
@@ -357,6 +375,8 @@ export function mergeLatestData(
   
   return {
     currentTemperature: getSandTemp(latest),
+    currentSandSide: getSandSide(latest),
+    currentSandCore: getSandCore(latest),
     currentWaterTempIn: getWaterTempIn(latest),
     currentWaterTempOut: getWaterTempOut(latest),
     currentFlow: getFlowRate(latest),

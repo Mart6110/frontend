@@ -212,8 +212,35 @@ export function AdvancedViewPage() {
           >
             <GridItem>
               <KPICard
-                label={APP_TEXT.DASHBOARD.KPI.TEMPERATURE}
-                value={displayData?.currentTemperature.toFixed(1) ?? "0.0"}
+                label={APP_TEXT.DASHBOARD.KPI.SAND_SIDE}
+                value={displayData?.currentSandSide.toFixed(1) ?? "0.0"}
+                unit={APP_TEXT.DASHBOARD.UNITS.TEMPERATURE}
+                isLoading={isLoading}
+              />
+            </GridItem>
+
+            <GridItem>
+              <KPICard
+                label={APP_TEXT.DASHBOARD.KPI.SAND_CORE}
+                value={displayData?.currentSandCore.toFixed(1) ?? "0.0"}
+                unit={APP_TEXT.DASHBOARD.UNITS.TEMPERATURE}
+                isLoading={isLoading}
+              />
+            </GridItem>
+
+            <GridItem>
+              <KPICard
+                label={APP_TEXT.DASHBOARD.KPI.WATER_TEMP_IN}
+                value={displayData?.currentWaterTempIn.toFixed(1) ?? "0.0"}
+                unit={APP_TEXT.DASHBOARD.UNITS.TEMPERATURE}
+                isLoading={isLoading}
+              />
+            </GridItem>
+
+            <GridItem>
+              <KPICard
+                label={APP_TEXT.DASHBOARD.KPI.WATER_TEMP_OUT}
+                value={displayData?.currentWaterTempOut.toFixed(1) ?? "0.0"}
                 unit={APP_TEXT.DASHBOARD.UNITS.TEMPERATURE}
                 isLoading={isLoading}
               />

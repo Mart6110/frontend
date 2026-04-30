@@ -43,6 +43,8 @@ export const APP_TEXT = {
     // KPI Labels
     KPI: {
       TEMPERATURE: "Temperatur",
+      SAND_SIDE: "Sand Side",
+      SAND_CORE: "Sand Kerne",
       ENERGY_IN: "Energi Ind",
       ENERGY_OUT: "Energi Ud",
       ENERGY: "Energi",
