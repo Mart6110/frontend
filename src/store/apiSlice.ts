@@ -27,6 +27,7 @@ export const api = createApi({
   reducerPath: 'api',
   baseQuery: fetchBaseQuery({
     baseUrl: import.meta.env.VITE_API_BASE_URL,
+    credentials: 'include',
     prepareHeaders: (headers, { getState }) => {
       // Get API key from Redux state and set X-Product-Key header
       const apiKey = (getState() as RootState).apiKey.apiKey
