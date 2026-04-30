@@ -62,7 +62,7 @@ export function ControlModal({
     color?: string
     statusText?: string
   }) => (
-    <HStack justify="space-between" p={4} borderWidth="1px" borderRadius="md" bg={isActive ? `${color}.50` : "transparent"}>
+    <HStack justify="space-between" p={4} borderWidth="1px" borderRadius="md" bg={isActive ? `${color}.50` : "bg"}>
       <VStack align="start" gap={1}>
         <Text fontSize="md" fontWeight="medium">{label}</Text>
         <Text fontSize="sm" color={isActive ? `${color}.600` : "gray.500"}>
