@@ -61,11 +61,12 @@ export function ControlModal({
     isLoading: boolean
     color?: string
     statusText?: string
-  }) => (
-    <HStack justify="space-between" p={4} borderWidth="1px" borderRadius="md" bg={isActive ? `${color}.50` : "bg"}>
+  }) => {
+    return (
+    <HStack justify="space-between" p={4} borderWidth="1px" borderRadius="md" bg="bg">
       <VStack align="start" gap={1}>
         <Text fontSize="md" fontWeight="medium">{label}</Text>
-        <Text fontSize="sm" color={isActive ? `${color}.600` : "gray.500"}>
+        <Text fontSize="sm" color={isActive ? "fg" : "gray.500"}>
           {statusText || (isActive ? "Aktiv" : "Inaktiv")}
         </Text>
       </VStack>
@@ -79,6 +80,7 @@ export function ControlModal({
       </Button>
     </HStack>
   )
+}
 
   return (
     <Dialog.Root lazyMount unmountOnExit>
