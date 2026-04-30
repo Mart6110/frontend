@@ -1,4 +1,4 @@
-import { HStack, Text } from "@chakra-ui/react"
+import { HStack, Text, Portal } from "@chakra-ui/react"
 import { SelectRoot, Select } from "@/components/ui/select"
 import { createListCollection } from "@chakra-ui/react"
 
@@ -46,17 +46,22 @@ export function IntervalSelector({ value, onChange, disabled = false, size = "md
         disabled={disabled}
         size={size}
         width="140px"
+        positioning={{ sameWidth: true }}
       >
         <Select.Trigger>
           <Select.ValueText placeholder="Select interval" />
         </Select.Trigger>
-        <Select.Content>
-          {intervals.items.map((interval) => (
-            <Select.Item key={interval.value || "auto"} item={interval}>
-              {interval.label}
-            </Select.Item>
-          ))}
-        </Select.Content>
+        <Portal>
+          <Select.Positioner>
+            <Select.Content>
+              {intervals.items.map((interval) => (
+                <Select.Item key={interval.value || "auto"} item={interval}>
+                  {interval.label}
+                </Select.Item>
+              ))}
+            </Select.Content>
+          </Select.Positioner>
+        </Portal>
       </SelectRoot>
     </HStack>
   )

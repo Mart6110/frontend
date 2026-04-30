@@ -271,9 +271,9 @@ export function AdvancedViewPage() {
             </GridItem>
           </Grid>
 
-          {/* System Status and Water Temperature */}
+          {/* System Status */}
           <Grid
-            templateColumns={{ base: "1fr", md: "repeat(2, 1fr)", lg: "repeat(4, 1fr)" }}
+            templateColumns={{ base: "1fr", md: "repeat(2, 1fr)" }}
             gap={4}
             w="full"
           >
@@ -316,26 +316,6 @@ export function AdvancedViewPage() {
                     onUpdate={handleControlUpdate}
                   />
                 }
-              />
-            </GridItem>
-
-            <GridItem>
-              <KPICard
-                label={APP_TEXT.DASHBOARD.KPI.WATER_TEMP_IN}
-                value={displayData?.currentWaterTempIn.toFixed(1) ?? "0.0"}
-                unit={APP_TEXT.DASHBOARD.UNITS.TEMPERATURE}
-                size="lg"
-                isLoading={isLoading}
-              />
-            </GridItem>
-
-            <GridItem>
-              <KPICard
-                label={APP_TEXT.DASHBOARD.KPI.WATER_TEMP_OUT}
-                value={displayData?.currentWaterTempOut.toFixed(1) ?? "0.0"}
-                unit={APP_TEXT.DASHBOARD.UNITS.TEMPERATURE}
-                size="lg"
-                isLoading={isLoading}
               />
             </GridItem>
           </Grid>
