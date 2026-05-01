@@ -55,7 +55,7 @@ export function SimpleViewPage() {
       const from = new Date(to.getTime() - milliseconds)
       const selectedInterval = interval === '' ? undefined : interval
       
-      const updatedData = await dashboardService.fetchDashboardData({ from, to, interval: selectedInterval })
+      const updatedData = await dashboardService.fetchDashboardData({ from, to, interval: selectedInterval, useAbsoluteLatest: true })
       dispatch(setSimpleAllData(updatedData))
       dispatch(setSimpleData(updatedData))
     } catch (error) {
@@ -75,7 +75,7 @@ export function SimpleViewPage() {
         // Use selected interval or let backend auto-calculate (undefined)
         const selectedInterval = interval === '' ? undefined : interval
         
-        const initialData = await dashboardService.fetchDashboardData({ from, to, interval: selectedInterval })
+        const initialData = await dashboardService.fetchDashboardData({ from, to, interval: selectedInterval, useAbsoluteLatest: true })
         dispatch(setSimpleAllData(initialData))
         dispatch(setSimpleData(initialData))
       } catch (error) {

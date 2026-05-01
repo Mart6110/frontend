@@ -14,39 +14,74 @@ export async function fetchDashboardData(params: {
   from: Date
   to: Date
   interval?: '1m' | '5m' | '15m' | '30m' | '1h' | '6h' | '1d'
+  useAbsoluteLatest?: boolean
 }): Promise<DashboardData> {
   try {
-    // Fetch data in parallel - always get absolute latest for current KPIs
-    const [latestData, latestEnergy, history, energyHistory, controlStatus, eventsResponse] = await Promise.all([
-      api.getLatestData(),
-      api.getLatestEnergy(),
-      api.getHistoryData({
-        from: params.from.toISOString(),
-        to: params.to.toISOString(),
-        interval: params.interval,
-        limit: 5000,
-      }),
-      api.getEnergyHistory({
-        from: params.from.toISOString(),
-        to: params.to.toISOString(),
-        limit: 5000,
-      }),
-      api.getControlStatus(),
-      api.getEvents({
-        from: params.from.toISOString(),
-        to: params.to.toISOString(),
-        limit: 1000,
-      }),
-    ])
+    // Check if we're viewing realtime data (within last 5 minutes) or historical data
+    const now = new Date()
+    const isRealtime = params.useAbsoluteLatest ?? (now.getTime() - params.to.getTime() < 300000) // within 5 minutes
     
-    return transform.convertHistoryToDashboardWithLatest(
-      latestData,
-      latestEnergy,
-      history,
-      energyHistory,
-      controlStatus,
-      eventsResponse.events
-    )
+    if (isRealtime) {
+      // Fetch data in parallel - get absolute latest for current KPIs
+      const [latestData, latestEnergy, history, energyHistory, controlStatus, eventsResponse] = await Promise.all([
+        api.getLatestData(),
+        api.getLatestEnergy(),
+        api.getHistoryData({
+          from: params.from.toISOString(),
+          to: params.to.toISOString(),
+          interval: params.interval,
+          limit: 5000,
+        }),
+        api.getEnergyHistory({
+          from: params.from.toISOString(),
+          to: params.to.toISOString(),
+          limit: 5000,
+        }),
+        api.getControlStatus(),
+        api.getEvents({
+          from: params.from.toISOString(),
+          to: params.to.toISOString(),
+          limit: 1000,
+        }),
+      ])
+      
+      return transform.convertHistoryToDashboardWithLatest(
+        latestData,
+        latestEnergy,
+        history,
+        energyHistory,
+        controlStatus,
+        eventsResponse.events
+      )
+    } else {
+      // For historical date ranges, use the last point from history as "latest"
+      const [history, energyHistory, controlStatus, eventsResponse] = await Promise.all([
+        api.getHistoryData({
+          from: params.from.toISOString(),
+          to: params.to.toISOString(),
+          interval: params.interval,
+          limit: 5000,
+        }),
+        api.getEnergyHistory({
+          from: params.from.toISOString(),
+          to: params.to.toISOString(),
+          limit: 5000,
+        }),
+        api.getControlStatus(),
+        api.getEvents({
+          from: params.from.toISOString(),
+          to: params.to.toISOString(),
+          limit: 1000,
+        }),
+      ])
+      
+      return transform.convertHistoryToDashboard(
+        history,
+        energyHistory,
+        controlStatus,
+        eventsResponse.events
+      )
+    }
   } catch (error) {
     console.error('Failed to fetch dashboard data:', error)
     throw error

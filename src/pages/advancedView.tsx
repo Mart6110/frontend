@@ -155,7 +155,12 @@ export function AdvancedViewPage() {
         // Use selected interval or let backend auto-calculate (undefined)
         const selectedInterval = interval === '' ? undefined : interval
 
-        const fetchedData = await dashboardService.fetchDashboardData({ from, to, interval: selectedInterval })
+        const fetchedData = await dashboardService.fetchDashboardData({ 
+          from, 
+          to, 
+          interval: selectedInterval,
+          useAbsoluteLatest: viewMode === 'realtime'
+        })
         dispatch(setAllData(fetchedData))
         dispatch(setDisplayData(fetchedData))
       } catch (error) {
