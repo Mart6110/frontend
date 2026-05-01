@@ -139,7 +139,7 @@ describe('dashboardService', () => {
       const from = new Date('2026-04-25T00:00:00Z')
       const to = new Date('2026-04-25T23:59:59Z')
 
-      const result = await dashboardService.fetchDashboardData({
+      await dashboardService.fetchDashboardData({
         from,
         to,
         interval: '1h',
