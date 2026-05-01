@@ -23,7 +23,7 @@ export async function fetchDashboardData(params: {
     
     if (isRealtime) {
       // Fetch data in parallel - get absolute latest for current KPIs
-      const [latestData, latestEnergy, history, energyHistory, controlStatus, eventsResponse] = await Promise.all([
+      const [latestData, latestEnergy, history, energyHistory, controlStatus, eventsResponse, alertsResponse] = await Promise.all([
         api.getLatestData(),
         api.getLatestEnergy(),
         api.getHistoryData({
@@ -43,7 +43,19 @@ export async function fetchDashboardData(params: {
           to: params.to.toISOString(),
           limit: 1000,
         }),
+        api.getAlerts(),
       ])
+      
+      // Convert alerts to events format and combine
+      const alertEvents: api.SystemEvent[] = alertsResponse.alerts.map(alert => ({
+        id: alert.id,
+        type: alert.severity === 'WARNING' ? 'warning' : 'error',
+        source: 'system' as const,
+        timestamp: alert.timestamp,
+        description: alert.message,
+      }))
+      
+      const allEvents = [...eventsResponse.events, ...alertEvents]
       
       return transform.convertHistoryToDashboardWithLatest(
         latestData,
@@ -51,11 +63,11 @@ export async function fetchDashboardData(params: {
         history,
         energyHistory,
         controlStatus,
-        eventsResponse.events
+        allEvents
       )
     } else {
       // For historical date ranges, use the last point from history as "latest"
-      const [history, energyHistory, controlStatus, eventsResponse] = await Promise.all([
+      const [history, energyHistory, controlStatus, eventsResponse, alertsResponse] = await Promise.all([
         api.getHistoryData({
           from: params.from.toISOString(),
           to: params.to.toISOString(),
@@ -73,13 +85,25 @@ export async function fetchDashboardData(params: {
           to: params.to.toISOString(),
           limit: 1000,
         }),
+        api.getAlerts(),
       ])
+      
+      // Convert alerts to events format and combine
+      const alertEvents: api.SystemEvent[] = alertsResponse.alerts.map(alert => ({
+        id: alert.id,
+        type: alert.severity === 'WARNING' ? 'warning' : 'error',
+        source: 'system' as const,
+        timestamp: alert.timestamp,
+        description: alert.message,
+      }))
+      
+      const allEvents = [...eventsResponse.events, ...alertEvents]
       
       return transform.convertHistoryToDashboard(
         history,
         energyHistory,
         controlStatus,
-        eventsResponse.events
+        allEvents
       )
     }
   } catch (error) {
@@ -98,18 +122,30 @@ export async function fetchLatestData(): Promise<{
   events: api.SystemEvent[]
 }> {
   try {
-    const [data, energyData, controlStatus, eventsResponse] = await Promise.all([
+    const [data, energyData, controlStatus, eventsResponse, alertsResponse] = await Promise.all([
       api.getLatestData(),
       api.getLatestEnergy(),
       api.getControlStatus(),
       api.getEvents({ limit: 1000 }),
+      api.getAlerts(),
     ])
+    
+    // Convert alerts to events format and combine
+    const alertEvents: api.SystemEvent[] = alertsResponse.alerts.map(alert => ({
+      id: alert.id,
+      type: alert.severity === 'WARNING' ? 'warning' : 'error',
+      source: 'system' as const,
+      timestamp: alert.timestamp,
+      description: alert.message,
+    }))
+    
+    const allEvents = [...eventsResponse.events, ...alertEvents]
     
     return {
       data,
       energyData,
       controlStatus,
-      events: eventsResponse.events,
+      events: allEvents,
     }
   } catch (error) {
     console.error('Failed to fetch latest data:', error)
