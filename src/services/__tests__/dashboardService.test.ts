@@ -15,46 +15,52 @@ vi.mock('../api', () => ({
 }))
 
 describe('dashboardService', () => {
-  const mockSensorData = {
+  const mockSensorData: api.SensorData = {
     timestamp: '2026-05-01T10:35:00Z',
+    product_key: 'test-key',
     temperatures: [
-      { label: 'sand_side', value: 48.9 },
-      { label: 'sand_core', value: 62.8 },
-      { label: 'water_in', value: 37.6 },
-      { label: 'water_out', value: 40.3 },
+      { index: 0, label: 'sand_side', value: 48.9 },
+      { index: 1, label: 'sand_core', value: 62.8 },
+      { index: 2, label: 'water_in', value: 37.6 },
+      { index: 3, label: 'water_out', value: 40.3 },
     ],
-    flow_rates: [{ value: 5.8 }],
+    flow_rates: [{ index: 0, value: 5.8 }],
     power_w: 2500,
-    status: 'ok',
+    energy_kwh: 0.01,
+    status: 'OK',
   }
 
-  const mockEnergyReading = {
+  const mockEnergyReading: api.EnergyReading = {
     timestamp: '2026-05-01T10:35:00Z',
     energy_kwh: 0.01,
   }
 
-  const mockHistoryResponse = {
-    total: 1,
-    limit: 5000,
+  const mockHistoryResponse: api.HistoryResponse = {
+    from: '2026-05-01T10:00:00Z',
+    to: '2026-05-01T11:00:00Z',
+    count: 1,
     data: [
       {
         timestamp: '2026-05-01T10:30:00Z',
+        product_key: 'test-key',
         temperatures: [
-          { label: 'sand_side', value: 48.5 },
-          { label: 'sand_core', value: 62.0 },
-          { label: 'water_in', value: 37.0 },
-          { label: 'water_out', value: 40.0 },
+          { index: 0, label: 'sand_side', value: 48.5 },
+          { index: 1, label: 'sand_core', value: 62.0 },
+          { index: 2, label: 'water_in', value: 37.0 },
+          { index: 3, label: 'water_out', value: 40.0 },
         ],
-        flow_rates: [{ value: 5.5 }],
+        flow_rates: [{ index: 0, value: 5.5 }],
         power_w: 2400,
-        status: 'ok',
+        energy_kwh: 0.008,
+        status: 'OK',
       },
     ],
   }
 
-  const mockEnergyHistoryResponse = {
-    total: 1,
-    limit: 5000,
+  const mockEnergyHistoryResponse: api.EnergyHistoryResponse = {
+    from: '2026-05-01T10:00:00Z',
+    to: '2026-05-01T11:00:00Z',
+    count: 1,
     data: [
       {
         timestamp: '2026-05-01T10:30:00Z',
@@ -63,19 +69,21 @@ describe('dashboardService', () => {
     ],
   }
 
-  const mockControlStatus = {
+  const mockControlStatus: api.ControlStatus = {
     pump: {
+      index: 0,
       active: true,
+      source: 'manual',
       last_changed: '2026-05-01T09:00:00Z',
     },
     heaters: [
-      { index: 0, active: true, last_changed: '2026-05-01T09:00:00Z' },
-      { index: 1, active: true, last_changed: '2026-05-01T09:00:00Z' },
-      { index: 2, active: true, last_changed: '2026-05-01T09:00:00Z' },
+      { index: 0, active: true, source: 'manual', last_changed: '2026-05-01T09:00:00Z' },
+      { index: 1, active: true, source: 'manual', last_changed: '2026-05-01T09:00:00Z' },
+      { index: 2, active: true, source: 'manual', last_changed: '2026-05-01T09:00:00Z' },
     ],
   }
 
-  const mockEventsResponse = {
+  const mockEventsResponse: api.EventsResponse = {
     total: 1,
     limit: 1000,
     offset: 0,
@@ -232,7 +240,7 @@ describe('dashboardService', () => {
       expect(api.getLatestData).toHaveBeenCalledTimes(1)
       expect(api.getLatestEnergy).toHaveBeenCalledTimes(1)
       expect(api.getControlStatus).toHaveBeenCalledTimes(1)
-      expect(api.getEvents).toHaveBeenCalledWith({ limit: 100 })
+      expect(api.getEvents).toHaveBeenCalledWith({ limit: 1000 })
 
       expect(result.data).toEqual(mockSensorData)
       expect(result.energyData).toEqual(mockEnergyReading)
@@ -249,7 +257,13 @@ describe('dashboardService', () => {
 
   describe('controlPump', () => {
     it('should call API controlPump with correct parameters', async () => {
-      const mockResponse = { success: true, message: 'Pump started' }
+      const mockResponse: api.ControlResponse = { 
+        success: true, 
+        action: 'pump_start',
+        source: 'manual',
+        timestamp: '2026-05-01T10:35:00Z',
+        event_id: 1
+      }
       vi.mocked(api.controlPump).mockResolvedValue(mockResponse)
 
       const result = await dashboardService.controlPump('start')
@@ -259,7 +273,13 @@ describe('dashboardService', () => {
     })
 
     it('should handle stop action', async () => {
-      const mockResponse = { success: true, message: 'Pump stopped' }
+      const mockResponse: api.ControlResponse = { 
+        success: true, 
+        action: 'pump_stop',
+        source: 'manual',
+        timestamp: '2026-05-01T10:35:00Z',
+        event_id: 2
+      }
       vi.mocked(api.controlPump).mockResolvedValue(mockResponse)
 
       const result = await dashboardService.controlPump('stop')
@@ -271,7 +291,13 @@ describe('dashboardService', () => {
 
   describe('controlHeater', () => {
     it('should call API controlHeater with correct parameters', async () => {
-      const mockResponse = { success: true, message: 'Heater turned on' }
+      const mockResponse: api.ControlResponse = { 
+        success: true, 
+        action: 'heat_on',
+        source: 'manual',
+        timestamp: '2026-05-01T10:35:00Z',
+        event_id: 3
+      }
       vi.mocked(api.controlHeater).mockResolvedValue(mockResponse)
 
       const result = await dashboardService.controlHeater(0, 'on')
@@ -281,7 +307,13 @@ describe('dashboardService', () => {
     })
 
     it('should handle different heater indices', async () => {
-      const mockResponse = { success: true, message: 'Heater turned off' }
+      const mockResponse: api.ControlResponse = { 
+        success: true, 
+        action: 'heat_off',
+        source: 'manual',
+        timestamp: '2026-05-01T10:35:00Z',
+        event_id: 4
+      }
       vi.mocked(api.controlHeater).mockResolvedValue(mockResponse)
 
       await dashboardService.controlHeater(2, 'off')

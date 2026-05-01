@@ -25,15 +25,17 @@ describe('dataTransform', () => {
   beforeEach(() => {
     mockLatestData = {
       timestamp: '2026-05-01T10:35:00Z',
+      product_key: 'test-key',
       temperatures: [
-        { label: 'sand_side', value: 48.9 },
-        { label: 'sand_core', value: 62.8 },
-        { label: 'water_in', value: 37.6 },
-        { label: 'water_out', value: 40.3 },
+        { index: 0, label: 'sand_side', value: 48.9 },
+        { index: 1, label: 'sand_core', value: 62.8 },
+        { index: 2, label: 'water_in', value: 37.6 },
+        { index: 3, label: 'water_out', value: 40.3 },
       ],
-      flow_rates: [{ value: 5.8 }],
+      flow_rates: [{ index: 0, value: 5.8 }],
       power_w: 2500,
-      status: 'ok',
+      energy_kwh: 0.01,
+      status: 'OK',
     }
 
     mockLatestEnergy = {
@@ -42,39 +44,45 @@ describe('dataTransform', () => {
     }
 
     mockHistory = {
-      total: 2,
-      limit: 5000,
+      from: '2026-05-01T10:00:00Z',
+      to: '2026-05-01T11:00:00Z',
+      count: 2,
       data: [
         {
           timestamp: '2026-05-01T10:30:00Z',
+          product_key: 'test-key',
           temperatures: [
-            { label: 'sand_side', value: 48.5 },
-            { label: 'sand_core', value: 62.0 },
-            { label: 'water_in', value: 37.0 },
-            { label: 'water_out', value: 40.0 },
+            { index: 0, label: 'sand_side', value: 48.5 },
+            { index: 1, label: 'sand_core', value: 62.0 },
+            { index: 2, label: 'water_in', value: 37.0 },
+            { index: 3, label: 'water_out', value: 40.0 },
           ],
-          flow_rates: [{ value: 5.5 }],
+          flow_rates: [{ index: 0, value: 5.5 }],
           power_w: 2400,
-          status: 'ok',
+          energy_kwh: 0.008,
+          status: 'OK',
         },
         {
           timestamp: '2026-05-01T10:33:00Z',
+          product_key: 'test-key',
           temperatures: [
-            { label: 'sand_side', value: 48.7 },
-            { label: 'sand_core', value: 62.4 },
-            { label: 'water_in', value: 37.3 },
-            { label: 'water_out', value: 40.1 },
+            { index: 0, label: 'sand_side', value: 48.7 },
+            { index: 1, label: 'sand_core', value: 62.4 },
+            { index: 2, label: 'water_in', value: 37.3 },
+            { index: 3, label: 'water_out', value: 40.1 },
           ],
-          flow_rates: [{ value: 5.6 }],
+          flow_rates: [{ index: 0, value: 5.6 }],
           power_w: 2450,
-          status: 'ok',
+          energy_kwh: 0.009,
+          status: 'OK',
         },
       ],
     }
 
     mockEnergyHistory = {
-      total: 2,
-      limit: 5000,
+      from: '2026-05-01T10:00:00Z',
+      to: '2026-05-01T11:00:00Z',
+      count: 2,
       data: [
         {
           timestamp: '2026-05-01T10:30:00Z',
@@ -89,13 +97,15 @@ describe('dataTransform', () => {
 
     mockControlStatus = {
       pump: {
+        index: 0,
         active: true,
+        source: 'manual' as const,
         last_changed: '2026-05-01T09:00:00Z',
       },
       heaters: [
-        { index: 0, active: true, last_changed: '2026-05-01T09:00:00Z' },
-        { index: 1, active: true, last_changed: '2026-05-01T09:00:00Z' },
-        { index: 2, active: true, last_changed: '2026-05-01T09:00:00Z' },
+        { index: 0, active: true, source: 'manual' as const, last_changed: '2026-05-01T09:00:00Z' },
+        { index: 1, active: true, source: 'manual' as const, last_changed: '2026-05-01T09:00:00Z' },
+        { index: 2, active: true, source: 'manual' as const, last_changed: '2026-05-01T09:00:00Z' },
       ],
     }
 
@@ -140,8 +150,8 @@ describe('dataTransform', () => {
     })
 
     it('should handle empty history data', () => {
-      const emptyHistory: HistoryResponse = { total: 0, limit: 5000, data: [] }
-      const emptyEnergyHistory: EnergyHistoryResponse = { total: 0, limit: 5000, data: [] }
+      const emptyHistory: HistoryResponse = { from: '2026-05-01T10:00:00Z', to: '2026-05-01T11:00:00Z', count: 0, data: [] }
+      const emptyEnergyHistory: EnergyHistoryResponse = { from: '2026-05-01T10:00:00Z', to: '2026-05-01T11:00:00Z', count: 0, data: [] }
 
       const result = convertHistoryToDashboard(
         emptyHistory,
@@ -250,15 +260,17 @@ describe('dataTransform', () => {
 
       const newLatest: SensorData = {
         timestamp: '2026-05-01T10:40:00Z',
+        product_key: 'test-key',
         temperatures: [
-          { label: 'sand_side', value: 49.0 },
-          { label: 'sand_core', value: 63.0 },
-          { label: 'water_in', value: 38.0 },
-          { label: 'water_out', value: 41.0 },
+          { index: 0, label: 'sand_side', value: 49.0 },
+          { index: 1, label: 'sand_core', value: 63.0 },
+          { index: 2, label: 'water_in', value: 38.0 },
+          { index: 3, label: 'water_out', value: 41.0 },
         ],
-        flow_rates: [{ value: 6.0 }],
+        flow_rates: [{ index: 0, value: 6.0 }],
         power_w: 2600,
-        status: 'ok',
+        energy_kwh: 0.012,
+        status: 'OK',
       }
 
       const newEnergy: EnergyReading = {
@@ -318,15 +330,17 @@ describe('dataTransform', () => {
 
       const newLatest: SensorData = {
         timestamp: '2026-05-01T10:40:00Z',
+        product_key: 'test-key',
         temperatures: [
-          { label: 'sand_side', value: 49.0 },
-          { label: 'sand_core', value: 63.0 },
-          { label: 'water_in', value: 38.0 },
-          { label: 'water_out', value: 41.0 },
+          { index: 0, label: 'sand_side', value: 49.0 },
+          { index: 1, label: 'sand_core', value: 63.0 },
+          { index: 2, label: 'water_in', value: 38.0 },
+          { index: 3, label: 'water_out', value: 41.0 },
         ],
-        flow_rates: [{ value: 6.0 }],
+        flow_rates: [{ index: 0, value: 6.0 }],
         power_w: 2600,
-        status: 'ok',
+        energy_kwh: 0.012,
+        status: 'OK',
       }
 
       const newEnergy: EnergyReading = {
