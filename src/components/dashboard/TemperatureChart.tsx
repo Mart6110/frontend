@@ -18,13 +18,13 @@ interface TemperatureChartProps {
   enableTableView?: boolean
 }
 
-// Color palette for different temperature sensors
+// Color palette for different temperature sensors using theme colors
 const TEMP_COLORS: Record<string, string> = {
-  sand_side: '#FF6B6B',
-  sand_core: '#FFA500',
-  water_in: '#4ECDC4',
-  water_out: '#45B7D1',
-  sand: '#FF6B6B', // fallback for generic sand reading
+  sand_side: APP_CONFIG.DASHBOARD.COLORS.TEMPERATURE,  // Tan/brown
+  sand_core: APP_CONFIG.DASHBOARD.COLORS.TEMPERATURE,  // Tan/brown
+  water_in: APP_CONFIG.DASHBOARD.COLORS.ENERGY_IN,     // Teal
+  water_out: APP_CONFIG.DASHBOARD.COLORS.ENERGY_IN,    // Teal
+  sand: APP_CONFIG.DASHBOARD.COLORS.TEMPERATURE,       // Fallback for generic sand reading
 }
 
 export const TemperatureChart = memo(function TemperatureChart({ 

@@ -102,7 +102,7 @@ export async function fetchLatestData(): Promise<{
       api.getLatestData(),
       api.getLatestEnergy(),
       api.getControlStatus(),
-      api.getEvents({ limit: 100 }),
+      api.getEvents({ limit: 1000 }),
     ])
     
     return {

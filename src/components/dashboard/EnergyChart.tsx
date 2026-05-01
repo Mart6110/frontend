@@ -27,8 +27,7 @@ export const EnergyChart = memo(function EnergyChart({
     return createBaseChartConfig({
       legend: legend ? {
         data: [
-          `${APP_TEXT.DASHBOARD.KPI.ENERGY_IN} (${APP_TEXT.DASHBOARD.UNITS.ENERGY})`,
-          `${APP_TEXT.DASHBOARD.KPI.ENERGY_OUT} (${APP_TEXT.DASHBOARD.UNITS.ENERGY})`,
+          `${APP_TEXT.DASHBOARD.KPI.ENERGY} (${APP_TEXT.DASHBOARD.UNITS.ENERGY})`,
         ],
         top: 0,
         textStyle: {
@@ -39,7 +38,7 @@ export const EnergyChart = memo(function EnergyChart({
       yAxis: createYAxis(APP_TEXT.DASHBOARD.UNITS.ENERGY),
       series: [
         {
-          name: `${APP_TEXT.DASHBOARD.KPI.ENERGY_IN} (${APP_TEXT.DASHBOARD.UNITS.ENERGY})`,
+          name: `${APP_TEXT.DASHBOARD.KPI.ENERGY} (${APP_TEXT.DASHBOARD.UNITS.ENERGY})`,
           type: 'line',
           smooth: true,
           symbol: 'none',
@@ -48,21 +47,6 @@ export const EnergyChart = memo(function EnergyChart({
           },
           lineStyle: {
             color: APP_CONFIG.DASHBOARD.COLORS.ENERGY_IN,
-            width: 2,
-          },
-          data: sampledData.map(point => point.energyIn),
-          animationDuration: APP_CONFIG.DASHBOARD.CHART.ANIMATION_DURATION,
-        },
-        {
-          name: `${APP_TEXT.DASHBOARD.KPI.ENERGY_OUT} (${APP_TEXT.DASHBOARD.UNITS.ENERGY})`,
-          type: 'line',
-          smooth: true,
-          symbol: 'none',
-          itemStyle: {
-            color: APP_CONFIG.DASHBOARD.COLORS.ENERGY_OUT,
-          },
-          lineStyle: {
-            color: APP_CONFIG.DASHBOARD.COLORS.ENERGY_OUT,
             width: 2,
           },
           data: sampledData.map(point => point.energyOut),
@@ -74,8 +58,7 @@ export const EnergyChart = memo(function EnergyChart({
 
   const tableColumns: Column[] = [
     { key: 'timestamp', label: 'Time' },
-    { key: 'energyIn', label: APP_TEXT.DASHBOARD.KPI.ENERGY_IN, unit: APP_TEXT.DASHBOARD.UNITS.ENERGY },
-    { key: 'energyOut', label: APP_TEXT.DASHBOARD.KPI.ENERGY_OUT, unit: APP_TEXT.DASHBOARD.UNITS.ENERGY },
+    { key: 'energyOut', label: APP_TEXT.DASHBOARD.KPI.ENERGY, unit: APP_TEXT.DASHBOARD.UNITS.ENERGY },
   ]
 
   const chartComponent = <BaseChart data={data} height={height} showLegend={showLegend} getOption={getOption} />

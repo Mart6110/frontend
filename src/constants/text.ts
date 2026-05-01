@@ -246,7 +246,7 @@ export const APP_CONFIG = {
   DASHBOARD: {
     // Update Intervals (in milliseconds)
     UPDATE_INTERVALS: {
-      REAL_TIME: 15000,      // 15 seconds
+      REAL_TIME: 5000,      // 5 seconds
       EFFICIENCY: 60000,     // 60 seconds
       HISTORICAL: 300000,    // 5 minutes
     },
