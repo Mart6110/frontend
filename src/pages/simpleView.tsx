@@ -2,6 +2,7 @@ import { VStack, Grid, GridItem, Box } from "@chakra-ui/react"
 import { useEffect, useRef } from "react"
 import { APP_TEXT, APP_CONFIG } from "@/constants/text"
 import * as dashboardService from "@/services/dashboardService"
+import * as dataTransform from "@/services/dataTransform"
 import { KPICard } from "@/components/dashboard/KPICard"
 import { PumpStatusCard } from "@/components/dashboard/PumpStatusCard"
 import { HeaterStatusCard } from "@/components/dashboard/HeaterStatusCard"
@@ -88,17 +89,20 @@ export function SimpleViewPage() {
     loadData()
   }, [dispatch, realtimeConfig, interval])
 
-  // Update display data when realtimeConfig changes
+  // Update display data when realtimeConfig changes or real-time data updates
   useEffect(() => {
     if (!allData) return
 
-    // Skip filtering if this is just a realtime data update
+    // Filter data by the current time window to keep graphs and events in sync
+    const timeWindowMs = timeConfigToMilliseconds(realtimeConfig)
+    const filteredData = dataTransform.filterDataByTimeRange(allData, timeWindowMs)
+    
     if (isRealtimeUpdateRef.current) {
       isRealtimeUpdateRef.current = false
-      dispatch(setSimpleData(allData))
-      return
     }
-  }, [allData, dispatch])
+    
+    dispatch(setSimpleData(filteredData))
+  }, [allData, dispatch, realtimeConfig])
 
   // Real-time updates every 15 seconds
   useEffect(() => {

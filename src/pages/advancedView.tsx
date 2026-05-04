@@ -2,6 +2,7 @@ import { VStack, Grid, GridItem, Box } from "@chakra-ui/react"
 import { useEffect, useRef, useMemo } from "react"
 import { APP_TEXT, APP_CONFIG } from "@/constants/text"
 import * as dashboardService from "@/services/dashboardService"
+import * as dataTransform from "@/services/dataTransform"
 import { KPICard } from "@/components/dashboard/KPICard"
 import { PumpStatusCard } from "@/components/dashboard/PumpStatusCard"
 import { HeaterStatusCard } from "@/components/dashboard/HeaterStatusCard"
@@ -173,16 +174,26 @@ export function AdvancedViewPage() {
     loadData()
   }, [dispatch, viewMode, realtimeConfig, interval, startDate, endDate])
 
-  // Update display data when realtime updates come in
+  // Update display data when realtime updates come in or time range changes
   useEffect(() => {
     if (!allData) return
 
-    // Only update display if this is a realtime update
-    if (isRealtimeUpdateRef.current && viewMode === 'realtime') {
-      isRealtimeUpdateRef.current = false
-      dispatch(setDisplayData(allData))
+    let filteredData = allData
+    
+    // Apply time filtering based on view mode
+    if (viewMode === 'realtime') {
+      const timeWindowMs = timeConfigToMilliseconds(realtimeConfig)
+      filteredData = dataTransform.filterDataByTimeRange(allData, timeWindowMs)
+    } else if (viewMode === 'dateRange' && startDate && endDate) {
+      filteredData = dataTransform.filterDataByDateRange(allData, startDate, endDate)
     }
-  }, [allData, viewMode, dispatch])
+    
+    if (isRealtimeUpdateRef.current) {
+      isRealtimeUpdateRef.current = false
+    }
+    
+    dispatch(setDisplayData(filteredData))
+  }, [allData, viewMode, realtimeConfig, startDate, endDate, dispatch])
 
   // Real-time updates every 30 seconds
   useEffect(() => {
