@@ -10,8 +10,6 @@ const EVENT_TYPE_OPTIONS = [
   { value: 'pump', label: 'Pump' },
   { value: 'temperature', label: 'Temperature' },
   { value: 'energy', label: 'Energy' },
-  { value: 'error', label: 'Error' },
-  { value: 'warning', label: 'Warning' },
 ] as const
 
 const EVENT_SEVERITY_OPTIONS = [

@@ -458,7 +458,8 @@ export function mergeLatestData(
   latestEnergy: EnergyReading,
   controlStatus: ControlStatus,
   newEvents: SystemEvent[],
-  maxHistoryPoints: number = 5000
+  maxHistoryPoints: number = 5000,
+  timeWindowMs?: number
 ): DashboardData {
   const timestamp = new Date(latest.timestamp).getTime()
   
@@ -466,10 +467,15 @@ export function mergeLatestData(
   const lastTempTimestamp = existingData.temperatureHistory[existingData.temperatureHistory.length - 1]?.timestamp
   const isNewData = !lastTempTimestamp || timestamp > lastTempTimestamp
   
+  // Calculate cutoff time if time window is specified
+  const cutoffTime = timeWindowMs ? timestamp - timeWindowMs : 0
+  
   // Only add new data points if the timestamp is actually newer
   const temperatureHistory = isNewData
     ? [
-        ...existingData.temperatureHistory.slice(-maxHistoryPoints + 1),
+        ...existingData.temperatureHistory
+          .filter(d => !timeWindowMs || d.timestamp >= cutoffTime)
+          .slice(-maxHistoryPoints + 1),
         { 
           timestamp, 
           temperatures: latest.temperatures.map(t => ({
@@ -478,32 +484,38 @@ export function mergeLatestData(
           })) 
         }
       ]
-    : existingData.temperatureHistory
+    : existingData.temperatureHistory.filter(d => !timeWindowMs || d.timestamp >= cutoffTime)
   
   const energyHistory = isNewData
     ? [
-        ...existingData.energyHistory.slice(-maxHistoryPoints + 1),
+        ...existingData.energyHistory
+          .filter(d => !timeWindowMs || d.timestamp >= cutoffTime)
+          .slice(-maxHistoryPoints + 1),
         { 
           timestamp, 
           energyIn: latest.power_w / 1000,
           energyOut: latestEnergy.energy_kwh
         }
       ]
-    : existingData.energyHistory
+    : existingData.energyHistory.filter(d => !timeWindowMs || d.timestamp >= cutoffTime)
   
   const flowHistory = isNewData
     ? [
-        ...existingData.flowHistory.slice(-maxHistoryPoints + 1),
+        ...existingData.flowHistory
+          .filter(d => !timeWindowMs || d.timestamp >= cutoffTime)
+          .slice(-maxHistoryPoints + 1),
         { timestamp, flow: getFlowRate(latest) }
       ]
-    : existingData.flowHistory
+    : existingData.flowHistory.filter(d => !timeWindowMs || d.timestamp >= cutoffTime)
   
   const pumpHistory = isNewData
     ? [
-        ...existingData.pumpHistory.slice(-maxHistoryPoints + 1),
+        ...existingData.pumpHistory
+          .filter(d => !timeWindowMs || d.timestamp >= cutoffTime)
+          .slice(-maxHistoryPoints + 1),
         { timestamp, active: controlStatus.pump.active }
       ]
-    : existingData.pumpHistory
+    : existingData.pumpHistory.filter(d => !timeWindowMs || d.timestamp >= cutoffTime)
   
   // Merge events (keep last 1000)
   const events = [

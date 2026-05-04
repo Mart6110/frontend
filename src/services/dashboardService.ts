@@ -161,9 +161,10 @@ export function updateDashboardWithLatest(
   latest: api.SensorData,
   energyData: api.EnergyReading,
   controlStatus: api.ControlStatus,
-  events: api.SystemEvent[]
+  events: api.SystemEvent[],
+  timeWindowMs?: number
 ): DashboardData {
-  return transform.mergeLatestData(existingData, latest, energyData, controlStatus, events)
+  return transform.mergeLatestData(existingData, latest, energyData, controlStatus, events, 5000, timeWindowMs)
 }
 
 /**

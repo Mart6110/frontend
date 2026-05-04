@@ -27,6 +27,7 @@ export const BaseChart = memo(function BaseChart({ data, height = 300, showLegen
           option={option} 
           style={{ height: `${height}px` }} 
           lazyUpdate={true}
+          notMerge={false}
           showLoading={isLoading}
           loadingOption={{
             text: '',

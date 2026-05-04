@@ -108,7 +108,9 @@ export function SimpleViewPage() {
       try {
         const { data, energyData, controlStatus, events } = await dashboardService.fetchLatestData()
         isRealtimeUpdateRef.current = true
-        const updatedData = dashboardService.updateDashboardWithLatest(allData, data, energyData, controlStatus, events)
+        // Pass time window in milliseconds to maintain rolling window
+        const timeWindowMs = timeConfigToMilliseconds(realtimeConfig)
+        const updatedData = dashboardService.updateDashboardWithLatest(allData, data, energyData, controlStatus, events, timeWindowMs)
         dispatch(setSimpleAllData(updatedData))
       } catch (error) {
         console.error('Failed to fetch latest data:', error)
@@ -116,7 +118,7 @@ export function SimpleViewPage() {
     }, APP_CONFIG.DASHBOARD.UPDATE_INTERVALS.REAL_TIME)
 
     return () => clearInterval(interval)
-  }, [allData, dispatch])
+  }, [allData, dispatch, realtimeConfig])
 
   return (
     <Box display="flex" flexDirection="column" h="full">
@@ -196,6 +198,15 @@ export function SimpleViewPage() {
               isLoading={isLoading}
             />
           </GridItem>
+          
+          <GridItem>
+            <KPICard
+              label={APP_TEXT.DASHBOARD.KPI.FLOW_RATE}
+              value={data?.currentFlow.toFixed(1) ?? "0.0"}
+              unit={APP_TEXT.DASHBOARD.UNITS.FLOW}
+              isLoading={isLoading}
+            />
+          </GridItem>
         </Grid>
 
         {/* Pump & Heater Status */}
@@ -243,16 +254,6 @@ export function SimpleViewPage() {
                   onUpdate={handleControlUpdate}
                 />
               }
-            />
-          </GridItem>
-
-          <GridItem>
-            <KPICard
-              label={APP_TEXT.DASHBOARD.KPI.FLOW_RATE}
-              value={data?.currentFlow.toFixed(1) ?? "0.0"}
-              unit={APP_TEXT.DASHBOARD.UNITS.FLOW}
-              size="lg"
-              isLoading={isLoading}
             />
           </GridItem>
         </Grid>

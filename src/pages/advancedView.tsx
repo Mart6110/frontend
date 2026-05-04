@@ -192,7 +192,9 @@ export function AdvancedViewPage() {
       try {
         const { data, energyData, controlStatus, events } = await dashboardService.fetchLatestData()
         isRealtimeUpdateRef.current = true
-        const updatedData = dashboardService.updateDashboardWithLatest(allData, data, energyData, controlStatus, events)
+        // Pass time window in milliseconds to maintain rolling window (only in realtime mode)
+        const timeWindowMs = viewMode === 'realtime' ? timeConfigToMilliseconds(realtimeConfig) : undefined
+        const updatedData = dashboardService.updateDashboardWithLatest(allData, data, energyData, controlStatus, events, timeWindowMs)
         dispatch(setAllData(updatedData))
       } catch (error) {
         console.error('Failed to fetch latest data:', error)
@@ -200,7 +202,7 @@ export function AdvancedViewPage() {
     }, APP_CONFIG.DASHBOARD.UPDATE_INTERVALS.REAL_TIME)
 
     return () => clearInterval(updateInterval)
-  }, [allData, dispatch])
+  }, [allData, dispatch, viewMode, realtimeConfig])
 
   return (
     <Box display="flex" flexDirection="column" h="full">
