@@ -1,6 +1,6 @@
 import { Box, Text } from "@chakra-ui/react"
 import ReactECharts from "echarts-for-react"
-import { useMemo, memo } from "react"
+import { useMemo, memo, useRef } from "react"
 import type { EChartsOption } from "echarts"
 
 interface BaseChartProps {
@@ -14,6 +14,7 @@ interface BaseChartProps {
 
 export const BaseChart = memo(function BaseChart({ data, height = 300, showLegend = true, title, isLoading = false, getOption }: BaseChartProps) {
   const option = useMemo(() => getOption(data, showLegend), [data, showLegend, getOption])
+  const chartRef = useRef<any>(null)
 
   return (
     <Box>
@@ -24,6 +25,7 @@ export const BaseChart = memo(function BaseChart({ data, height = 300, showLegen
       )}
       <Box position="relative">
         <ReactECharts 
+          ref={chartRef}
           option={option} 
           style={{ height: `${height}px` }} 
           lazyUpdate={true}
@@ -34,6 +36,7 @@ export const BaseChart = memo(function BaseChart({ data, height = 300, showLegen
             color: '#14b8a6',
             maskColor: 'rgba(0, 0, 0, 0.4)',
           }}
+          opts={{ renderer: 'canvas' }}
         />
       </Box>
     </Box>
@@ -92,16 +95,12 @@ export function createBaseChartConfig(overrides: Partial<EChartsOption> = {}): E
     dataZoom: [
       {
         type: 'inside',
-        start: 0,
-        end: 100,
         zoomOnMouseWheel: true,
         moveOnMouseMove: true,
         moveOnMouseWheel: false,
       },
       {
         type: 'slider',
-        start: 0,
-        end: 100,
         height: 25,
         bottom: 10,
         borderColor: 'rgba(0, 255, 170, 0.3)',
