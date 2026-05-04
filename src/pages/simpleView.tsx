@@ -190,15 +190,6 @@ export function SimpleViewPage() {
           
           <GridItem>
             <KPICard
-              label={APP_TEXT.DASHBOARD.KPI.POWER}
-              value={data?.currentPower.toFixed(0) ?? "0"}
-              unit={APP_TEXT.DASHBOARD.UNITS.POWER}
-              isLoading={isLoading}
-            />
-          </GridItem>
-          
-          <GridItem>
-            <KPICard
               label={APP_TEXT.DASHBOARD.KPI.ENERGY}
               value={data?.currentEnergy.toFixed(2) ?? "0.00"}
               unit={APP_TEXT.DASHBOARD.UNITS.ENERGY}
