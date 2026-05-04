@@ -10,7 +10,6 @@ interface DashboardHeaderProps {
   children?: ReactNode
   events?: DashboardEvent[]
   isLoading?: boolean
-  maxEvents?: number
   dashboardData?: DashboardData
   enableExport?: boolean
 }
@@ -19,7 +18,6 @@ export function DashboardHeader({
   children = null, 
   events, 
   isLoading = false,
-  maxEvents = 100,
   dashboardData,
   enableExport = false,
 }: DashboardHeaderProps) {
@@ -77,7 +75,7 @@ export function DashboardHeader({
           }
           title="Systemhændelser Tidslinje"
         >
-          <EventTimeline events={events ?? []} maxEvents={maxEvents} />
+          <EventTimeline events={events ?? []} />
         </Drawer>
       </Flex>
     </Flex>

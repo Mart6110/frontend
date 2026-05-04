@@ -1,7 +1,7 @@
-import { Box, Text, Timeline, Badge, Flex, Stack, Separator, Button, IconButton } from "@chakra-ui/react"
+import { Box, Text, Timeline, Badge, Flex, Stack, Separator, Button, IconButton, Spinner } from "@chakra-ui/react"
 import { Popover, PopoverBody, PopoverCloseTrigger, PopoverHeader, PopoverTitle } from "@/components/ui/popover"
 import { FilterCheckbox } from "@/components/ui/filterCheckbox"
-import { useState } from "react"
+import { useState, useEffect, useRef, useCallback } from "react"
 import { LuFilter, LuX } from "react-icons/lu"
 import type { DashboardEvent } from "@/services/dataTransform"
 import { APP_TEXT } from "@/constants/text"
@@ -22,10 +22,11 @@ const EVENT_SEVERITY_OPTIONS = [
 
 interface EventTimelineProps {
   events: DashboardEvent[]
-  maxEvents?: number
 }
 
-export function EventTimeline({ events, maxEvents = 100 }: EventTimelineProps) {
+const EVENTS_PER_PAGE = 50
+
+export function EventTimeline({ events }: EventTimelineProps) {
   // Applied filters (used for actual filtering)
   const [selectedTypes, setSelectedTypes] = useState<string[]>([])
   const [selectedSeverities, setSelectedSeverities] = useState<string[]>([])
@@ -34,6 +35,11 @@ export function EventTimeline({ events, maxEvents = 100 }: EventTimelineProps) {
   const [tempTypes, setTempTypes] = useState<string[]>([])
   const [tempSeverities, setTempSeverities] = useState<string[]>([])
 
+  // Lazy loading state
+  const [displayedCount, setDisplayedCount] = useState(EVENTS_PER_PAGE)
+  const [isLoadingMore, setIsLoadingMore] = useState(false)
+  const observerTarget = useRef<HTMLDivElement>(null)
+
   // Filter events based on selections (empty array = show all)
   const filteredEvents = events.filter(event => {
     const typeMatch = selectedTypes.length === 0 || selectedTypes.includes(event.type)
@@ -41,7 +47,8 @@ export function EventTimeline({ events, maxEvents = 100 }: EventTimelineProps) {
     return typeMatch && severityMatch
   })
   
-  const displayEvents = filteredEvents.slice(0, maxEvents)
+  const displayEvents = filteredEvents.slice(0, displayedCount)
+  const hasMore = displayedCount < filteredEvents.length
 
   const handleTypeToggle = (type: string) => {
     setTempTypes(prev => 
@@ -62,6 +69,8 @@ export function EventTimeline({ events, maxEvents = 100 }: EventTimelineProps) {
   const handleApply = () => {
     setSelectedTypes(tempTypes)
     setSelectedSeverities(tempSeverities)
+    // Reset displayed count when filters change
+    setDisplayedCount(EVENTS_PER_PAGE)
   }
 
   const handleClear = () => {
@@ -76,6 +85,46 @@ export function EventTimeline({ events, maxEvents = 100 }: EventTimelineProps) {
       setTempSeverities(selectedSeverities)
     }
   }
+
+  // Load more events
+  const loadMore = useCallback(() => {
+    if (isLoadingMore || !hasMore) return
+    
+    setIsLoadingMore(true)
+    // Simulate async loading for smooth UX
+    setTimeout(() => {
+      setDisplayedCount(prev => Math.min(prev + EVENTS_PER_PAGE, filteredEvents.length))
+      setIsLoadingMore(false)
+    }, 100)
+  }, [isLoadingMore, hasMore, filteredEvents.length])
+
+  // Intersection Observer for infinite scroll
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore && !isLoadingMore) {
+          loadMore()
+        }
+      },
+      { threshold: 0.1 }
+    )
+
+    const currentTarget = observerTarget.current
+    if (currentTarget) {
+      observer.observe(currentTarget)
+    }
+
+    return () => {
+      if (currentTarget) {
+        observer.unobserve(currentTarget)
+      }
+    }
+  }, [hasMore, isLoadingMore, loadMore])
+
+  // Reset displayed count when events change
+  useEffect(() => {
+    setDisplayedCount(EVENTS_PER_PAGE)
+  }, [events.length])
 
   const getSeverityColor = (severity: 'info' | 'warning' | 'error') => {
     switch (severity) {
@@ -222,6 +271,7 @@ export function EventTimeline({ events, maxEvents = 100 }: EventTimelineProps) {
         </Box>
         <Text fontSize="xs" color="gray.400">
           Showing {displayEvents.length} of {filteredEvents.length} events
+          {hasMore && " (scroll for more)"}
         </Text>
       </Flex>
 
@@ -234,36 +284,51 @@ export function EventTimeline({ events, maxEvents = 100 }: EventTimelineProps) {
           </Text>
         </Box>
       ) : (
-        <Timeline.Root variant="subtle" size="sm">
-          {displayEvents.map((event) => (
-            <Timeline.Item key={event.id}>
-              <Timeline.Connector>
-                <Timeline.Indicator colorPalette={getSeverityColor(event.severity)}>
-                  <Text fontSize="lg">{getTypeIcon(event.type)}</Text>
-                </Timeline.Indicator>
-                <Timeline.Separator />
-              </Timeline.Connector>
-              <Timeline.Content>
-                <Timeline.Title fontSize="sm" fontWeight="medium">
-                  {event.message}
-                  <Badge
-                    ml={2}
-                    colorScheme={getSeverityColor(event.severity)}
-                    fontSize="2xs"
-                    px={2}
-                    py={0.5}
-                    borderRadius="full"
-                  >
-                    {event.severity}
-                  </Badge>
-                </Timeline.Title>
-                <Timeline.Description fontSize="xs" color="gray.400">
-                  {formatTimestamp(event.timestamp)}
-                </Timeline.Description>
-              </Timeline.Content>
-            </Timeline.Item>
-          ))}
-        </Timeline.Root>
+        <>
+          <Timeline.Root variant="subtle" size="sm">
+            {displayEvents.map((event) => (
+              <Timeline.Item key={event.id}>
+                <Timeline.Connector>
+                  <Timeline.Indicator colorPalette={getSeverityColor(event.severity)}>
+                    <Text fontSize="lg">{getTypeIcon(event.type)}</Text>
+                  </Timeline.Indicator>
+                  <Timeline.Separator />
+                </Timeline.Connector>
+                <Timeline.Content>
+                  <Timeline.Title fontSize="sm" fontWeight="medium">
+                    {event.message}
+                    <Badge
+                      ml={2}
+                      colorScheme={getSeverityColor(event.severity)}
+                      fontSize="2xs"
+                      px={2}
+                      py={0.5}
+                      borderRadius="full"
+                    >
+                      {event.severity}
+                    </Badge>
+                  </Timeline.Title>
+                  <Timeline.Description fontSize="xs" color="gray.400">
+                    {formatTimestamp(event.timestamp)}
+                  </Timeline.Description>
+                </Timeline.Content>
+              </Timeline.Item>
+            ))}
+          </Timeline.Root>
+          
+          {/* Intersection Observer Target */}
+          <Box ref={observerTarget} py={4} textAlign="center">
+            {isLoadingMore && (
+              <Flex align="center" justify="center" gap={2}>
+                <Spinner size="sm" colorPalette="teal" />
+                <Text fontSize="sm" color="gray.400">Loading more events...</Text>
+              </Flex>
+            )}
+            {!hasMore && displayEvents.length > EVENTS_PER_PAGE && (
+              <Text fontSize="sm" color="gray.400">All events loaded</Text>
+            )}
+          </Box>
+        </>
       )}
       </Box>
     </Box>
